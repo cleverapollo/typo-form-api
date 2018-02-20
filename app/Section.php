@@ -17,8 +17,22 @@ class Section extends Model
     /**
      * Get the form that owns the section.
      */
-    public function post()
+    public function form()
     {
         return $this->belongsTo('App\Form');
+    }
+    /**
+     * Get the groups for the Section.
+     */
+    public function group()
+    {
+        return $this->hasMany('App\Group');
+    }
+    /**
+     * Get the groups for the Section.
+     */
+    public function question()
+    {
+        return $this->hasMany('App\Question');
     }
 }

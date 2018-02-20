@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSectionTable extends Migration
+class CreateAnswerTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateSectionTable extends Migration
      */
     public function up()
     {
-        Schema::create('sections', function (Blueprint $table) {
+        Schema::create('answers', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('form_id')->unsigned()->nullable();;
-            $table->foreign('form_id')->references('id')
-                ->on('forms')->onDelete('cascade');
-            $table->string('name');
+            $table->integer('question_id')->unsigned()->nullable();;
+            $table->foreign('question_id')->references('id')
+                ->on('questions')->onDelete('cascade');
+            $table->string('answer');
             $table->integer('order');
             $table->timestamps();
         });
@@ -31,6 +31,6 @@ class CreateSectionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sections');
+        Schema::dropIfExists('answers');
     }
 }

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Section;
-use App\Form;
+use App\Group;
 
-class SectionController extends Controller
+class GroupController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -23,10 +23,10 @@ class SectionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($form_id, Request $request)
+    public function index($section_id, Request $request)
     {
-        $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success','result' => $section]);
+        $group = Section::find($section_id)->group()->get();
+        return response()->json(['status' => 'success','result' => $group]);
     }
 
     /**
@@ -35,13 +35,12 @@ class SectionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($form_id, Request $request)
+    public function store($section_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
-            'order' => 'required'
+            'name' => 'required'
         ]);
-        if(Form::find($form_id)->section()->Create($request->all())){
+        if(Section::find($section_id)->group()->Create($request->all())){
             return response()->json(['status' => 'success']);
         }else{
             return response()->json(['status' => 'fail']);
@@ -54,10 +53,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($form_id, $id)
+    public function show($section_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return response()->json($section);
+        $group = Section::find($section_id)->group()->where('id', $id)->get();
+        return response()->json($group);
 
     }
 
@@ -67,10 +66,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($form_id, $id)
+    public function edit($section_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return view('section.editsection',['sections' => $section]);
+        $group = Section::find($section_id)->group()->where('id', $id)->get();
+        return view('group.editgroup',['groups' => $group]);
     }
 
     /**
@@ -80,14 +79,13 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update($form_id, Request $request, $id)
+    public function update($section_id, Request $request, $id)
     {
         $this->validate($request, [
-            'name' => 'filled',
-            'order' => 'filled'
+            'name' => 'filled'
         ]);
-        $section = Form::find($form_id)->section()->find($id);
-        if($section->fill($request->all())->save()){
+        $group = Section::find($section_id)->group()->find($id);
+        if($group->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
         return response()->json(['status' => 'failed']);
@@ -99,9 +97,9 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($form_id, $id)
+    public function destroy($section_id, $id)
     {
-        if(Form::find($form_id)->section()->destroy($id)){
+        if(Section::find($section_id)->group()->destroy($id)){
             return response()->json(['status' => 'success']);
         }
     }

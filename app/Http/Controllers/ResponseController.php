@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Section;
-use App\Form;
+use App\Response;
+use App\Submission;
 
-class SectionController extends Controller
+class ResponseController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -23,10 +23,10 @@ class SectionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($form_id, Request $request)
+    public function index($submission_id, Request $request)
     {
-        $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success','result' => $section]);
+        $response = Submission::find($submission_id)->response()->get();
+        return response()->json(['status' => 'success','result' => $response]);
     }
 
     /**
@@ -35,13 +35,13 @@ class SectionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($form_id, Request $request)
+    public function store($submission_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
-            'order' => 'required'
+            'response' => 'required',
+            'answer_id' => 'required'
         ]);
-        if(Form::find($form_id)->section()->Create($request->all())){
+        if(Submission::find($submission_id)->response()->Create($request->all())){
             return response()->json(['status' => 'success']);
         }else{
             return response()->json(['status' => 'fail']);
@@ -54,10 +54,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($form_id, $id)
+    public function show($submission_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return response()->json($section);
+        $response = Submission::find($submission_id)->response()->where('id', $id)->get();
+        return response()->json($response);
 
     }
 
@@ -67,10 +67,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($form_id, $id)
+    public function edit($submission_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return view('section.editsection',['sections' => $section]);
+        $response = Submission::find($submission_id)->response()->where('id', $id)->get();
+        return view('response.editresponse',['responses' => $response]);
     }
 
     /**
@@ -80,14 +80,14 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update($form_id, Request $request, $id)
+    public function update($submission_id, Request $request, $id)
     {
         $this->validate($request, [
-            'name' => 'filled',
-            'order' => 'filled'
+            'response' => 'filled',
+            'answer_id' => 'filled'
         ]);
-        $section = Form::find($form_id)->section()->find($id);
-        if($section->fill($request->all())->save()){
+        $response = Submission::find($submission_id)->response()->find($id);
+        if($response->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
         return response()->json(['status' => 'failed']);
@@ -99,9 +99,9 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($form_id, $id)
+    public function destroy($submission_id, $id)
     {
-        if(Form::find($form_id)->section()->destroy($id)){
+        if(Submission::find($submission_id)->response()->destroy($id)){
             return response()->json(['status' => 'success']);
         }
     }

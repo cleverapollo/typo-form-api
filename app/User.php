@@ -34,4 +34,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->belongsToMany('App\Organisation', 'user_organisation');
     }
+    /**
+     * Get the submissions for the Form.
+     */
+    public function submission()
+    {
+        return $this->hasOne('App\Submission');
+    }
 }

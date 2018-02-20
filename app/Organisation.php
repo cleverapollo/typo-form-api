@@ -19,4 +19,11 @@ class Organisation extends Model
     {
         return $this->belongsToMany('App\User', 'user_organisation');
     }
+    /**
+     * Get the submissions for the Form.
+     */
+    public function submission()
+    {
+        return $this->hasMany('App\Submission');
+    }
 }

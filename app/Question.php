@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form extends Model
+class Question extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,20 +12,20 @@ class Form extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'question', 'order', 'section_id'
     ];
     /**
-     * Get the sections for the Form.
+     * Get the form that owns the section.
      */
     public function section()
     {
-        return $this->hasMany('App\Section');
+        return $this->belongsTo('App\Section');
     }
     /**
-     * Get the submissions for the Form.
+     * Get the answer for the Question.
      */
-    public function submission()
+    public function answer()
     {
-        return $this->hasMany('App\Submission');
+        return $this->hasMany('App\Answer');
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Section;
-use App\Form;
+use App\Organisation;
+use Auth;
 
-class SectionController extends Controller
+class SubmissionController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -23,10 +23,10 @@ class SectionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($form_id, Request $request)
+    public function index($organisation_id, Request $request)
     {
-        $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success','result' => $section]);
+        $submission = Auth::user()->submission()->where('organisation_id', $organisation_id)->get();
+        return response()->json(['status' => 'success','result' => $submission]);
     }
 
     /**
@@ -35,13 +35,13 @@ class SectionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($form_id, Request $request)
+    public function store($organisation_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
-            'order' => 'required'
+            'form_id' => 'required'
         ]);
-        if(Form::find($form_id)->section()->Create($request->all())){
+        if(Auth::user()->submission()->Create(['form_id' => $request->form_id,
+            'organisation_id' => $organisation_id])) {
             return response()->json(['status' => 'success']);
         }else{
             return response()->json(['status' => 'fail']);
@@ -54,10 +54,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($form_id, $id)
+    public function show($organisation_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return response()->json($section);
+        $submission = Auth::user()->submission()->where('id', $id)->where('organisation_id', $organisation_id)->get();
+        return response()->json($submission);
 
     }
 
@@ -67,10 +67,10 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($form_id, $id)
+    public function edit($organisation_id, $id)
     {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return view('section.editsection',['sections' => $section]);
+        $submission = Auth::user()->submission()->where('id', $id)->where('organisation_id', $organisation_id)->get();
+        return view('submission.editsubmission',['submissions' => $submission]);
     }
 
     /**
@@ -80,14 +80,13 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update($form_id, Request $request, $id)
+    public function update($organisation_id, Request $request, $id)
     {
         $this->validate($request, [
-            'name' => 'filled',
-            'order' => 'filled'
+            'form_id' => 'filled'
         ]);
-        $section = Form::find($form_id)->section()->find($id);
-        if($section->fill($request->all())->save()){
+        $organisation = Auth::user()->submission()->find($id);
+        if($organisation->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
         return response()->json(['status' => 'failed']);
@@ -99,9 +98,9 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($form_id, $id)
+    public function destroy($organisation_id, $id)
     {
-        if(Form::find($form_id)->section()->destroy($id)){
+        if(Auth::user()->submission()->destroy($id)){
             return response()->json(['status' => 'success']);
         }
     }
