@@ -14,3 +14,10 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+$router->group(['prefix' => 'api'], function () use ($router) {
+    $router->post('login', 'UserController@login');
+    $router->post('logout', 'UserController@logout');
+    $router->post('register', 'UserController@register');
+    $router->post('resetPassword', 'UserController@resetpassword');
+});
