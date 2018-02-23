@@ -50,7 +50,7 @@ class UserController extends Controller
     {
         $user = $this->auth->user();
 
-        $user->api_token= '';
+        $user->api_token= NULL;
         $user->save();
 
         return response()->json(['message'=>'success'], 200);
