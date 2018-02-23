@@ -17,6 +17,7 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('login', 'UserController@login');
+    $router->get('userinfo', 'UserController@userinfo');
     $router->post('logout', 'UserController@logout');
     $router->post('register', 'UserController@register');
     $router->post('resetPassword', 'UserController@resetpassword');

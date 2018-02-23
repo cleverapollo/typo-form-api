@@ -30,7 +30,17 @@ class UserController extends Controller
         if ($user && Hash::check($request->input('password'), $user->password)) {
             $api_token = base64_encode(str_random(40));
             $user->update(['api_token' => $api_token]);
-            return response()->json(['status' => 'success', $user]);
+            return response()->json(['status' => 'success', 'user' => $user]);
+        } else {
+            return response()->json(['status' => 'fail'], 401);
+        }
+    }
+
+    public function userinfo(Request $request)
+    {
+        $user = User::where('api_token', $request->header('api_token'))->first();
+        if ($user) {
+            return response()->json(['status' => 'success', 'user' => $user]);
         } else {
             return response()->json(['status' => 'fail'], 401);
         }
