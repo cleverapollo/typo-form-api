@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->dateTime('expire_date');
             $table->rememberToken();
             $table->timestamps();
+        });
     }
 
     /**
