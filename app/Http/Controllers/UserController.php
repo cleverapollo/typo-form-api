@@ -29,7 +29,7 @@ class UserController extends Controller
         $user = User::where('email', $request->input('email'))->first();
         if ($user && Hash::check($request->input('password'), $user->password)) {
             $api_token = base64_encode(str_random(40));
-            $user->update(['api_token' => $api_token]);
+            $user->update(['api_token' => $api_token, 'expire_date' => new DateTime('today')]);
             return response()->json(['status' => 'success', 'user' => $user]);
         } else {
             return response()->json(['status' => 'fail'], 401);
