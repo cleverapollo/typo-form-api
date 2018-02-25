@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Auth\Guard;
 use App\User;
-use DateTime;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -30,7 +30,8 @@ class UserController extends Controller
         $user = User::where('email', $request->input('email'))->first();
         if ($user && Hash::check($request->input('password'), $user->password)) {
             $api_token = base64_encode(str_random(40));
-            $user->update(['api_token' => $api_token, 'expire_date' => new DateTime('today')]);
+            $expire_date = Carbon::now();
+            $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
             return response()->json(['status' => 'success', 'user' => $user]);
         } else {
             return response()->json(['status' => 'fail'], 401);
@@ -52,6 +53,7 @@ class UserController extends Controller
         $user = $this->auth->user();
 
         $user->api_token= NULL;
+        $user->expire_date= NULL;
         $user->save();
 
         return response()->json(['message'=>'success'], 200);
