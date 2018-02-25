@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Auth\Guard;
 use App\User;
+use DateTime;
 
 class UserController extends Controller
 {
