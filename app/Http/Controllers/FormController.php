@@ -75,10 +75,12 @@ class FormController extends Controller
         $this->validate($request, [
             'name' => 'filled'
         ]);
+
         $form = Form::find($id);
         if ($form->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
+
         return response()->json(['status' => 'fail']);
     }
 
@@ -93,5 +95,7 @@ class FormController extends Controller
         if (Form::destroy($id)) {
             return response()->json(['status' => 'success']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 }

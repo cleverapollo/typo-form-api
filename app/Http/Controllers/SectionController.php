@@ -3,36 +3,29 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Section;
-use App\Form;
+use App\Models\Section;
+use App\Models\Form;
 
 class SectionController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
-
-    /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param $form_id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index($form_id, Request $request)
     {
         $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success','result' => $section]);
+        return response()->json(['status' => 'success', 'result' => $section]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param $form_id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store($form_id, Request $request)
@@ -41,43 +34,46 @@ class SectionController extends Controller
             'name' => 'required',
             'order' => 'required'
         ]);
-        if(Form::find($form_id)->section()->Create($request->all())){
+
+        if (Form::find($form_id)->section()->Create($request->all())) {
             return response()->json(['status' => 'success']);
-        }else{
-            return response()->json(['status' => 'fail']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param $form_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($form_id, $id)
     {
         $section = Form::find($form_id)->section()->where('id', $id)->get();
         return response()->json($section);
-
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param $form_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($form_id, $id)
     {
         $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return view('section.editsection',['sections' => $section]);
+        return view('section.editSection', ['sections' => $section]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param $form_id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update($form_id, Request $request, $id)
@@ -86,23 +82,28 @@ class SectionController extends Controller
             'name' => 'filled',
             'order' => 'filled'
         ]);
+
         $section = Form::find($form_id)->section()->find($id);
-        if($section->fill($request->all())->save()){
+        if ($section->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
+
         return response()->json(['status' => 'fail']);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param $form_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($form_id, $id)
     {
-        if(Form::find($form_id)->section()->destroy($id)){
+        if (Form::find($form_id)->section()->destroy($id)) {
             return response()->json(['status' => 'success']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 }
