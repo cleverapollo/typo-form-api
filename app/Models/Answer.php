@@ -14,11 +14,12 @@ class Answer extends Model
     protected $fillable = [
         'answer', 'order', 'question_id'
     ];
+
     /**
      * Get the question that owns the answer.
      */
     public function question()
     {
-        return $this->belongsTo('App\Question');
+        return $this->belongsTo('App\Models\Question');
     }
 }

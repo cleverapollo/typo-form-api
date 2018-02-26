@@ -14,18 +14,20 @@ class Form extends Model
     protected $fillable = [
         'name'
     ];
+
     /**
      * Get the sections for the Form.
      */
     public function section()
     {
-        return $this->hasMany('App\Section');
+        return $this->hasMany('App\Models\Section');
     }
+
     /**
      * Get the submissions for the Form.
      */
     public function submission()
     {
-        return $this->hasMany('App\Submission');
+        return $this->hasMany('App\Models\Submission');
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Organisation;
+use App\Models\Team;
 use Auth;
 
 class OrganisationController extends Controller
@@ -47,7 +47,7 @@ class OrganisationController extends Controller
      */
     public function show($id)
     {
-        $organisation = Organisation::where('id', $id)->get();
+        $organisation = Team::where('id', $id)->get();
         return response()->json($organisation);
     }
 
@@ -59,7 +59,7 @@ class OrganisationController extends Controller
      */
     public function edit($id)
     {
-        $organisation = Organisation::where('id', $id)->get();
+        $organisation = Team::where('id', $id)->get();
         return view('organisation.editOrganisation', ['organisations' => $organisation]);
     }
 
@@ -76,7 +76,7 @@ class OrganisationController extends Controller
             'name' => 'filled'
         ]);
 
-        $organisation = Organisation::find($id);
+        $organisation = Team::find($id);
         if ($organisation->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
@@ -92,7 +92,7 @@ class OrganisationController extends Controller
      */
     public function destroy($id)
     {
-        if (Organisation::destroy($id)) {
+        if (Team::destroy($id)) {
             return response()->json(['status' => 'success']);
         }
 

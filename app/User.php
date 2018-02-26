@@ -30,9 +30,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
-    public function organisation()
+    public function team()
     {
-        return $this->belongsToMany('App\Models\Organisation', 'user_organisation');
+        return $this->belongsToMany('App\Models\Team', 'user_team');
     }
 
     /**
