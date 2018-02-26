@@ -39,7 +39,7 @@ class UserController extends Controller
         return response()->json(['status' => 'fail'], 401);
     }
 
-    public function userinfo(Request $request)
+    public function userInfo(Request $request)
     {
         $user = User::where('api_token', $request->header('api_token'))->first();
         if ($user) {

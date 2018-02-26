@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Team;
 use Auth;
 
-class OrganisationController extends Controller
+class TeamController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,8 +16,8 @@ class OrganisationController extends Controller
      */
     public function index(Request $request)
     {
-        $organisation = Auth::user()->organisation()->get();
-        return response()->json(['status' => 'success', 'result' => $organisation]);
+        $team = Auth::user()->team()->get();
+        return response()->json(['status' => 'success', 'result' => $team]);
     }
 
     /**
@@ -32,7 +32,7 @@ class OrganisationController extends Controller
             'name' => 'required'
         ]);
 
-        if (Auth::user()->organisation()->Create($request->all())) {
+        if (Auth::user()->team()->Create($request->all())) {
             return response()->json(['status' => 'success']);
         }
 
@@ -47,8 +47,8 @@ class OrganisationController extends Controller
      */
     public function show($id)
     {
-        $organisation = Team::where('id', $id)->get();
-        return response()->json($organisation);
+        $team = Team::where('id', $id)->get();
+        return response()->json($team);
     }
 
     /**
@@ -59,8 +59,8 @@ class OrganisationController extends Controller
      */
     public function edit($id)
     {
-        $organisation = Team::where('id', $id)->get();
-        return view('organisation.editOrganisation', ['organisations' => $organisation]);
+        $team = Team::where('id', $id)->get();
+        return view('team.editTeam', ['teams' => $team]);
     }
 
     /**
@@ -76,8 +76,8 @@ class OrganisationController extends Controller
             'name' => 'filled'
         ]);
 
-        $organisation = Team::find($id);
-        if ($organisation->fill($request->all())->save()) {
+        $team = Team::find($id);
+        if ($team->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
 
