@@ -27,36 +27,37 @@ class UserController extends Controller
             'email' => 'required',
             'password' => 'required'
         ]);
+
         $user = User::where('email', $request->input('email'))->first();
         if ($user && Hash::check($request->input('password'), $user->password)) {
             $api_token = base64_encode(str_random(40));
             $expire_date = Carbon::now();
             $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
             return response()->json(['status' => 'success', 'user' => $user]);
-        } else {
-            return response()->json(['status' => 'fail'], 401);
         }
+
+        return response()->json(['status' => 'fail'], 401);
     }
 
-    public function userinfo(Request $request)
+    public function userInfo(Request $request)
     {
         $user = User::where('api_token', $request->header('api_token'))->first();
         if ($user) {
             return response()->json(['status' => 'success', 'user' => $user]);
-        } else {
-            return response()->json(['status' => 'fail'], 401);
         }
+
+        return response()->json(['status' => 'fail'], 401);
     }
 
     public function logout(Request $request)
     {
         $user = $this->auth->user();
 
-        $user->api_token= NULL;
-        $user->expire_date= NULL;
+        $user->api_token = NULL;
+        $user->expire_date = NULL;
         $user->save();
 
-        return response()->json(['message'=>'success'], 200);
+        return response()->json(['message' => 'success'], 200);
     }
 
     public function register(Request $request)
@@ -74,12 +75,14 @@ class UserController extends Controller
             'password' => app('hash')->make($request->password)
         ]);
 
-        if($user) {
+        if ($user) {
             return response()->json(['status' => 'success'], 200);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 
-    public function resetpassword(Request $request)
+    public function resetPassword(Request $request)
     {
     }
 }

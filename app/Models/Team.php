@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Organisation extends Model
+class Team extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -17,13 +17,14 @@ class Organisation extends Model
 
     public function user()
     {
-        return $this->belongsToMany('App\User', 'user_organisation');
+        return $this->belongsToMany('App\User', 'user_team');
     }
+
     /**
      * Get the submissions for the Form.
      */
     public function submission()
     {
-        return $this->hasMany('App\Submission');
+        return $this->hasMany('App\Models\Submission');
     }
 }

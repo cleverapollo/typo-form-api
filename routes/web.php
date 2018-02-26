@@ -17,16 +17,16 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('login', 'UserController@login');
-    $router->get('userinfo', 'UserController@userinfo');
+    $router->get('user-info', 'UserController@userInfo');
     $router->post('logout', 'UserController@logout');
     $router->post('register', 'UserController@register');
-    $router->post('resetPassword', 'UserController@resetpassword');
+    $router->post('reset-password', 'UserController@resetPassword');
 
-    $router->post('organisations/','OrganisationController@store');
-    $router->get('organisations/', 'OrganisationController@index');
-    $router->get('organisations/{id}/', 'OrganisationController@show');
-    $router->put('organisations/{id}/', 'OrganisationController@update');
-    $router->delete('organisations/{id}/', 'OrganisationController@destroy');
+    $router->post('teams/','TeamController@store');
+    $router->get('teams/', 'TeamController@index');
+    $router->get('teams/{id}/', 'TeamController@show');
+    $router->put('teams/{id}/', 'TeamController@update');
+    $router->delete('teams/{id}/', 'TeamController@destroy');
 
     $router->post('forms/','FormController@store');
     $router->get('forms/', 'FormController@index');
@@ -64,7 +64,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->delete('/answers/{id}/', 'AnswerController@destroy');
     });
 
-    $router->group(['prefix' => 'organisations/{organisation_id}'], function () use ($router) {
+    $router->group(['prefix' => 'teams/{team_id}'], function () use ($router) {
         $router->post('/submissions/','SubmissionController@store');
         $router->get('/submissions/', 'SubmissionController@index');
         $router->get('/submissions/{id}/', 'SubmissionController@show');

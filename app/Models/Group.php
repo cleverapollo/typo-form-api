@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,11 +14,12 @@ class Group extends Model
     protected $fillable = [
         'name', 'section_id'
     ];
+
     /**
      * Get the section that owns the group.
      */
     public function section()
     {
-        return $this->belongsTo('App\Section');
+        return $this->belongsTo('App\Models\Section');
     }
 }

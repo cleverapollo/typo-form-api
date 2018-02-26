@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,25 +14,28 @@ class Section extends Model
     protected $fillable = [
         'name', 'order', 'form_id'
     ];
+
     /**
      * Get the form that owns the section.
      */
     public function form()
     {
-        return $this->belongsTo('App\Form');
+        return $this->belongsTo('App\Models\Form');
     }
+
     /**
      * Get the groups for the Section.
      */
     public function group()
     {
-        return $this->hasMany('App\Group');
+        return $this->hasMany('App\Models\Group');
     }
+
     /**
      * Get the groups for the Section.
      */
     public function question()
     {
-        return $this->hasMany('App\Question');
+        return $this->hasMany('App\Models\Question');
     }
 }

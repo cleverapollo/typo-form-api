@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,15 +12,17 @@ class Submission extends Model
      * @var array
      */
     protected $fillable = [
-        'form_id', 'user_id', 'organisation_id'
+        'form_id', 'user_id', 'team_id'
     ];
+
     /**
      * Get the form that owns the submission.
      */
     public function form()
     {
-        return $this->belongsTo('App\Form');
+        return $this->belongsTo('App\Models\Form');
     }
+
     /**
      * Get the user that owns the submission.
      */
@@ -28,18 +30,20 @@ class Submission extends Model
     {
         return $this->belongsTo('App\User');
     }
+
     /**
-     * Get the organisation that owns the submission.
+     * Get the team that owns the submission.
      */
-    public function organisation()
+    public function team()
     {
-        return $this->belongsTo('App\Organisation');
+        return $this->belongsTo('App\Models\Team');
     }
+
     /**
      * Get the answer for the Question.
      */
     public function response()
     {
-        return $this->hasMany('App\Response');
+        return $this->hasMany('App\Models\Response');
     }
 }

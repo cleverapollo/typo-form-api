@@ -3,36 +3,29 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Response;
-use App\Submission;
+use App\Models\Response;
+use App\Models\Submission;
 
 class ResponseController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
-
-    /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param $submission_id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index($submission_id, Request $request)
     {
         $response = Submission::find($submission_id)->response()->get();
-        return response()->json(['status' => 'success','result' => $response]);
+        return response()->json(['status' => 'success', 'result' => $response]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param $submission_id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store($submission_id, Request $request)
@@ -41,43 +34,46 @@ class ResponseController extends Controller
             'response' => 'required',
             'answer_id' => 'required'
         ]);
-        if(Submission::find($submission_id)->response()->Create($request->all())){
+
+        if (Submission::find($submission_id)->response()->Create($request->all())) {
             return response()->json(['status' => 'success']);
-        }else{
-            return response()->json(['status' => 'fail']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param $submission_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($submission_id, $id)
     {
         $response = Submission::find($submission_id)->response()->where('id', $id)->get();
         return response()->json($response);
-
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param $submission_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($submission_id, $id)
     {
         $response = Submission::find($submission_id)->response()->where('id', $id)->get();
-        return view('response.editresponse',['responses' => $response]);
+        return view('response.editResponse', ['responses' => $response]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param $submission_id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update($submission_id, Request $request, $id)
@@ -86,23 +82,28 @@ class ResponseController extends Controller
             'response' => 'filled',
             'answer_id' => 'filled'
         ]);
+
         $response = Submission::find($submission_id)->response()->find($id);
-        if($response->fill($request->all())->save()){
+        if ($response->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
-        return response()->json(['status' => 'failed']);
+
+        return response()->json(['status' => 'fail']);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param $submission_id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($submission_id, $id)
     {
-        if(Submission::find($submission_id)->response()->destroy($id)){
+        if (Submission::find($submission_id)->response()->destroy($id)) {
             return response()->json(['status' => 'success']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 }

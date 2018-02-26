@@ -3,36 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Organisation;
+use App\Models\Team;
 use Auth;
 
-class OrganisationController extends Controller
+class TeamController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
-
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
-        $organisation = Auth::user()->organisation()->get();
-        return response()->json(['status' => 'success','result' => $organisation]);
+        $team = Auth::user()->team()->get();
+        return response()->json(['status' => 'success', 'result' => $team]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -40,43 +31,43 @@ class OrganisationController extends Controller
         $this->validate($request, [
             'name' => 'required'
         ]);
-        if(Auth::user()->organisation()->Create($request->all())){
+
+        if (Auth::user()->team()->Create($request->all())) {
             return response()->json(['status' => 'success']);
-        }else{
-            return response()->json(['status' => 'fail']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        $organisation = Organisation::where('id', $id)->get();
-        return response()->json($organisation);
-
+        $team = Team::where('id', $id)->get();
+        return response()->json($team);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
     {
-        $organisation = Organisation::where('id', $id)->get();
-        return view('organisation.editorganisation',['organisations' => $organisation]);
+        $team = Team::where('id', $id)->get();
+        return view('team.editTeam', ['teams' => $team]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -84,23 +75,27 @@ class OrganisationController extends Controller
         $this->validate($request, [
             'name' => 'filled'
         ]);
-        $organisation = Organisation::find($id);
-        if($organisation->fill($request->all())->save()){
+
+        $team = Team::find($id);
+        if ($team->fill($request->all())->save()) {
             return response()->json(['status' => 'success']);
         }
-        return response()->json(['status' => 'failed']);
+
+        return response()->json(['status' => 'fail']);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        if(Organisation::destroy($id)){
+        if (Team::destroy($id)) {
             return response()->json(['status' => 'success']);
         }
+
+        return response()->json(['status' => 'fail']);
     }
 }
