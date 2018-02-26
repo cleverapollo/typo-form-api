@@ -18,7 +18,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email','password','api_token'
+        'name', 'email', 'password', 'api_token'
     ];
 
     /**
@@ -32,13 +32,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function organisation()
     {
-        return $this->belongsToMany('App\Organisation', 'user_organisation');
+        return $this->belongsToMany('App\Models\Organisation', 'user_organisation');
     }
+
     /**
      * Get the submissions for the Form.
      */
     public function submission()
     {
-        return $this->hasOne('App\Submission');
+        return $this->hasOne('App\Models\Submission');
     }
 }

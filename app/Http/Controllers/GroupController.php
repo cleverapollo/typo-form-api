@@ -88,7 +88,7 @@ class GroupController extends Controller
         if($group->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
-        return response()->json(['status' => 'failed']);
+        return response()->json(['status' => 'fail']);
     }
 
     /**

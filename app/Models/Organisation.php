@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form extends Model
+class Organisation extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -14,12 +14,10 @@ class Form extends Model
     protected $fillable = [
         'name'
     ];
-    /**
-     * Get the sections for the Form.
-     */
-    public function section()
+
+    public function user()
     {
-        return $this->hasMany('App\Section');
+        return $this->belongsToMany('App\User', 'user_organisation');
     }
     /**
      * Get the submissions for the Form.

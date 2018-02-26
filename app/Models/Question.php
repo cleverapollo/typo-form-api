@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Group extends Model
+class Question extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,13 +12,20 @@ class Group extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'section_id'
+        'question', 'order', 'section_id'
     ];
     /**
-     * Get the section that owns the group.
+     * Get the form that owns the section.
      */
     public function section()
     {
         return $this->belongsTo('App\Section');
+    }
+    /**
+     * Get the answer for the Question.
+     */
+    public function answer()
+    {
+        return $this->hasMany('App\Answer');
     }
 }

@@ -90,7 +90,7 @@ class ResponseController extends Controller
         if($response->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
-        return response()->json(['status' => 'failed']);
+        return response()->json(['status' => 'fail']);
     }
 
     /**

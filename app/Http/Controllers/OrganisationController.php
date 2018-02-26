@@ -88,7 +88,7 @@ class OrganisationController extends Controller
         if($organisation->fill($request->all())->save()){
             return response()->json(['status' => 'success']);
         }
-        return response()->json(['status' => 'failed']);
+        return response()->json(['status' => 'fail']);
     }
 
     /**
