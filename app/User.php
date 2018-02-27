@@ -32,7 +32,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function team()
     {
-        return $this->belongsToMany('App\Models\Team', 'user_team');
+        return $this->belongsToMany('App\Models\Team', 'user_teams');
     }
 
     /**

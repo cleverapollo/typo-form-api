@@ -53,8 +53,8 @@ class UserController extends Controller
     {
         $user = $this->auth->user();
 
-        $user->api_token = NULL;
-        $user->expire_date = NULL;
+        $user->api_token = null;
+        $user->expire_date = null;
         $user->save();
 
         return response()->json(['message' => 'success'], 200);
