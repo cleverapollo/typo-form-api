@@ -32,9 +32,6 @@ class UpdateOrganisationToTeam extends Migration
      */
     public function down()
     {
-        Schema::rename('teams', 'organisations');
-        Schema::rename('user_team', 'user_organisation');
-
         Schema::table('submissions', function (Blueprint $table) {
             $table->renameColumn('team_id', 'organisation_id');
         });
@@ -42,5 +39,8 @@ class UpdateOrganisationToTeam extends Migration
         Schema::table('user_team', function (Blueprint $table) {
             $table->renameColumn('team_id', 'organisation_id');
         });
+
+        Schema::rename('teams', 'organisations');
+        Schema::rename('user_team', 'user_organisation');
     }
 }
