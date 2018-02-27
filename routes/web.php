@@ -22,61 +22,68 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'UserController@register');
     $router->post('reset-password', 'UserController@resetPassword');
 
-    $router->post('teams/','TeamController@store');
-    $router->get('teams/', 'TeamController@index');
-    $router->get('teams/{id}/', 'TeamController@show');
-    $router->put('teams/{id}/', 'TeamController@update');
-    $router->delete('teams/{id}/', 'TeamController@destroy');
+    $router->group(['prefix' => 'teams'], function () use ($router) {
+        $router->post('/', 'TeamController@store');
+        $router->get('/', 'TeamController@index');
+        $router->get('{id}', 'TeamController@show');
+        $router->put('{id}', 'TeamController@update');
+        $router->delete('{id}', 'TeamController@destroy');
 
-    $router->post('forms/','FormController@store');
-    $router->get('forms/', 'FormController@index');
-    $router->get('forms/{id}/', 'FormController@show');
-    $router->put('forms/{id}/', 'FormController@update');
-    $router->delete('forms/{id}/', 'FormController@destroy');
-
-    $router->group(['prefix' => 'forms/{form_id}'], function () use ($router) {
-        $router->post('/sections/','SectionController@store');
-        $router->get('/sections/', 'SectionController@index');
-        $router->get('/sections/{id}/', 'SectionController@show');
-        $router->put('/sections/{id}/', 'SectionController@update');
-        $router->delete('/sections/{id}/', 'SectionController@destroy');
+        $router->group(['prefix' => '{team_id}/submissions'], function () use ($router) {
+            $router->post('/', 'SubmissionController@store');
+            $router->get('/', 'SubmissionController@index');
+            $router->get('{id}', 'SubmissionController@show');
+            $router->put('{id}', 'SubmissionController@update');
+            $router->delete('{id}', 'SubmissionController@destroy');
+        });
     });
 
-    $router->group(['prefix' => 'sections/{section_id}'], function () use ($router) {
-        $router->post('/groups/','GroupController@store');
-        $router->get('/groups/', 'GroupController@index');
-        $router->get('/groups/{id}/', 'GroupController@show');
-        $router->put('/groups/{id}/', 'GroupController@update');
-        $router->delete('/groups/{id}/', 'GroupController@destroy');
+    $router->group(['prefix' => 'forms'], function () use ($router) {
+        $router->post('/', 'FormController@store');
+        $router->get('/', 'FormController@index');
+        $router->get('{id}', 'FormController@show');
+        $router->put('{id}', 'FormController@update');
+        $router->delete('{id}', 'FormController@destroy');
+
+        $router->group(['prefix' => '{form_id}/sections'], function () use ($router) {
+            $router->post('/', 'SectionController@store');
+            $router->get('/', 'SectionController@index');
+            $router->get('{id}', 'SectionController@show');
+            $router->put('{id}', 'SectionController@update');
+            $router->delete('{id}', 'SectionController@destroy');
+        });
     });
 
-    $router->post('questions/','QuestionController@store');
-    $router->get('questions/', 'QuestionController@index');
-    $router->get('questions/{id}/', 'QuestionController@show');
-    $router->put('questions/{id}/', 'QuestionController@update');
-    $router->delete('questions/{id}/', 'QuestionController@destroy');
-
-    $router->group(['prefix' => 'questions/{question_id}'], function () use ($router) {
-        $router->post('/answers/','AnswerController@store');
-        $router->get('/answers/', 'AnswerController@index');
-        $router->get('/answers/{id}/', 'AnswerController@show');
-        $router->put('/answers/{id}/', 'AnswerController@update');
-        $router->delete('/answers/{id}/', 'AnswerController@destroy');
+    $router->group(['prefix' => 'sections/{section_id}/groups'], function () use ($router) {
+        $router->post('/', 'GroupController@store');
+        $router->get('/', 'GroupController@index');
+        $router->get('{id}', 'GroupController@show');
+        $router->put('{id}', 'GroupController@update');
+        $router->delete('{id}', 'GroupController@destroy');
     });
 
-    $router->group(['prefix' => 'teams/{team_id}'], function () use ($router) {
-        $router->post('/submissions/','SubmissionController@store');
-        $router->get('/submissions/', 'SubmissionController@index');
-        $router->get('/submissions/{id}/', 'SubmissionController@show');
-        $router->put('/submissions/{id}/', 'SubmissionController@update');
-        $router->delete('/submissions/{id}/', 'SubmissionController@destroy');
+
+    $router->group(['prefix' => 'questions'], function () use ($router) {
+        $router->post('/', 'QuestionController@store');
+        $router->get('/', 'QuestionController@index');
+        $router->get('{id}', 'QuestionController@show');
+        $router->put('{id}', 'QuestionController@update');
+        $router->delete('{id}', 'QuestionController@destroy');
+
+        $router->group(['prefix' => '{question_id}/answers'], function () use ($router) {
+            $router->post('/', 'AnswerController@store');
+            $router->get('/', 'AnswerController@index');
+            $router->get('{id}', 'AnswerController@show');
+            $router->put('{id}', 'AnswerController@update');
+            $router->delete('{id}', 'AnswerController@destroy');
+        });
     });
 
-    $router->group(['prefix' => 'submissions/{submission_id}'], function () use ($router) {
-        $router->post('/responses/','ResponseController@store');
-        $router->get('/responses/', 'ResponseController@index');
-        $router->get('/responses/{id}/', 'ResponseController@show');
-        $router->put('/responses/{id}/', 'ResponseController@update');
-        $router->delete('/responses/{id}/', 'ResponseController@destroy');
+    $router->group(['prefix' => 'submissions/{submission_id}/responses'], function () use ($router) {
+        $router->post('/', 'ResponseController@store');
+        $router->get('/', 'ResponseController@index');
+        $router->get('{id}', 'ResponseController@show');
+        $router->put('{id}', 'ResponseController@update');
+        $router->delete('{id}', 'ResponseController@destroy');
     });
 });
