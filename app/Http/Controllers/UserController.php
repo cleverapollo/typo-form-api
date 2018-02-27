@@ -85,4 +85,67 @@ class UserController extends Controller
     public function resetPassword(Request $request)
     {
     }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        $user = User::get();
+        return response()->json(['status' => 'success', 'result' => $user]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $user = User::where('id', $id)->get();
+        return response()->json($user);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $this->validate($request, [
+            'first_name' => 'filled',
+            'last_name' => 'filled',
+            'email' => 'filled',
+            'password' => 'filled'
+        ]);
+
+        $user = User::find($id);
+        if ($user->fill($request->all())->save()) {
+            return response()->json(['status' => 'success']);
+        }
+
+        return response()->json(['status' => 'fail']);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        if (User::destroy($id)) {
+            return response()->json(['status' => 'success']);
+        }
+
+        return response()->json(['status' => 'fail']);
+    }
 }

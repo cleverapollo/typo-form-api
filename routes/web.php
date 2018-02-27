@@ -22,6 +22,14 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'UserController@register');
     $router->post('reset-password', 'UserController@resetPassword');
 
+    $router->group(['prefix' => 'users'], function () use ($router) {
+        $router->post('/', 'UserController@register');
+        $router->get('/', 'UserController@index');
+        $router->get('{id}', 'UserController@show');
+        $router->put('{id}', 'UserController@update');
+        $router->delete('{id}', 'UserController@destroy');
+    });
+
     $router->group(['prefix' => 'teams'], function () use ($router) {
         $router->post('/', 'TeamController@store');
         $router->get('/', 'TeamController@index');
