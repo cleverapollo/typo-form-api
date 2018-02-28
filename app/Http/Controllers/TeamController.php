@@ -29,10 +29,10 @@ class TeamController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required'
+            'name' => 'required|max:255'
         ]);
 
-        if (Auth::user()->team()->Create($request->all())) {
+        if (Auth::user()->team()->Create($request->only(['name']))) {
             return response()->json(['status' => 'success']);
         }
 

@@ -31,7 +31,7 @@ class GroupController extends Controller
     public function store($section_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required'
+            'name' => 'required|max:255'
         ]);
 
         if (Section::find($section_id)->group()->Create($request->all())) {

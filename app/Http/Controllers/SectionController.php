@@ -31,7 +31,7 @@ class SectionController extends Controller
     public function store($form_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
+            'name' => 'required|max:255',
             'order' => 'required'
         ]);
 
