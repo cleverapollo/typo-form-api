@@ -20,7 +20,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('user-info', 'UserController@userInfo');
     $router->post('logout', 'UserController@logout');
     $router->post('register', 'UserController@register');
-    $router->post('reset-password', 'UserController@resetPassword');
+//    $router->post('reset-password', 'UserController@resetPassword');
+    $router->post('reset-password', 'PasswordController@sendResetLinkEmail');
+    $router->post('reset-password/{token}', 'PasswordController@reset');
 
     $router->group(['prefix' => 'users'], function () use ($router) {
         $router->post('/', 'UserController@register');

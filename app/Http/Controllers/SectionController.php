@@ -16,7 +16,7 @@ class SectionController extends Controller
     public function index($form_id)
     {
         $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success', 'result' => $section]);
+        return response()->json(['status' => 'success', 'result' => $section], 200);
     }
 
     /**

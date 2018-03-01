@@ -16,7 +16,7 @@ class GroupController extends Controller
     public function index($section_id)
     {
         $group = Section::find($section_id)->group()->get();
-        return response()->json(['status' => 'success', 'result' => $group]);
+        return response()->json(['status' => 'success', 'result' => $group], 200);
     }
 
     /**

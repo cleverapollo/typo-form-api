@@ -16,7 +16,7 @@ class AnswerController extends Controller
     public function index($question_id)
     {
         $answer = Question::find($question_id)->answer()->get();
-        return response()->json(['status' => 'success', 'result' => $answer]);
+        return response()->json(['status' => 'success', 'result' => $answer], 200);
     }
 
     /**

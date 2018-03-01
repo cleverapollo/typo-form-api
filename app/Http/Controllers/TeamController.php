@@ -17,7 +17,7 @@ class TeamController extends Controller
     public function index()
     {
         $team = Auth::user()->team()->get();
-        return response()->json(['status' => 'success', 'result' => $team]);
+        return response()->json(['status' => 'success', 'result' => $team], 200);
     }
 
     /**

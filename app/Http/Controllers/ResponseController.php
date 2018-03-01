@@ -16,7 +16,7 @@ class ResponseController extends Controller
     public function index($submission_id)
     {
         $response = Submission::find($submission_id)->response()->get();
-        return response()->json(['status' => 'success', 'result' => $response]);
+        return response()->json(['status' => 'success', 'result' => $response], 200);
     }
 
     /**
