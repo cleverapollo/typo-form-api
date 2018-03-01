@@ -27,11 +27,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->group(['prefix' => 'users'], function () use ($router) {
         $router->post('/', 'UserController@register');
         $router->get('/', 'UserController@index');
+        $router->put('/update-email', 'UserController@updateEmail');
+        $router->put('/update-password', 'UserController@updatePassword');
         $router->get('{id}', 'UserController@show');
         $router->put('{id}', 'UserController@update');
         $router->delete('{id}', 'UserController@destroy');
-        $router->put('/update-email', 'UserController@updateEmail');
-        $router->put('/update-password', 'UserController@updatePassword');
     });
 
     $router->group(['prefix' => 'teams'], function () use ($router) {
