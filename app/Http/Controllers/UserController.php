@@ -4,21 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\Auth\Guard;
 use App\User;
 use Carbon\Carbon;
+use Auth;
 
 class UserController extends Controller
 {
-    private $auth;
-
-    public function __construct(Guard $auth)
+    public function __construct()
     {
         $this->middleware('auth:api', ['except' => [
             'login', 'register'
         ]]);
-
-        $this->auth = $auth;
     }
 
     /**
@@ -52,7 +48,7 @@ class UserController extends Controller
 
     public function userInfo(Request $request)
     {
-        $user = User::where('api_token', $request->header('api_token'))->first();
+        $user = Auth::user();
         if ($user) {
             return response()->json(['status' => 'success', 'user' => $user]);
         }
@@ -122,8 +118,7 @@ class UserController extends Controller
         $this->validate($request, [
             'first_name' => 'filled',
             'last_name' => 'filled',
-            'email' => 'filled',
-            'password' => 'filled'
+            'email' => 'filled'
         ]);
 
         $user = User::find($id);
