@@ -49,9 +49,16 @@ class TeamController extends Controller
         return response()->json(['status' => 'fail'], 503);
     }
 
+    /**
+     * Send email
+     *
+     * @param $teamName
+     * @param $userName
+     * @param $email
+     */
     protected function invite($teamName, $userName, $email)
     {
-        Mail::send('emails.invitationToTeam', ['title' => $teamName, 'content' => $userName], function ($message) use ($email) {
+        Mail::send('emails.invitationToTeam', ['teamName' => $teamName, 'userName' => $userName], function ($message) use ($email) {
             $message->from('info@informed365.com', 'Informed 365');
             $message->to($email);
         });
