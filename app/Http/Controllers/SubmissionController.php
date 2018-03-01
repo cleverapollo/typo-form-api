@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Team;
 use Auth;
 
 class SubmissionController extends Controller
@@ -12,10 +11,9 @@ class SubmissionController extends Controller
      * Display a listing of the resource.
      *
      * @param $team_id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($team_id, Request $request)
+    public function index($team_id)
     {
         $submission = Auth::user()->submission()->where('team_id', $team_id)->get();
         return response()->json(['status' => 'success', 'result' => $submission]);
@@ -36,7 +34,7 @@ class SubmissionController extends Controller
 
         if (Auth::user()->submission()->Create(['form_id' => $request->form_id,
             'team_id' => $team_id])) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -84,7 +82,7 @@ class SubmissionController extends Controller
 
         $team = Auth::user()->submission()->find($id);
         if ($team->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -100,7 +98,7 @@ class SubmissionController extends Controller
     public function destroy($team_id, $id)
     {
         if (Auth::user()->submission()->destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

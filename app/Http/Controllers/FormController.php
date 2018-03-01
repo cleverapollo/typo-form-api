@@ -11,10 +11,9 @@ class FormController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index()
     {
         $form = Form::get();
         return response()->json(['status' => 'success', 'result' => $form]);
@@ -33,7 +32,7 @@ class FormController extends Controller
         ]);
 
         if (Form::create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -78,7 +77,7 @@ class FormController extends Controller
 
         $form = Form::find($id);
         if ($form->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -93,7 +92,7 @@ class FormController extends Controller
     public function destroy($id)
     {
         if (Form::destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

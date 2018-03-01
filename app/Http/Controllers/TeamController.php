@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Team;
 use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class TeamController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index()
     {
         $team = Auth::user()->team()->get();
         return response()->json(['status' => 'success', 'result' => $team]);
@@ -32,11 +32,29 @@ class TeamController extends Controller
             'name' => 'required|max:255'
         ]);
 
-        if (Auth::user()->team()->Create($request->only(['name']))) {
-            return response()->json(['status' => 'success']);
-        }
+        $user = Auth::user();
+        $team = $user->team()->Create($request->only(['name']));
+        if ($team) {
+            // Send email to other users
+            $emails = json_decode($request->input('emails'));
 
-        return response()->json(['status' => 'fail']);
+            if ($emails && count($emails) > 0) {
+                foreach ($emails as $email) {
+                    $this->invite($team->name, $user->first_name . " " . $user->last_name, $email);
+                }
+            }
+
+            return response()->json(['status' => 'success'], 200);
+        }
+        return response()->json(['status' => 'fail'], 503);
+    }
+
+    protected function invite($teamName, $userName, $email)
+    {
+        Mail::send('emails.invitationToTeam', ['title' => $teamName, 'content' => $userName], function ($message) use ($email) {
+            $message->from('info@informed365.com', 'Informed 365');
+            $message->to($email);
+        });
     }
 
     /**
@@ -78,7 +96,7 @@ class TeamController extends Controller
 
         $team = Team::find($id);
         if ($team->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -93,7 +111,7 @@ class TeamController extends Controller
     public function destroy($id)
     {
         if (Team::destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

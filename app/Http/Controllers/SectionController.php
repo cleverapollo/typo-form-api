@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Section;
 use App\Models\Form;
 
 class SectionController extends Controller
@@ -12,10 +11,9 @@ class SectionController extends Controller
      * Display a listing of the resource.
      *
      * @param $form_id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($form_id, Request $request)
+    public function index($form_id)
     {
         $section = Form::find($form_id)->section()->get();
         return response()->json(['status' => 'success', 'result' => $section]);
@@ -36,7 +34,7 @@ class SectionController extends Controller
         ]);
 
         if (Form::find($form_id)->section()->Create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -85,7 +83,7 @@ class SectionController extends Controller
 
         $section = Form::find($form_id)->section()->find($id);
         if ($section->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -101,7 +99,7 @@ class SectionController extends Controller
     public function destroy($form_id, $id)
     {
         if (Form::find($form_id)->section()->destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

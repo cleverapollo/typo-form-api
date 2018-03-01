@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Response;
 use App\Models\Submission;
 
 class ResponseController extends Controller
@@ -12,10 +11,9 @@ class ResponseController extends Controller
      * Display a listing of the resource.
      *
      * @param $submission_id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($submission_id, Request $request)
+    public function index($submission_id)
     {
         $response = Submission::find($submission_id)->response()->get();
         return response()->json(['status' => 'success', 'result' => $response]);
@@ -36,7 +34,7 @@ class ResponseController extends Controller
         ]);
 
         if (Submission::find($submission_id)->response()->Create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -85,7 +83,7 @@ class ResponseController extends Controller
 
         $response = Submission::find($submission_id)->response()->find($id);
         if ($response->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -101,7 +99,7 @@ class ResponseController extends Controller
     public function destroy($submission_id, $id)
     {
         if (Submission::find($submission_id)->response()->destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

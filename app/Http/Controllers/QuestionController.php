@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Section;
 use App\Models\Question;
 
 class QuestionController extends Controller
@@ -11,10 +10,9 @@ class QuestionController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index()
     {
         $question = Question::get();
         return response()->json(['status' => 'success', 'result' => $question]);
@@ -34,7 +32,7 @@ class QuestionController extends Controller
         ]);
 
         if (Question::Create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -80,7 +78,7 @@ class QuestionController extends Controller
 
         $question = Question::find($id);
         if ($question->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -95,7 +93,7 @@ class QuestionController extends Controller
     public function destroy($id)
     {
         if (Question::destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

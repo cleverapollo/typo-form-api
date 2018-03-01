@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Question;
-use App\Models\Answer;
 
 class AnswerController extends Controller
 {
@@ -12,10 +11,9 @@ class AnswerController extends Controller
      * Display a listing of the resource.
      *
      * @param $question_id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($question_id, Request $request)
+    public function index($question_id)
     {
         $answer = Question::find($question_id)->answer()->get();
         return response()->json(['status' => 'success', 'result' => $answer]);
@@ -36,7 +34,7 @@ class AnswerController extends Controller
         ]);
 
         if (Question::find($question_id)->answer()->Create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -85,7 +83,7 @@ class AnswerController extends Controller
 
         $answer = Question::find($question_id)->answer()->find($id);
         if ($answer->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -101,7 +99,7 @@ class AnswerController extends Controller
     public function destroy($question_id, $id)
     {
         if (Question::find($question_id)->answer()->destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Section;
-use App\Models\Group;
 
 class GroupController extends Controller
 {
@@ -12,10 +11,9 @@ class GroupController extends Controller
      * Display a listing of the resource.
      *
      * @param $section_id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($section_id, Request $request)
+    public function index($section_id)
     {
         $group = Section::find($section_id)->group()->get();
         return response()->json(['status' => 'success', 'result' => $group]);
@@ -35,7 +33,7 @@ class GroupController extends Controller
         ]);
 
         if (Section::find($section_id)->group()->Create($request->all())) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -83,7 +81,7 @@ class GroupController extends Controller
 
         $group = Section::find($section_id)->group()->find($id);
         if ($group->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -99,7 +97,7 @@ class GroupController extends Controller
     public function destroy($section_id, $id)
     {
         if (Section::find($section_id)->group()->destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);

@@ -21,6 +21,17 @@ class UserController extends Controller
         $this->auth = $auth;
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index()
+    {
+        $user = User::get();
+        return response()->json(['status' => 'success', 'result' => $user]);
+    }
+
     public function login(Request $request)
     {
         $this->validate($request, [
@@ -88,18 +99,6 @@ class UserController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index(Request $request)
-    {
-        $user = User::get();
-        return response()->json(['status' => 'success', 'result' => $user]);
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int $id
@@ -129,7 +128,7 @@ class UserController extends Controller
 
         $user = User::find($id);
         if ($user->fill($request->all())->save()) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
@@ -144,7 +143,7 @@ class UserController extends Controller
     public function destroy($id)
     {
         if (User::destroy($id)) {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success'], 200);
         }
 
         return response()->json(['status' => 'fail']);
