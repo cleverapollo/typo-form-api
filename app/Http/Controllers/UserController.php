@@ -90,7 +90,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success'], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     public function resetPassword(Request $request)
@@ -129,7 +129,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success'], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     /**
@@ -151,7 +151,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success', 'user' => $user]);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     /**
@@ -173,7 +173,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success', 'user' => $user]);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     /**
@@ -188,6 +188,6 @@ class UserController extends Controller
             return response()->json(['status' => 'success'], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 }
