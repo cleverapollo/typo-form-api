@@ -130,6 +130,50 @@ class UserController extends Controller
     }
 
     /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateEmail(Request $request)
+    {
+        $this->validate($request, [
+            'password' => 'required',
+            'email' => 'required'
+        ]);
+
+        $user = Auth::user();
+        if ($user && Hash::check($request->input('password'), $user->password)) {
+            $user->update(['email' => $request->input('email')]);
+            return response()->json(['status' => 'success', 'user' => $user]);
+        }
+
+        return response()->json(['status' => 'fail']);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updatePassword(Request $request)
+    {
+        $this->validate($request, [
+            'password' => 'required',
+            'newPassword' => 'required'
+        ]);
+
+        $user = Auth::user();
+        if ($user && Hash::check($request->input('password'), $user->password)) {
+            $user->update(['password' => app('hash')->make($request->input('newPassword'))]);
+            return response()->json(['status' => 'success', 'user' => $user]);
+        }
+
+        return response()->json(['status' => 'fail']);
+    }
+
+    /**
      * Remove the specified resource from storage.
      *
      * @param  int $id

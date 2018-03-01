@@ -28,6 +28,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->get('{id}', 'UserController@show');
         $router->put('{id}', 'UserController@update');
         $router->delete('{id}', 'UserController@destroy');
+        $router->post('/update-email', 'UserController@updateEmail');
+        $router->post('/update-password', 'UserController@updatePassword');
     });
 
     $router->group(['prefix' => 'teams'], function () use ($router) {
