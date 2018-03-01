@@ -58,7 +58,7 @@ class UserController extends Controller
 
     public function logout(Request $request)
     {
-        $user = $this->auth->user();
+        $user = Auth::user();
 
         $user->api_token = null;
         $user->expire_date = null;
