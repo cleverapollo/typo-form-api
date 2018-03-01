@@ -36,9 +36,6 @@ class AuthServiceProvider extends ServiceProvider
                 return User::where('expire_date', '>', Carbon::yesterday())
                     ->where('api_token', $request->header('api_token'))->first();
             }
-            // if ($request->input('api_token')) {
-            //    return User::where('api_token', $request->input('api_token'))->first();
-            // }
         });
     }
 }

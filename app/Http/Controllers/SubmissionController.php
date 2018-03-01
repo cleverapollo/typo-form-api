@@ -16,7 +16,7 @@ class SubmissionController extends Controller
     public function index($team_id)
     {
         $submission = Auth::user()->submission()->where('team_id', $team_id)->get();
-        return response()->json(['status' => 'success', 'result' => $submission]);
+        return response()->json(['status' => 'success', 'result' => $submission], 200);
     }
 
     /**

@@ -12,6 +12,8 @@ class UserController extends Controller
 {
     public function __construct()
     {
+//        parent::__construct();
+
         $this->middleware('auth:api', ['except' => [
             'login', 'register'
         ]]);
@@ -25,7 +27,7 @@ class UserController extends Controller
     public function index()
     {
         $user = User::get();
-        return response()->json(['status' => 'success', 'result' => $user]);
+        return response()->json(['status' => 'success', 'result' => $user], 200);
     }
 
     public function login(Request $request)
@@ -40,7 +42,8 @@ class UserController extends Controller
             $api_token = base64_encode(str_random(40));
             $expire_date = Carbon::now();
             $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
-            return response()->json(['status' => 'success', 'user' => $user]);
+
+            return response()->json(['status' => 'success', 'user' => $user], 200);
         }
 
         return response()->json(['status' => 'fail'], 401);
@@ -50,7 +53,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
         if ($user) {
-            return response()->json(['status' => 'success', 'user' => $user]);
+            return response()->json(['status' => 'success', 'user' => $user], 200);
         }
 
         return response()->json(['status' => 'fail'], 401);
@@ -64,7 +67,7 @@ class UserController extends Controller
         $user->expire_date = null;
         $user->save();
 
-        return response()->json(['message' => 'success'], 200);
+        return response()->json(['status' => 'success'], 200);
     }
 
     public function register(Request $request)
@@ -73,7 +76,7 @@ class UserController extends Controller
             'first_name' => 'required|max:255',
             'last_name' => 'required|max:255',
             'email' => 'required|unique:users|email',
-            'password' => 'required'
+            'password' => 'required|min:6'
         ]);
 
         $user = User::create([

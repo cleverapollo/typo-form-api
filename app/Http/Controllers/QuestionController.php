@@ -15,7 +15,7 @@ class QuestionController extends Controller
     public function index()
     {
         $question = Question::get();
-        return response()->json(['status' => 'success', 'result' => $question]);
+        return response()->json(['status' => 'success', 'result' => $question], 200);
     }
 
     /**
