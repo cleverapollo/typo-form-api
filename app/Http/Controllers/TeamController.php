@@ -44,7 +44,7 @@ class TeamController extends Controller
                 }
             }
 
-            return response()->json(['status' => 'success'], 200);
+            return response()->json(['status' => 'success', 'result' => $team], 200);
         }
         return response()->json(['status' => 'fail'], 503);
     }
@@ -103,7 +103,7 @@ class TeamController extends Controller
 
         $team = Team::find($id);
         if ($team->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+            return response()->json(['status' => 'success', 'result' => $team], 200);
         }
 
         return response()->json(['status' => 'fail']);

@@ -90,7 +90,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success'], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     public function resetPassword(Request $request)
@@ -126,10 +126,10 @@ class UserController extends Controller
 
         $user = User::find($id);
         if ($user->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+            return response()->json(['status' => 'success', 'user' => $user], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
     }
 
     /**
@@ -144,6 +144,50 @@ class UserController extends Controller
             return response()->json(['status' => 'success'], 200);
         }
 
-        return response()->json(['status' => 'fail']);
+        return response()->json(['status' => 'fail'], 401);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateEmail(Request $request)
+    {
+        $this->validate($request, [
+            'password' => 'required',
+            'email' => 'required'
+        ]);
+
+        $user = Auth::user();
+        if ($user && Hash::check($request->input('password'), $user->password)) {
+            $user->update(['email' => $request->input('email')]);
+            return response()->json(['status' => 'success', 'user' => $user], 200);
+        }
+
+        return response()->json(['status' => 'fail'], 401);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updatePassword(Request $request)
+    {
+        $this->validate($request, [
+            'password' => 'required',
+            'newPassword' => 'required'
+        ]);
+
+        $user = Auth::user();
+        if ($user && Hash::check($request->input('password'), $user->password)) {
+            $user->update(['password' => app('hash')->make($request->input('newPassword'))]);
+            return response()->json(['status' => 'success', 'user' => $user], 200);
+        }
+
+        return response()->json(['status' => 'fail'], 401);
     }
 }
