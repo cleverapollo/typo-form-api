@@ -34,7 +34,7 @@ class TeamController extends Controller
         ]);
 
         $user = Auth::user();
-        $team = $user->team()->Create($request->only(['name']));
+        $team = $user->team()->Create($request->only(['name', 'description']));
         if ($team) {
             // Update user role in user_teams table
             DB::table('user_teams')->where([
