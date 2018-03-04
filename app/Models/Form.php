@@ -30,4 +30,12 @@ class Form extends Model
     {
         return $this->hasMany('App\Models\Submission');
     }
+
+    /**
+     * Get the application that owns the Form.
+     */
+    public function application()
+    {
+        return $this->belongsTo('App\Models\Application');
+    }
 }

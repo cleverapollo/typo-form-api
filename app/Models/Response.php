@@ -16,7 +16,7 @@ class Response extends Model
     ];
 
     /**
-     * Get the Submission that owns the Response.
+     * Get the submission that owns the Response.
      */
     public function submission()
     {
@@ -24,7 +24,7 @@ class Response extends Model
     }
 
     /**
-     * Get the Answer that owns the Response.
+     * Get the answer that owns the Response.
      */
     public function answer()
     {

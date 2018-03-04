@@ -16,7 +16,7 @@ class Section extends Model
     ];
 
     /**
-     * Get the form that owns the section.
+     * Get the form that owns the Section.
      */
     public function form()
     {
@@ -32,7 +32,7 @@ class Section extends Model
     }
 
     /**
-     * Get the groups for the Section.
+     * Get the questions for the Section.
      */
     public function question()
     {

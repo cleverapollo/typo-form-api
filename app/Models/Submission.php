@@ -16,7 +16,7 @@ class Submission extends Model
     ];
 
     /**
-     * Get the form that owns the submission.
+     * Get the form that owns the Submission.
      */
     public function form()
     {
@@ -24,7 +24,7 @@ class Submission extends Model
     }
 
     /**
-     * Get the user that owns the submission.
+     * Get the user that owns the Submission.
      */
     public function user()
     {
@@ -32,7 +32,7 @@ class Submission extends Model
     }
 
     /**
-     * Get the team that owns the submission.
+     * Get the team that owns the Submission.
      */
     public function team()
     {
@@ -40,7 +40,7 @@ class Submission extends Model
     }
 
     /**
-     * Get the answer for the Question.
+     * Get the responses for the Submission.
      */
     public function response()
     {

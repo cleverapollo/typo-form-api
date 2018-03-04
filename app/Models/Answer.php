@@ -16,7 +16,7 @@ class Answer extends Model
     ];
 
     /**
-     * Get the question that owns the answer.
+     * Get the question that owns the Answer.
      */
     public function question()
     {

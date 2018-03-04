@@ -16,7 +16,7 @@ class Group extends Model
     ];
 
     /**
-     * Get the section that owns the group.
+     * Get the section that owns the Group.
      */
     public function section()
     {

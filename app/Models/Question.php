@@ -16,7 +16,7 @@ class Question extends Model
     ];
 
     /**
-     * Get the form that owns the section.
+     * Get the section that owns the Question.
      */
     public function section()
     {
@@ -24,7 +24,7 @@ class Question extends Model
     }
 
     /**
-     * Get the answer for the Question.
+     * Get the answers for the Question.
      */
     public function answer()
     {
