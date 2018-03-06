@@ -2,8 +2,11 @@
 
 namespace App\Http\Foundation\Auth;
 
+use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 trait AuthenticatesUsers
@@ -41,8 +44,9 @@ trait AuthenticatesUsers
             return $this->sendLockoutResponse($request);
         }
 
-        if ($this->attemptLogin($request)) {
-            return $this->sendLoginResponse($request);
+        $user = $this->attemptLogin($request);
+        if ($user) {
+            return $this->sendLoginResponse($request, $user);
         }
 
         // If the login attempt was unsuccessful we will increment the number of attempts
@@ -75,9 +79,18 @@ trait AuthenticatesUsers
      */
     protected function attemptLogin(Request $request)
     {
-        return $this->guard()->attempt(
-            $this->credentials($request), $request->filled('remember')
-        );
+//        return $this->guard()->attempt(
+//            $this->credentials($request), $request->filled('remember')
+//        );
+        $user = User::where('email', $request->input('email'))->first();
+        if ($user && Hash::check($request->input('password'), $user->password)) {
+            $api_token = base64_encode(str_random(40));
+            $expire_date = Carbon::now();
+            $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
+            return $user;
+        }
+
+        return null;
     }
 
     /**
@@ -97,14 +110,16 @@ trait AuthenticatesUsers
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    protected function sendLoginResponse(Request $request)
+    protected function sendLoginResponse(Request $request, $user)
     {
-        $request->session()->regenerate();
+//        $request->session()->regenerate();
 
         $this->clearLoginAttempts($request);
 
-        return $this->authenticated($request, $this->guard()->user())
-                ?: redirect()->intended($this->redirectPath());
+        return response()->json(['status' => 'success', 'user' => $user], 200);
+
+//        return $this->authenticated($request, $this->guard()->user())
+//                ?: redirect()->intended($this->redirectPath());
     }
 
     /**
@@ -123,15 +138,19 @@ trait AuthenticatesUsers
      * Get the failed login response instance.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return \Illuminate\Http\Response
      *
-     * @throws \Illuminate\Validation\ValidationException
+//     * @throws \Illuminate\Validation\ValidationException
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-        throw ValidationException::withMessages([
-            $this->username() => [trans('auth.failed')],
-        ]);
+        return response()->json([
+            'status' => 'fail',
+            'message' => 'Invalid email or password.'
+        ], 401);
+//        throw ValidationException::withMessages([
+//            $this->username() => [trans('auth.failed')],
+//        ]);
     }
 
     /**
@@ -152,11 +171,19 @@ trait AuthenticatesUsers
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+
+        $user->api_token = null;
+        $user->expire_date = null;
+        $user->save();
+
         $this->guard()->logout();
 
-        $request->session()->invalidate();
+        return response()->json(['status' => 'success'], 200);
 
-        return redirect('/');
+//        $request->session()->invalidate();
+
+//        return redirect('/');
     }
 
     /**

@@ -16,10 +16,10 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
-    $router->post('login', 'UserController@login');
+    $router->post('login', 'Auth\LoginController@login');
     $router->get('user-info', 'UserController@userInfo');
     $router->post('logout', 'UserController@logout');
-    $router->post('register', 'UserController@register');
+    $router->post('register', 'Auth\RegisterController@register');
 //    $router->post('reset-password', 'UserController@resetPassword');
     $router->post('reset-password', 'PasswordController@sendResetLinkEmail');
     $router->post('reset-password/{token}', 'PasswordController@reset');

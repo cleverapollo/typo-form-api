@@ -3,16 +3,9 @@
 namespace App\Http\Controllers;
 
 use Laravel\Lumen\Routing\Controller as BaseController;
+use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
+    use AuthorizesRequests;
 }

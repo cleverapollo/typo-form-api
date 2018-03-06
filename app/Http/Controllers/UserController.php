@@ -10,10 +10,13 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
-//        parent::__construct();
-
         $this->middleware('auth:api', ['except' => [
             'login', 'register'
         ]]);
@@ -68,33 +71,6 @@ class UserController extends Controller
         $user->save();
 
         return response()->json(['status' => 'success'], 200);
-    }
-
-    public function register(Request $request)
-    {
-        $this->validate($request, [
-            'first_name' => 'required|max:255',
-            'last_name' => 'required|max:255',
-            'email' => 'required|unique:users|email',
-            'password' => 'required|min:6'
-        ]);
-
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => app('hash')->make($request->password)
-        ]);
-
-        if ($user) {
-            return response()->json(['status' => 'success'], 200);
-        }
-
-        return response()->json(['status' => 'fail'], 401);
-    }
-
-    public function resetPassword(Request $request)
-    {
     }
 
     /**
