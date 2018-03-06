@@ -12,7 +12,7 @@ class Question extends Model
      * @var array
      */
     protected $fillable = [
-        'question', 'order', 'section_id'
+        'question', 'description', 'mandatory', 'section_id', 'group_id', 'question_type_id', 'order'
     ];
 
     /**
@@ -29,5 +29,21 @@ class Question extends Model
     public function answer()
     {
         return $this->hasMany('App\Models\Answer');
+    }
+
+    /**
+     * Get the question type that owns the Form.
+     */
+    public function type()
+    {
+        return $this->belongsTo('App\Models\QuestionType');
+    }
+
+    /**
+     * Get all of the Question's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

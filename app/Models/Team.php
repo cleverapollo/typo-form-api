@@ -12,7 +12,7 @@ class Team extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name', 'description', 'application_id'
     ];
 
     /**
@@ -37,5 +37,21 @@ class Team extends Model
     public function application()
     {
         return $this->belongsTo('App\Models\Application');
+    }
+
+    /**
+     * Get the invitations for the Team.
+     */
+    public function invitation()
+    {
+        return $this->hasMany('App\Models\TeamInvitation');
+    }
+
+    /**
+     * Get all of the Team's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

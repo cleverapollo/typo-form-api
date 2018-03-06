@@ -15,9 +15,11 @@ class CreateTeamInvitationsTable extends Migration
     {
         Schema::create('team_invitations', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer ('inviter_id');
+            $table->integer ('inviter_id')->unsigned();
+            $table->foreign('inviter_id')->references('id')->on('users')->onDelete('cascade');
             $table->string ('invitee');
-            $table->integer ('team_id');
+            $table->integer ('team_id')->unsigned();
+            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
             $table->boolean('status')->default(0);
             $table->timestamps();
         });

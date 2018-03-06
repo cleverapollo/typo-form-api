@@ -30,4 +30,12 @@ class Application extends Model
     {
         return $this->hasMany('App\Models\Team');
     }
+
+    /**
+     * Get all of the Application's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
+    }
 }

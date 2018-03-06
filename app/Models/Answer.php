@@ -12,7 +12,7 @@ class Answer extends Model
      * @var array
      */
     protected $fillable = [
-        'answer', 'order', 'question_id'
+        'answer', 'question_id', 'order'
     ];
 
     /**
@@ -21,5 +21,13 @@ class Answer extends Model
     public function question()
     {
         return $this->belongsTo('App\Models\Question');
+    }
+
+    /**
+     * Get all of the Answer's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

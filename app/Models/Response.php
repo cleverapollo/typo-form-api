@@ -12,7 +12,7 @@ class Response extends Model
      * @var array
      */
     protected $fillable = [
-        'response', 'submission_id', 'answer_id'
+        'response', 'answer_id', 'submission_id'
     ];
 
     /**
@@ -29,5 +29,13 @@ class Response extends Model
     public function answer()
     {
         return $this->belongsTo('App\Models\Answer');
+    }
+
+    /**
+     * Get all of the Responses's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

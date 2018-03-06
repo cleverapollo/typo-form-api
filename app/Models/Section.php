@@ -12,7 +12,7 @@ class Section extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'order', 'form_id'
+        'name', 'form_id', 'section_id', 'order'
     ];
 
     /**
@@ -37,5 +37,13 @@ class Section extends Model
     public function question()
     {
         return $this->hasMany('App\Models\Question');
+    }
+
+    /**
+     * Get all of the Section's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

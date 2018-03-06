@@ -12,7 +12,7 @@ class Submission extends Model
      * @var array
      */
     protected $fillable = [
-        'form_id', 'user_id', 'team_id'
+        'form_id', 'user_id', 'team_id', 'period_start', 'period_end'
     ];
 
     /**
@@ -45,5 +45,13 @@ class Submission extends Model
     public function response()
     {
         return $this->hasMany('App\Models\Response');
+    }
+
+    /**
+     * Get all of the Submission's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

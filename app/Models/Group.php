@@ -12,7 +12,7 @@ class Group extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'section_id'
+        'name', 'section_id', 'repeatable'
     ];
 
     /**
@@ -21,5 +21,13 @@ class Group extends Model
     public function section()
     {
         return $this->belongsTo('App\Models\Section');
+    }
+
+    /**
+     * Get all of the Group's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }

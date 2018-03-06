@@ -19,7 +19,7 @@ class AddApplicationIdToTeamsFormsTables extends Migration
         });
 
         Schema::table('teams', function (Blueprint $table) {
-            $table->integer('application_id')->unsigned()->after('name');
+            $table->integer('application_id')->unsigned()->after('description');
             $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
         });
     }

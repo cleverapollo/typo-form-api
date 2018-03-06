@@ -12,7 +12,7 @@ class Form extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name', 'application_id'
     ];
 
     /**
@@ -37,5 +37,13 @@ class Form extends Model
     public function application()
     {
         return $this->belongsTo('App\Models\Application');
+    }
+
+    /**
+     * Get all of the Form's meta data
+     */
+    public function meta()
+    {
+        return $this->morphMany('App\Models\Meta', 'metable');
     }
 }
