@@ -108,6 +108,7 @@ trait AuthenticatesUsers
      * Send the response after the user was authenticated.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  $user
      * @return \Illuminate\Http\Response
      */
     protected function sendLoginResponse(Request $request, $user)

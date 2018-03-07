@@ -89,7 +89,7 @@ trait ResetsPasswords
     protected function credentials(Request $request)
     {
         return $request->only(
-            'email', 'password', 'password_confirmation', 'token'
+            'email', 'password', 'token'
         );
     }
 
@@ -121,8 +121,12 @@ trait ResetsPasswords
      */
     protected function sendResetResponse($response)
     {
-        return redirect($this->redirectPath())
-                            ->with('status', trans($response));
+        return response()->json([
+            'status' => 'success',
+            'message' => trans($response)
+        ], 200);
+//        return redirect($this->redirectPath())
+//                            ->with('status', trans($response));
     }
 
     /**
@@ -134,9 +138,13 @@ trait ResetsPasswords
      */
     protected function sendResetFailedResponse(Request $request, $response)
     {
-        return redirect()->back()
-                    ->withInput($request->only('email'))
-                    ->withErrors(['email' => trans($response)]);
+        return response()->json([
+            'status' => 'fail',
+            'message' => trans($response)
+        ], 503);
+//        return redirect()->back()
+//                    ->withInput($request->only('email'))
+//                    ->withErrors(['email' => trans($response)]);
     }
 
     /**

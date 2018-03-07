@@ -17,9 +17,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => [
-            'login', 'register'
-        ]]);
+        $this->middleware('auth:api');
     }
 
     /**
@@ -33,25 +31,6 @@ class UserController extends Controller
         return response()->json(['status' => 'success', 'result' => $user], 200);
     }
 
-    public function login(Request $request)
-    {
-        $this->validate($request, [
-            'email' => 'required',
-            'password' => 'required'
-        ]);
-
-        $user = User::where('email', $request->input('email'))->first();
-        if ($user && Hash::check($request->input('password'), $user->password)) {
-            $api_token = base64_encode(str_random(40));
-            $expire_date = Carbon::now();
-            $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
-
-            return response()->json(['status' => 'success', 'user' => $user], 200);
-        }
-
-        return response()->json(['status' => 'fail'], 401);
-    }
-
     public function userInfo(Request $request)
     {
         $user = Auth::user();
@@ -60,17 +39,6 @@ class UserController extends Controller
         }
 
         return response()->json(['status' => 'fail'], 401);
-    }
-
-    public function logout(Request $request)
-    {
-        $user = Auth::user();
-
-        $user->api_token = null;
-        $user->expire_date = null;
-        $user->save();
-
-        return response()->json(['status' => 'success'], 200);
     }
 
     /**
