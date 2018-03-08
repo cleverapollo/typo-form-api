@@ -18,6 +18,14 @@ class Application extends Model
     /**
      * Get the forms for the Application.
      */
+    public function user()
+    {
+        return $this->belongsToMany('App\User');
+    }
+
+    /**
+     * Get the forms for the Application.
+     */
     public function form()
     {
         return $this->hasMany('App\Models\Form');

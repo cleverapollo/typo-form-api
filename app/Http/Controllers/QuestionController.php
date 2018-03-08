@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Question;
+use Illuminate\Http\Request;
 
 class QuestionController extends Controller
 {
@@ -24,8 +24,11 @@ class QuestionController extends Controller
      */
     public function index()
     {
-        $question = Question::get();
-        return response()->json(['status' => 'success', 'result' => $question], 200);
+        $questions = Question::get();
+        return response()->json([
+            'status' => 'success',
+            'questions' => $questions
+        ], 200);
     }
 
     /**
@@ -41,11 +44,17 @@ class QuestionController extends Controller
             'order' => 'required'
         ]);
 
-        if (Question::Create($request->all())) {
-            return response()->json(['status' => 'success'], 200);
+        $question = Question::Create($request->all());
+        if ($answer) {
+            return response()->json([
+                'status' => 'success',
+                'answer' => $answer
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('question', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -57,19 +66,16 @@ class QuestionController extends Controller
     public function show($id)
     {
         $question = Question::where('id', $id)->get();
-        return response()->json($question);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $question = Question::where('id', $id)->get();
-        return view('question.editQuestion', ['questions' => $question]);
+        if ($answer) {
+            return response()->json([
+                'status' => 'success',
+                'answer' => $answer
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('question', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -87,11 +93,22 @@ class QuestionController extends Controller
         ]);
 
         $question = Question::find($id);
-        if ($question->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        if (!$answer) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('question', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($answer->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'answer' => $answer
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('question', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -105,7 +122,9 @@ class QuestionController extends Controller
         if (Question::destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('question', 503, 'delete')
+        ], 503);
     }
 }

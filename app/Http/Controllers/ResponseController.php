@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Submission;
+use Illuminate\Http\Request;
 
 class ResponseController extends Controller
 {
@@ -25,8 +25,11 @@ class ResponseController extends Controller
      */
     public function index($submission_id)
     {
-        $response = Submission::find($submission_id)->response()->get();
-        return response()->json(['status' => 'success', 'result' => $response], 200);
+        $responses = Submission::find($submission_id)->response()->get();
+        return response()->json([
+            'status' => 'success',
+            'responses' => $responses
+        ], 200);
     }
 
     /**
@@ -40,14 +43,20 @@ class ResponseController extends Controller
     {
         $this->validate($request, [
             'response' => 'required',
-            'answer_id' => 'required'
+            'response_id' => 'required'
         ]);
 
-        if (Submission::find($submission_id)->response()->Create($request->all())) {
-            return response()->json(['status' => 'success'], 200);
+        $response = Submission::find($submission_id)->response()->Create($request->all());
+        if ($response) {
+            return response()->json([
+                'status' => 'success',
+                'response' => $response
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('response', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -60,20 +69,16 @@ class ResponseController extends Controller
     public function show($submission_id, $id)
     {
         $response = Submission::find($submission_id)->response()->where('id', $id)->get();
-        return response()->json($response);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param $submission_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($submission_id, $id)
-    {
-        $response = Submission::find($submission_id)->response()->where('id', $id)->get();
-        return view('response.editResponse', ['responses' => $response]);
+        if ($response) {
+            return response()->json([
+                'status' => 'success',
+                'response' => $response
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('response', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -88,15 +93,26 @@ class ResponseController extends Controller
     {
         $this->validate($request, [
             'response' => 'filled',
-            'answer_id' => 'filled'
+            'response_id' => 'filled'
         ]);
 
         $response = Submission::find($submission_id)->response()->find($id);
-        if ($response->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        if (!$response) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('response', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($response->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'response' => $response
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('response', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -111,7 +127,9 @@ class ResponseController extends Controller
         if (Submission::find($submission_id)->response()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('response', 503, 'delete')
+        ], 503);
     }
 }

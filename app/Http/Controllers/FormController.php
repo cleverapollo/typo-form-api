@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Form;
-use Auth;
+use Illuminate\Http\Request;
 
 class FormController extends Controller
 {
@@ -25,8 +24,11 @@ class FormController extends Controller
      */
     public function index()
     {
-        $form = Form::get();
-        return response()->json(['status' => 'success', 'result' => $form], 200);
+        $forms = Form::get();
+        return response()->json([
+            'status' => 'success',
+            'forms' => $forms
+        ], 200);
     }
 
     /**
@@ -38,14 +40,20 @@ class FormController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|max:255'
+            'name' => 'required|max:191'
         ]);
 
-        if (Form::create($request->all())) {
-            return response()->json(['status' => 'success'], 200);
+        $form = Form::create($request->all());
+        if ($form) {
+            return response()->json([
+                'status' => 'success',
+                'form' => $form
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('form', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -57,19 +65,16 @@ class FormController extends Controller
     public function show($id)
     {
         $form = Form::where('id', $id)->get();
-        return response()->json($form);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $form = Form::where('id', $id)->get();
-        return view('form.editForm', ['forms' => $form]);
+        if ($form) {
+            return response()->json([
+                'status' => 'success',
+                'form' => $form
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('form', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -86,11 +91,22 @@ class FormController extends Controller
         ]);
 
         $form = Form::find($id);
-        if ($form->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        if (!$form) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('form', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($form->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'form' => $form
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('form', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -104,7 +120,9 @@ class FormController extends Controller
         if (Form::destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('form', 503, 'delete')
+        ], 503);
     }
 }

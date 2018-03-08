@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Models\Team;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
-class TeamController extends Controller
+class ApplicationController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -27,10 +27,10 @@ class TeamController extends Controller
      */
     public function index()
     {
-        $teams = Auth::user()->team()->get();
+        $applications = Auth::user()->application()->get();
         return response()->json([
             'status' => 'success',
-            'teams' => $teams
+            'applications' => $applications
         ], 200);
     }
 
@@ -47,51 +47,45 @@ class TeamController extends Controller
         ]);
 
         $user = Auth::user();
-        $team = $user->team()->Create($request->only(['name', 'description']));
-        if ($team) {
-            // Update user role in user_teams table
-            DB::table('user_teams')->where([
-                ['user_id', '=', $user->id],
-                ['team_id', '=', $team->id],
-            ])->update(['role' => 'Owner']);
-
+        $application = $user->application()->Create($request->only(['name']));
+        if ($application) {
             // Send email to other users
             $emails = json_decode($request->input('emails', []));
 
             if ($emails && count($emails) > 0) {
                 foreach ($emails as $email) {
-                    $this->invite($team->name, $user->first_name . " " . $user->last_name, $email);
+                    $this->invite($application->name, $user->first_name . " " . $user->last_name, $email);
 
-                    // Input to the team_invitations table
-                    DB::table('team_invitations')->insert([
+                    // Input to the application_invitations table
+                    DB::table('application_invitations')->insert([
                         'inviter_id' => $user->id,
                         'invitee' => $email,
-                        'team_id' => $team->id
+                        'application_id' => $application->id
                     ]);
                 }
             }
 
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'application' => $application
             ], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'store')
+            'message' => $this->generateErrorMessage('application', 503, 'store')
         ], 503);
     }
 
     /**
      * Send email
      *
-     * @param $teamName
+     * @param $applicationName
      * @param $userName
      * @param $email
      */
-    protected function invite($teamName, $userName, $email)
+    protected function invite($applicationName, $userName, $email)
     {
-        Mail::send('emails.invitationToTeam', ['teamName' => $teamName, 'userName' => $userName], function ($message) use ($email) {
+        Mail::send('emails.invitationToApplication', ['applicationName' => $applicationName, 'userName' => $userName], function ($message) use ($email) {
             $message->from('info@informed365.com', 'Informed 365');
             $message->to($email);
         });
@@ -105,16 +99,16 @@ class TeamController extends Controller
      */
     public function show($id)
     {
-        $team = Team::where('id', $id)->get();
-        if ($team) {
+        $application = Application::where('id', $id)->get();
+        if ($application) {
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'application' => $application
             ], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 404, 'show')
+            'message' => $this->generateErrorMessage('application', 404, 'show')
         ], 404);
     }
 
@@ -131,22 +125,22 @@ class TeamController extends Controller
             'name' => 'filled'
         ]);
 
-        $team = Team::find($id);
-        if (!$team) {
+        $application = Application::find($id);
+        if (!$application) {
             return response()->json([
                 'status' => 'fail',
-                'message' => $this->generateErrorMessage('team', 404, 'update')
+                'message' => $this->generateErrorMessage('application', 404, 'update')
             ], 404);
         }
-        if ($team->fill($request->all())->save()) {
+        if ($application->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'application' => $application
             ], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'update')
+            'message' => $this->generateErrorMessage('application', 503, 'update')
         ], 404);
     }
 
@@ -158,12 +152,12 @@ class TeamController extends Controller
      */
     public function destroy($id)
     {
-        if (Team::destroy($id)) {
+        if (Application::destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'delete')
+            'message' => $this->generateErrorMessage('application', 503, 'delete')
         ], 503);
     }
 }

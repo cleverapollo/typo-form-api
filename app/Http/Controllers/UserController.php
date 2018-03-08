@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,35 +20,13 @@ class UserController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index()
-    {
-        $user = User::get();
-        return response()->json(['status' => 'success', 'result' => $user], 200);
-    }
-
-    public function userInfo(Request $request)
-    {
-        $user = Auth::user();
-        if ($user) {
-            return response()->json(['status' => 'success', 'user' => $user], 200);
-        }
-
-        return response()->json(['status' => 'fail'], 401);
-    }
-
-    /**
      * Display the specified resource.
      *
-     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show()
     {
-        $user = User::where('id', $id)->get();
+        $user = Auth::user();
         return response()->json($user);
     }
 
@@ -57,10 +34,9 @@ class UserController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         $this->validate($request, [
             'first_name' => 'filled',
@@ -68,27 +44,33 @@ class UserController extends Controller
             'email' => 'filled'
         ]);
 
-        $user = User::find($id);
+        $user = Auth::user();
         if ($user->fill($request->all())->save()) {
-            return response()->json(['status' => 'success', 'user' => $user], 200);
+            return response()->json([
+                'status' => 'success',
+                'user' => $user
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail'], 401);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('user', 503, 'update')
+        ], 404);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy()
     {
-        if (User::destroy($id)) {
+        if (Auth::user()->destroy()) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail'], 401);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('user', 503, 'delete')
+        ], 503);
     }
 
     /**
@@ -100,17 +82,27 @@ class UserController extends Controller
     public function updateEmail(Request $request)
     {
         $this->validate($request, [
-            'password' => 'required',
-            'email' => 'required'
+            'email' => 'required',
+            'password' => 'required'
         ]);
 
         $user = Auth::user();
-        if ($user && Hash::check($request->input('password'), $user->password)) {
-            $user->update(['email' => $request->input('email')]);
-            return response()->json(['status' => 'success', 'user' => $user], 200);
+        if (Hash::check($request->input('password'), $user->password)) {
+            if ($user->update(['email' => $request->input('email')])) {
+                return response()->json([
+                    'status' => 'success',
+                    'user' => $user
+                ], 200);
+            }
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('user email', 503, 'update')
+            ], 503);
         }
-
-        return response()->json(['status' => 'fail'], 401);
+        return response()->json([
+            'status' => 'fail',
+            'message' => 'Invalid password.'
+        ], 400);
     }
 
     /**
@@ -127,11 +119,21 @@ class UserController extends Controller
         ]);
 
         $user = Auth::user();
-        if ($user && Hash::check($request->input('password'), $user->password)) {
-            $user->update(['password' => app('hash')->make($request->input('newPassword'))]);
-            return response()->json(['status' => 'success', 'user' => $user], 200);
+        if (Hash::check($request->input('password'), $user->password)) {
+            if ($user->update(['password' => app('hash')->make($request->input('newPassword'))])) {
+                return response()->json([
+                    'status' => 'success',
+                    'user' => $user
+                ], 200);
+            }
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('user password', 503, 'update')
+            ], 503);
         }
-
-        return response()->json(['status' => 'fail'], 401);
+        return response()->json([
+            'status' => 'fail',
+            'message' => 'Invalid password.'
+        ], 400);
     }
 }

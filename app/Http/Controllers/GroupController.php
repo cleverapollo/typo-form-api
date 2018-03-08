@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Section;
+use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
@@ -25,8 +25,11 @@ class GroupController extends Controller
      */
     public function index($section_id)
     {
-        $group = Section::find($section_id)->group()->get();
-        return response()->json(['status' => 'success', 'result' => $group], 200);
+        $groups = Section::find($section_id)->group()->get();
+        return response()->json([
+            'status' => 'success',
+            'groups' => $groups
+        ], 200);
     }
 
     /**
@@ -39,14 +42,20 @@ class GroupController extends Controller
     public function store($section_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|max:255'
+            'name' => 'required|max:191'
         ]);
 
-        if (Section::find($section_id)->group()->Create($request->all())) {
-            return response()->json(['status' => 'success'], 200);
+        $group = Section::find($section_id)->group()->Create($request->all());
+        if ($group) {
+            return response()->json([
+                'status' => 'success',
+                'group' => $group
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('group', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -59,20 +68,16 @@ class GroupController extends Controller
     public function show($section_id, $id)
     {
         $group = Section::find($section_id)->group()->where('id', $id)->get();
-        return response()->json($group);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param $section_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($section_id, $id)
-    {
-        $group = Section::find($section_id)->group()->where('id', $id)->get();
-        return view('group.editGroup', ['groups' => $group]);
+        if ($group) {
+            return response()->json([
+                'status' => 'success',
+                'group' => $group
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('group', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -90,11 +95,22 @@ class GroupController extends Controller
         ]);
 
         $group = Section::find($section_id)->group()->find($id);
-        if ($group->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        if (!$group) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('group', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($group->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'group' => $group
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('group', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -109,7 +125,9 @@ class GroupController extends Controller
         if (Section::find($section_id)->group()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('group', 503, 'delete')
+        ], 503);
     }
 }

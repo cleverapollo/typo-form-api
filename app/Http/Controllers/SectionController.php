@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Form;
+use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
@@ -25,8 +25,11 @@ class SectionController extends Controller
      */
     public function index($form_id)
     {
-        $section = Form::find($form_id)->section()->get();
-        return response()->json(['status' => 'success', 'result' => $section], 200);
+        $sections = Form::find($form_id)->section()->get();
+        return response()->json([
+            'status' => 'success',
+            'sections' => $sections
+        ], 200);
     }
 
     /**
@@ -39,15 +42,21 @@ class SectionController extends Controller
     public function store($form_id, Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|max:255',
+            'name' => 'required|max:191',
             'order' => 'required'
         ]);
 
-        if (Form::find($form_id)->section()->Create($request->all())) {
-            return response()->json(['status' => 'success'], 200);
+        $section = Form::find($form_id)->section()->Create($request->all());
+        if ($section) {
+            return response()->json([
+                'status' => 'success',
+                'section' => $section
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('section', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -60,20 +69,16 @@ class SectionController extends Controller
     public function show($form_id, $id)
     {
         $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return response()->json($section);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param $form_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($form_id, $id)
-    {
-        $section = Form::find($form_id)->section()->where('id', $id)->get();
-        return view('section.editSection', ['sections' => $section]);
+        if ($section) {
+            return response()->json([
+                'status' => 'success',
+                'section' => $section
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('section', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -92,11 +97,22 @@ class SectionController extends Controller
         ]);
 
         $section = Form::find($form_id)->section()->find($id);
-        if ($section->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        if (!$section) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('section', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($section->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'section' => $section
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('section', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -111,7 +127,9 @@ class SectionController extends Controller
         if (Form::find($form_id)->section()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('section', 503, 'delete')
+        ], 503);
     }
 }

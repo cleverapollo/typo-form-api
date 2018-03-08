@@ -35,9 +35,20 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
+    /**
+     * Get the teams for the User.
+     */
     public function team()
     {
         return $this->belongsToMany('App\Models\Team', 'user_teams');
+    }
+
+    /**
+     * Get the applications for the User.
+     */
+    public function application()
+    {
+        return $this->belongsToMany('App\Models\Application', 'application_users');
     }
 
     /**

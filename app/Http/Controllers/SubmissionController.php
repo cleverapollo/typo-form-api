@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Auth;
+use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
 {
@@ -25,8 +25,11 @@ class SubmissionController extends Controller
      */
     public function index($team_id)
     {
-        $submission = Auth::user()->submission()->where('team_id', $team_id)->get();
-        return response()->json(['status' => 'success', 'result' => $submission], 200);
+        $submissions = Auth::user()->submission()->where('team_id', $team_id)->get();
+        return response()->json([
+            'status' => 'success',
+            'submissions' => $submissions
+        ], 200);
     }
 
     /**
@@ -42,12 +45,17 @@ class SubmissionController extends Controller
             'form_id' => 'required'
         ]);
 
-        if (Auth::user()->submission()->Create(['form_id' => $request->form_id,
-            'team_id' => $team_id])) {
-            return response()->json(['status' => 'success'], 200);
+        $submission = Auth::user()->submission()->Create(['form_id' => $request->form_id, 'team_id' => $team_id]);
+        if ($submission) {
+            return response()->json([
+                'status' => 'success',
+                'submission' => $submission
+            ], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('submission', 503, 'store')
+        ], 503);
     }
 
     /**
@@ -60,20 +68,16 @@ class SubmissionController extends Controller
     public function show($team_id, $id)
     {
         $submission = Auth::user()->submission()->where('id', $id)->where('team_id', $team_id)->get();
-        return response()->json($submission);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param $team_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($team_id, $id)
-    {
-        $submission = Auth::user()->submission()->where('id', $id)->where('team_id', $team_id)->get();
-        return view('submission.editSubmission', ['submissions' => $submission]);
+        if ($submission) {
+            return response()->json([
+                'status' => 'success',
+                'submission' => $submission
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('submission', 404, 'show')
+        ], 404);
     }
 
     /**
@@ -90,12 +94,23 @@ class SubmissionController extends Controller
             'form_id' => 'filled'
         ]);
 
-        $team = Auth::user()->submission()->find($id);
-        if ($team->fill($request->all())->save()) {
-            return response()->json(['status' => 'success'], 200);
+        $submission = Auth::user()->submission()->find($id);
+        if (!$submission) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $this->generateErrorMessage('submission', 404, 'update')
+            ], 404);
         }
-
-        return response()->json(['status' => 'fail']);
+        if ($submission->fill($request->all())->save()) {
+            return response()->json([
+                'status' => 'success',
+                'submission' => $submission
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('submission', 503, 'update')
+        ], 404);
     }
 
     /**
@@ -110,7 +125,9 @@ class SubmissionController extends Controller
         if (Auth::user()->submission()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
-
-        return response()->json(['status' => 'fail']);
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('submission', 503, 'delete')
+        ], 503);
     }
 }
