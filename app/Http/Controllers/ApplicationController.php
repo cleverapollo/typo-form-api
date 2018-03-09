@@ -51,25 +51,7 @@ class ApplicationController extends Controller
         if ($application) {
             // Send invitation
             $invitations = $request->input('invitations', []);
-            if ($invitations && count($invitations) > 0) {
-                foreach ($invitations as $invitation) {
-                    $token =
-                    $this->invite(
-                        $application->name,
-                        $user->first_name . " " . $user->last_name,
-                        $invitation->email,
-                        $invitation->role
-                    );
-
-                    // Input to the application_invitations table
-                    DB::table('application_invitations')->insert([
-                        'inviter_id' => $user->id,
-                        'invitee' => $invitation->email,
-                        'application_id' => $application->id,
-                        'role' => $invitation->role
-                    ]);
-                }
-            }
+            $this->sendInvitation('application', $application, $user, $invitations);
 
             return response()->json([
                 'status' => 'success',
@@ -80,26 +62,6 @@ class ApplicationController extends Controller
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 503, 'store')
         ], 503);
-    }
-
-    /**
-     * Send email
-     *
-     * @param $applicationName
-     * @param $userName
-     * @param $email
-     * @param $role
-     */
-    protected function invite($applicationName, $userName, $email, $role)
-    {
-        Mail::send('emails.invitationToApplication', [
-            'applicationName' => $applicationName,
-            'userName' => $userName,
-            'role' => $role
-        ], function ($message) use ($email) {
-            $message->from('info@informed365.com', 'Informed 365');
-            $message->to($email);
-        });
     }
 
     /**

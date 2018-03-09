@@ -85,6 +85,9 @@ trait AuthenticatesUsers
         $user = User::where('email', $request->input('email'))->first();
         if ($user && Hash::check($request->input('password'), $user->password)) {
             $api_token = base64_encode(str_random(40));
+            while (!is_null(User::where('api_token', $api_token)->first())) {
+                $api_token = base64_encode(str_random(40));
+            }
             $expire_date = Carbon::now();
             $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
             return $user;

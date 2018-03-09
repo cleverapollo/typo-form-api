@@ -55,21 +55,9 @@ class TeamController extends Controller
                 ['team_id', '=', $team->id],
             ])->update(['role' => 'Owner']);
 
-            // Send email to other users
-            $emails = $request->input('emails', []);
-
-            if ($emails && count($emails) > 0) {
-                foreach ($emails as $email) {
-                    $this->invite($team->name, $user->first_name . " " . $user->last_name, $email);
-
-                    // Input to the team_invitations table
-                    DB::table('team_invitations')->insert([
-                        'inviter_id' => $user->id,
-                        'invitee' => $email,
-                        'team_id' => $team->id
-                    ]);
-                }
-            }
+            // Send invitation
+            $invitations = $request->input('invitations', []);
+            $this->sendInvitation('team', $team, $user, $invitations);
 
             return response()->json([
                 'status' => 'success',
@@ -80,21 +68,6 @@ class TeamController extends Controller
             'status' => 'fail',
             'message' => $this->generateErrorMessage('team', 503, 'store')
         ], 503);
-    }
-
-    /**
-     * Send email
-     *
-     * @param $teamName
-     * @param $userName
-     * @param $email
-     */
-    protected function invite($teamName, $userName, $email)
-    {
-        Mail::send('emails.invitationToTeam', ['teamName' => $teamName, 'userName' => $userName], function ($message) use ($email) {
-            $message->from('info@informed365.com', 'Informed 365');
-            $message->to($email);
-        });
     }
 
     /**
