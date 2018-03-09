@@ -40,6 +40,22 @@ class Section extends Model
     }
 
     /**
+     * Get the parent section for the Section
+     */
+    public function parent()
+    {
+        return $this->belongsTo('App\Models\Section', 'section_id');
+    }
+
+    /**
+     * Get the children sections for the Section
+     */
+    public function children()
+    {
+        return $this->hasMany('App\Models\Section', 'section_id');
+    }
+
+    /**
      * Get all of the Section's meta data
      */
     public function meta()
