@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\Team;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class TeamController extends Controller
 {
@@ -49,12 +47,6 @@ class TeamController extends Controller
         $user = Auth::user();
         $team = $user->team()->Create($request->only(['name', 'description']));
         if ($team) {
-            // Update user role in user_teams table
-            DB::table('user_teams')->where([
-                ['user_id', '=', $user->id],
-                ['team_id', '=', $team->id],
-            ])->update(['role' => 'Owner']);
-
             // Send invitation
             $invitations = $request->input('invitations', []);
             $this->sendInvitation('team', $team, $user, $invitations);

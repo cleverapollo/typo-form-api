@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Laravel\Lumen\Routing\Controller as BaseController;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
+use Laravel\Lumen\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class Controller extends BaseController
 {

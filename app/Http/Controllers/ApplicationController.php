@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\Application;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class ApplicationController extends Controller
 {
