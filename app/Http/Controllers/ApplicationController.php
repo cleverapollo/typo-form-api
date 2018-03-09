@@ -49,18 +49,24 @@ class ApplicationController extends Controller
         $user = Auth::user();
         $application = $user->application()->Create($request->only(['name']));
         if ($application) {
-            // Send email to other users
-            $emails = $request->input('emails', []);
-
-            if ($emails && count($emails) > 0) {
-                foreach ($emails as $email) {
-                    $this->invite($application->name, $user->first_name . " " . $user->last_name, $email);
+            // Send invitation
+            $invitations = $request->input('invitations', []);
+            if ($invitations && count($invitations) > 0) {
+                foreach ($invitations as $invitation) {
+                    $token =
+                    $this->invite(
+                        $application->name,
+                        $user->first_name . " " . $user->last_name,
+                        $invitation->email,
+                        $invitation->role
+                    );
 
                     // Input to the application_invitations table
                     DB::table('application_invitations')->insert([
                         'inviter_id' => $user->id,
-                        'invitee' => $email,
-                        'application_id' => $application->id
+                        'invitee' => $invitation->email,
+                        'application_id' => $application->id,
+                        'role' => $invitation->role
                     ]);
                 }
             }
@@ -82,10 +88,15 @@ class ApplicationController extends Controller
      * @param $applicationName
      * @param $userName
      * @param $email
+     * @param $role
      */
-    protected function invite($applicationName, $userName, $email)
+    protected function invite($applicationName, $userName, $email, $role)
     {
-        Mail::send('emails.invitationToApplication', ['applicationName' => $applicationName, 'userName' => $userName], function ($message) use ($email) {
+        Mail::send('emails.invitationToApplication', [
+            'applicationName' => $applicationName,
+            'userName' => $userName,
+            'role' => $role
+        ], function ($message) use ($email) {
             $message->from('info@informed365.com', 'Informed 365');
             $message->to($email);
         });

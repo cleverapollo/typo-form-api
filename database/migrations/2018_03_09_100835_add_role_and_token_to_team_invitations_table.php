@@ -15,7 +15,7 @@ class AddRoleAndTokenToTeamInvitationsTable extends Migration
     {
         Schema::table('team_invitations', function (Blueprint $table) {
             $table->string('role')->default('User')->after('team_id');
-            $table->string('token')->after('role');
+            $table->string('token')->unique()->after('role');
         });
     }
 

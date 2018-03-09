@@ -15,7 +15,7 @@ class AddRoleAndTokenToApplicationInvitationsTable extends Migration
     {
         Schema::table('application_invitations', function (Blueprint $table) {
             $table->string('role')->default('User')->after('application_id');
-            $table->string('token')->after('role');
+            $table->string('token')->unique()->after('role');
         });
     }
 
