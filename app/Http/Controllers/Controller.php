@@ -48,19 +48,19 @@ class Controller extends BaseController
                     'type' => $type,
                     'name' => $data->name,
                     'userName' => $user->first_name . " " . $user->last_name,
-                    'role' => $invitation->role,
+                    'role' => $invitation['role'],
                     'token' => $token
                 ], function ($message) use ($invitation) {
                     $message->from('info@informed365.com', 'Informed 365');
-                    $message->to($invitation->email);
+                    $message->to($invitation['email']);
                 });
 
                 // Input to the invitations table
                 DB::table($type . '_invitations')->insert([
                     'inviter_id' => $user->id,
-                    'invitee' => $invitation->email,
+                    'invitee' => $invitation['email'],
                     $type . '_id' => $data->id,
-                    'role' => $invitation->role,
+                    'role' => $invitation['role'],
                     'token' => $token
                 ]);
             }
