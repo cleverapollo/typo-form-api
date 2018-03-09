@@ -56,6 +56,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function submission()
     {
-        return $this->hasOne('App\Models\Submission');
+        return $this->hasMany('App\Models\Submission');
     }
 }
