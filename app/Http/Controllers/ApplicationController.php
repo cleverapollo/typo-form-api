@@ -50,7 +50,7 @@ class ApplicationController extends Controller
         $application = $user->application()->Create($request->only(['name']));
         if ($application) {
             // Send email to other users
-            $emails = json_decode($request->input('emails', []));
+            $emails = json_decode($request->input('emails', ''));
 
             if ($emails && count($emails) > 0) {
                 foreach ($emails as $email) {
