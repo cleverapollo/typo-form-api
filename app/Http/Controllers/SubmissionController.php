@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\Models\Form;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -20,12 +21,16 @@ class SubmissionController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param $team_id
+     * @param  int $form_id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($team_id)
+    public function index($form_id)
     {
-        $submissions = Auth::user()->submission()->where('team_id', $team_id)->get();
+        if (Auth::user()->role == "SuperAdmin") {
+            $submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
+        } else {
+            $submissions = Form::find($form_id)->submissions()->get();
+        }
         return response()->json([
             'status' => 'success',
             'submissions' => $submissions
@@ -35,17 +40,22 @@ class SubmissionController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param $team_id
+     * @param  int $form_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store($team_id, Request $request)
+    public function store($form_id, Request $request)
     {
         $this->validate($request, [
             'form_id' => 'required'
         ]);
 
-        $submission = Auth::user()->submission()->Create(['form_id' => $request->form_id, 'team_id' => $team_id]);
+        $submission = Auth::user()->submissions()->create([
+            'form_id' => $form_id,
+            'team_id' => $request->input('team_id'. null),
+            'period_start' => $request->input('period_start'. null),
+            'period_end' => $request->input('period_end'. null)
+        ]);
         if ($submission) {
             return response()->json([
                 'status' => 'success',
@@ -61,14 +71,22 @@ class SubmissionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param $team_id
+     * @param  int $form_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($team_id, $id)
+    public function show($form_id, $id)
     {
-        $submission = Auth::user()->submission()->where('id', $id)->where('team_id', $team_id)->get();
+        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
         if ($submission) {
+            $user = Auth::user();
+            if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'You do not have permission to see this submission.'
+                ], 404);
+            }
+
             return response()->json([
                 'status' => 'success',
                 'submission' => $submission
@@ -83,24 +101,33 @@ class SubmissionController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param $team_id
+     * @param  int $form_id
      * @param  \Illuminate\Http\Request $request
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function update($team_id, Request $request, $id)
+    public function update($form_id, Request $request, $id)
     {
         $this->validate($request, [
             'form_id' => 'filled'
         ]);
 
-        $submission = Auth::user()->submission()->find($id);
+        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
         if (!$submission) {
             return response()->json([
                 'status' => 'fail',
                 'message' => $this->generateErrorMessage('submission', 404, 'update')
             ], 404);
         }
+
+        $user = Auth::user();
+        if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to update this submission.'
+            ], 404);
+        }
+
         if ($submission->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
@@ -116,13 +143,22 @@ class SubmissionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param $team_id
+     * @param  int $form_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($team_id, $id)
+    public function destroy($form_id, $id)
     {
-        if (Auth::user()->submission()->destroy($id)) {
+        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
+        $user = Auth::user();
+        if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to delete this submission.'
+            ], 404);
+        }
+
+        if ($submission->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

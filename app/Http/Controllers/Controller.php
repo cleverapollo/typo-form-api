@@ -14,9 +14,9 @@ class Controller extends BaseController
     /**
      * Generate error message for status and action
      *
-     * @param $data
-     * @param $status
-     * @param $action
+     * @param  $data
+     * @param  $status
+     * @param  $action
      * @return string
      */
     protected function generateErrorMessage($data, $status, $action) {

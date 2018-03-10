@@ -18,7 +18,7 @@ class Form extends Model
     /**
      * Get the sections for the Form.
      */
-    public function section()
+    public function sections()
     {
         return $this->hasMany('App\Models\Section');
     }
@@ -26,7 +26,7 @@ class Form extends Model
     /**
      * Get the submissions for the Form.
      */
-    public function submission()
+    public function submissions()
     {
         return $this->hasMany('App\Models\Submission');
     }

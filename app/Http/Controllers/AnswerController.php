@@ -20,12 +20,12 @@ class AnswerController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param $question_id
+     * @param  int $question_id
      * @return \Illuminate\Http\JsonResponse
      */
     public function index($question_id)
     {
-        $answers = Question::find($question_id)->answer()->get();
+        $answers = Question::find($question_id)->answers()->get();
         return response()->json([
             'status' => 'success',
             'answers' => $answers
@@ -35,7 +35,7 @@ class AnswerController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param $question_id
+     * @param  int $question_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
@@ -46,7 +46,7 @@ class AnswerController extends Controller
             'order' => 'required'
         ]);
 
-        $answer = Question::find($question_id)->answer()->Create($request->all());
+        $answer = Question::find($question_id)->answers()->create($request->all());
         if ($answer) {
             return response()->json([
                 'status' => 'success',
@@ -62,13 +62,13 @@ class AnswerController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param $question_id
+     * @param  int $question_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($question_id, $id)
     {
-        $answer = Question::find($question_id)->answer()->where('id', $id)->get();
+        $answer = Question::find($question_id)->answers()->where('id', $id)->first();
         if ($answer) {
             return response()->json([
                 'status' => 'success',
@@ -84,19 +84,19 @@ class AnswerController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param $question_id
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $question_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update($question_id, Request $request, $id)
+    public function update($question_id, $id, Request $request)
     {
         $this->validate($request, [
             'answer' => 'filled',
             'order' => 'filled'
         ]);
 
-        $answer = Question::find($question_id)->answer()->find($id);
+        $answer = Question::find($question_id)->answers()->where('id', $id)->first();
         if (!$answer) {
             return response()->json([
                 'status' => 'fail',
@@ -118,13 +118,13 @@ class AnswerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param $question_id
+     * @param  int $question_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($question_id, $id)
     {
-        if (Question::find($question_id)->answer()->destroy($id)) {
+        if (Question::find($question_id)->answers()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

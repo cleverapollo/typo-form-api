@@ -20,12 +20,12 @@ class GroupController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param $section_id
+     * @param  int $section_id
      * @return \Illuminate\Http\JsonResponse
      */
     public function index($section_id)
     {
-        $groups = Section::find($section_id)->group()->get();
+        $groups = Section::find($section_id)->groups()->get();
         return response()->json([
             'status' => 'success',
             'groups' => $groups
@@ -35,7 +35,7 @@ class GroupController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param $section_id
+     * @param  int $section_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
@@ -45,7 +45,7 @@ class GroupController extends Controller
             'name' => 'required|max:191'
         ]);
 
-        $group = Section::find($section_id)->group()->Create($request->all());
+        $group = Section::find($section_id)->groups()->create($request->all());
         if ($group) {
             return response()->json([
                 'status' => 'success',
@@ -61,13 +61,13 @@ class GroupController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param $section_id
+     * @param  int $section_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($section_id, $id)
     {
-        $group = Section::find($section_id)->group()->where('id', $id)->get();
+        $group = Section::find($section_id)->groups()->where('id', $id)->first();
         if ($group) {
             return response()->json([
                 'status' => 'success',
@@ -83,18 +83,18 @@ class GroupController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param $section_id
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $section_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update($section_id, Request $request, $id)
+    public function update($section_id, $id, Request $request)
     {
         $this->validate($request, [
             'name' => 'filled'
         ]);
 
-        $group = Section::find($section_id)->group()->find($id);
+        $group = Section::find($section_id)->groups()->where('id', $id)->first();
         if (!$group) {
             return response()->json([
                 'status' => 'fail',
@@ -116,13 +116,13 @@ class GroupController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param $section_id
+     * @param  int $section_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($section_id, $id)
     {
-        if (Section::find($section_id)->group()->destroy($id)) {
+        if (Section::find($section_id)->groups()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

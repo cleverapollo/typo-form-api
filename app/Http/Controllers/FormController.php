@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Form;
+use App\Models\Application;
 use Illuminate\Http\Request;
 
 class FormController extends Controller
@@ -20,11 +20,12 @@ class FormController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  int $application_id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index($application_id)
     {
-        $forms = Form::get();
+        $forms = Application::find($application_id)->forms()->get();
         return response()->json([
             'status' => 'success',
             'forms' => $forms
@@ -34,16 +35,17 @@ class FormController extends Controller
     /**
      * Store a newly created resource in storage.
      *
+     * @param  int $application_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($application_id, Request $request)
     {
         $this->validate($request, [
             'name' => 'required|max:191'
         ]);
 
-        $form = Form::create($request->all());
+        $form = Application::find($application_id)->forms()->create($request->all());
         if ($form) {
             return response()->json([
                 'status' => 'success',
@@ -59,12 +61,13 @@ class FormController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param  int $application_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($application_id, $id)
     {
-        $form = Form::where('id', $id)->get();
+        $form = Application::find($application_id)->forms()->where('id', $id)->first();
         if ($form) {
             return response()->json([
                 'status' => 'success',
@@ -80,17 +83,18 @@ class FormController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $application_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($application_id, $id, Request $request)
     {
         $this->validate($request, [
             'name' => 'filled'
         ]);
 
-        $form = Form::find($id);
+        $form = Application::find($application_id)->forms()->where('id', $id)->first();
         if (!$form) {
             return response()->json([
                 'status' => 'fail',
@@ -112,12 +116,13 @@ class FormController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param  int $application_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($application_id, $id)
     {
-        if (Form::destroy($id)) {
+        if (Application::find($application_id)->forms()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

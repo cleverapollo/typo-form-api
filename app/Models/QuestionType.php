@@ -18,7 +18,7 @@ class QuestionType extends Model
     /**
      * Get the questions for the Type.
      */
-    public function question()
+    public function questions()
     {
         return $this->hasMany('App\Models\Question');
     }

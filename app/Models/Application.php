@@ -16,9 +16,9 @@ class Application extends Model
     ];
 
     /**
-     * Get the forms for the Application.
+     * Get the users for the Application.
      */
-    public function user()
+    public function users()
     {
         return $this->belongsToMany('App\User');
     }
@@ -26,7 +26,7 @@ class Application extends Model
     /**
      * Get the forms for the Application.
      */
-    public function form()
+    public function forms()
     {
         return $this->hasMany('App\Models\Form');
     }
@@ -34,7 +34,7 @@ class Application extends Model
     /**
      * Get the teams for the Application.
      */
-    public function team()
+    public function teams()
     {
         return $this->hasMany('App\Models\Team');
     }

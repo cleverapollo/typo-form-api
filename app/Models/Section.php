@@ -26,7 +26,7 @@ class Section extends Model
     /**
      * Get the groups for the Section.
      */
-    public function group()
+    public function groups()
     {
         return $this->hasMany('App\Models\Group');
     }
@@ -34,13 +34,13 @@ class Section extends Model
     /**
      * Get the questions for the Section.
      */
-    public function question()
+    public function questions()
     {
         return $this->hasMany('App\Models\Question');
     }
 
     /**
-     * Get the parent section for the Section
+     * Get the parent section for the Section.
      */
     public function parent()
     {
@@ -48,7 +48,7 @@ class Section extends Model
     }
 
     /**
-     * Get the children sections for the Section
+     * Get the children sections for the Section.
      */
     public function children()
     {

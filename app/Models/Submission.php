@@ -42,7 +42,7 @@ class Submission extends Model
     /**
      * Get the responses for the Submission.
      */
-    public function response()
+    public function responses()
     {
         return $this->hasMany('App\Models\Response');
     }

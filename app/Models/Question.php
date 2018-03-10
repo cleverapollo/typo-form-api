@@ -26,13 +26,13 @@ class Question extends Model
     /**
      * Get the answers for the Question.
      */
-    public function answer()
+    public function answers()
     {
         return $this->hasMany('App\Models\Answer');
     }
 
     /**
-     * Get the question type that owns the Form.
+     * Get the question type of the Question.
      */
     public function type()
     {

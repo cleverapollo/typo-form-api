@@ -20,12 +20,12 @@ class ResponseController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param $submission_id
+     * @param  int $submission_id
      * @return \Illuminate\Http\JsonResponse
      */
     public function index($submission_id)
     {
-        $responses = Submission::find($submission_id)->response()->get();
+        $responses = Submission::find($submission_id)->responses()->get();
         return response()->json([
             'status' => 'success',
             'responses' => $responses
@@ -35,7 +35,7 @@ class ResponseController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param $submission_id
+     * @param  int $submission_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
@@ -46,7 +46,7 @@ class ResponseController extends Controller
             'response_id' => 'required'
         ]);
 
-        $response = Submission::find($submission_id)->response()->Create($request->all());
+        $response = Submission::find($submission_id)->responses()->create($request->all());
         if ($response) {
             return response()->json([
                 'status' => 'success',
@@ -62,13 +62,13 @@ class ResponseController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param $submission_id
+     * @param  int $submission_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($submission_id, $id)
     {
-        $response = Submission::find($submission_id)->response()->where('id', $id)->get();
+        $response = Submission::find($submission_id)->responses()->where('id', $id)->first();
         if ($response) {
             return response()->json([
                 'status' => 'success',
@@ -84,19 +84,19 @@ class ResponseController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param $submission_id
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $submission_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update($submission_id, Request $request, $id)
+    public function update($submission_id, $id, Request $request)
     {
         $this->validate($request, [
             'response' => 'filled',
             'response_id' => 'filled'
         ]);
 
-        $response = Submission::find($submission_id)->response()->find($id);
+        $response = Submission::find($submission_id)->responses()->where('id', $id)->first();
         if (!$response) {
             return response()->json([
                 'status' => 'fail',
@@ -118,13 +118,13 @@ class ResponseController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param $submission_id
+     * @param  int $submission_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($submission_id, $id)
     {
-        if (Submission::find($submission_id)->response()->destroy($id)) {
+        if (Submission::find($submission_id)->responses()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

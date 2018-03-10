@@ -38,7 +38,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     /**
      * Get the teams for the User.
      */
-    public function team()
+    public function teams()
     {
         return $this->belongsToMany('App\Models\Team', 'user_teams');
     }
@@ -46,15 +46,15 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     /**
      * Get the applications for the User.
      */
-    public function application()
+    public function applications()
     {
         return $this->belongsToMany('App\Models\Application', 'application_users');
     }
 
     /**
-     * Get the submissions for the Form.
+     * Get the submissions for the User.
      */
-    public function submission()
+    public function submissions()
     {
         return $this->hasMany('App\Models\Submission');
     }

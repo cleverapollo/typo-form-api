@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\Models\Team;
+use App\Models\Application;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -21,11 +22,12 @@ class TeamController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  int $application_id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index($application_id)
     {
-        $teams = Auth::user()->team()->get();
+        $teams = Application::find($application_id)->teams()->get();
         return response()->json([
             'status' => 'success',
             'teams' => $teams
@@ -35,17 +37,23 @@ class TeamController extends Controller
     /**
      * Store a newly created resource in storage.
      *
+     * @param  int $application_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($application_id, Request $request)
     {
         $this->validate($request, [
             'name' => 'required|max:191'
         ]);
 
         $user = Auth::user();
-        $team = $user->team()->Create($request->only(['name', 'description']));
+        $team = $user->teams()->create([
+            'name' => $request->input('name'),
+            'description' => $request->input('description', null),
+            'application_id' => $application_id
+        ]);
+
         if ($team) {
             // Send invitation
             $invitations = $request->input('invitations', []);
@@ -65,12 +73,13 @@ class TeamController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param  int $application_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($application_id, $id)
     {
-        $team = Team::where('id', $id)->get();
+        $team = Application::find($application_id)->teams()->where('id', $id)->first();
         if ($team) {
             return response()->json([
                 'status' => 'success',
@@ -86,17 +95,18 @@ class TeamController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $application_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($application_id, $id, Request $request)
     {
         $this->validate($request, [
             'name' => 'filled'
         ]);
 
-        $team = Team::find($id);
+        $team = Application::find($application_id)->teams()->where('id', $id)->first();
         if (!$team) {
             return response()->json([
                 'status' => 'fail',
@@ -118,14 +128,16 @@ class TeamController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param  int $application_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($application_id, $id)
     {
-        if (Team::destroy($id)) {
+        if (Application::find($application_id)->teams()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
+
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('team', 503, 'delete')

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Question;
+use App\Models\Section;
 use Illuminate\Http\Request;
 
 class QuestionController extends Controller
@@ -20,11 +20,12 @@ class QuestionController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  int $section_id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index($section_id)
     {
-        $questions = Question::get();
+        $questions = Section::find($section_id)->questions()->get();
         return response()->json([
             'status' => 'success',
             'questions' => $questions
@@ -34,21 +35,22 @@ class QuestionController extends Controller
     /**
      * Store a newly created resource in storage.
      *
+     * @param  int $section_id
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($section_id, Request $request)
     {
         $this->validate($request, [
             'question' => 'required',
             'order' => 'required'
         ]);
 
-        $question = Question::Create($request->all());
-        if ($answer) {
+        $question = Section::find($section_id)->questions()->create($request->all());
+        if ($question) {
             return response()->json([
                 'status' => 'success',
-                'answer' => $answer
+                'question' => $question
             ], 200);
         }
         return response()->json([
@@ -60,16 +62,17 @@ class QuestionController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param  int $section_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($section_id, $id)
     {
-        $question = Question::where('id', $id)->get();
-        if ($answer) {
+        $question = Section::find($section_id)->questions()->where('id', $id)->first();
+        if ($question) {
             return response()->json([
                 'status' => 'success',
-                'answer' => $answer
+                'question' => $question
             ], 200);
         }
         return response()->json([
@@ -81,28 +84,29 @@ class QuestionController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  int $section_id
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($section_id, $id, Request $request)
     {
         $this->validate($request, [
             'question' => 'filled',
             'order' => 'filled'
         ]);
 
-        $question = Question::find($id);
-        if (!$answer) {
+        $question = Section::find($section_id)->questions()->where('id', $id)->first();
+        if (!$question) {
             return response()->json([
                 'status' => 'fail',
                 'message' => $this->generateErrorMessage('question', 404, 'update')
             ], 404);
         }
-        if ($answer->fill($request->all())->save()) {
+        if ($question->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
-                'answer' => $answer
+                'question' => $question
             ], 200);
         }
         return response()->json([
@@ -114,12 +118,13 @@ class QuestionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param  int $section_id
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($section_id, $id)
     {
-        if (Question::destroy($id)) {
+        if (Section::find($section_id)->questions()->destroy($id)) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

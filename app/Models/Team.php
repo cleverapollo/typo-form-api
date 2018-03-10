@@ -18,7 +18,7 @@ class Team extends Model
     /**
      * Get the users that belongs to the Team.
      */
-    public function user()
+    public function users()
     {
         return $this->belongsToMany('App\User', 'user_teams');
     }
@@ -26,7 +26,7 @@ class Team extends Model
     /**
      * Get the submissions for the Team.
      */
-    public function submission()
+    public function submissions()
     {
         return $this->hasMany('App\Models\Submission');
     }
@@ -42,7 +42,7 @@ class Team extends Model
     /**
      * Get the invitations for the Team.
      */
-    public function invitation()
+    public function invitations()
     {
         return $this->hasMany('App\Models\TeamInvitation');
     }

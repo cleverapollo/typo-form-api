@@ -25,7 +25,7 @@ class ApplicationController extends Controller
      */
     public function index()
     {
-        $applications = Auth::user()->application()->get();
+        $applications = Auth::user()->applications()->get();
         return response()->json([
             'status' => 'success',
             'applications' => $applications
@@ -45,7 +45,7 @@ class ApplicationController extends Controller
         ]);
 
         $user = Auth::user();
-        $application = $user->application()->Create($request->only(['name']));
+        $application = $user->applications()->create($request->only(['name']));
         if ($application) {
             // Send invitation
             $invitations = $request->input('invitations', []);
@@ -70,7 +70,7 @@ class ApplicationController extends Controller
      */
     public function show($id)
     {
-        $application = Application::where('id', $id)->get();
+        $application = Auth::user()->applications()->where('id', $id)->first();
         if ($application) {
             return response()->json([
                 'status' => 'success',
@@ -86,17 +86,17 @@ class ApplicationController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
      * @param  int $id
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id, Request $request)
     {
         $this->validate($request, [
             'name' => 'filled'
         ]);
 
-        $application = Application::find($id);
+        $application = Auth::user()->applications()->where('id', $id)->first();
         if (!$application) {
             return response()->json([
                 'status' => 'fail',
