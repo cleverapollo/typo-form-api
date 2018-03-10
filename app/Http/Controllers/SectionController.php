@@ -112,7 +112,7 @@ class SectionController extends Controller
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('section', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**

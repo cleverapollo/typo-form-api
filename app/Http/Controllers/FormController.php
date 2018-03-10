@@ -110,7 +110,7 @@ class FormController extends Controller
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('form', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**

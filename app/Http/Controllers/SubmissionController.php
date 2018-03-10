@@ -137,7 +137,7 @@ class SubmissionController extends Controller
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('submission', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**

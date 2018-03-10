@@ -103,16 +103,19 @@ class ResponseController extends Controller
                 'message' => $this->generateErrorMessage('response', 404, 'update')
             ], 404);
         }
-        if ($response->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'response' => $response
-            ], 200);
+        $newResponse = $response->fill($request->all())->except(['id']);
+        if (Submission::find($submission_id)->responses()->destroy($id)) {
+            if ($newResponse->save()) {
+                return response()->json([
+                    'status' => 'success',
+                    'response' => $response
+                ], 200);
+            }
         }
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('response', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**

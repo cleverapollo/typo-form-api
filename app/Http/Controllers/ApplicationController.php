@@ -112,7 +112,7 @@ class ApplicationController extends Controller
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**

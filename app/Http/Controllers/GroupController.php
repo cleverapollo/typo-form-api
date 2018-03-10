@@ -110,7 +110,7 @@ class GroupController extends Controller
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('group', 503, 'update')
-        ], 404);
+        ], 503);
     }
 
     /**
