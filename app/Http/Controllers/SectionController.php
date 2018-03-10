@@ -124,7 +124,7 @@ class SectionController extends Controller
      */
     public function destroy($form_id, $id)
     {
-        if (Form::find($form_id)->sections()->destroy($id)) {
+        if (Form::find($form_id)->sections()->where('id', $id)->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

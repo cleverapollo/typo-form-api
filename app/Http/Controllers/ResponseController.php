@@ -104,7 +104,7 @@ class ResponseController extends Controller
             ], 404);
         }
         $newResponse = $response->fill($request->all())->except(['id']);
-        if (Submission::find($submission_id)->responses()->destroy($id)) {
+        if (Submission::find($submission_id)->responses()->where('id', $id)->delete()) {
             if ($newResponse->save()) {
                 return response()->json([
                     'status' => 'success',
@@ -127,7 +127,7 @@ class ResponseController extends Controller
      */
     public function destroy($submission_id, $id)
     {
-        if (Submission::find($submission_id)->responses()->destroy($id)) {
+        if (Submission::find($submission_id)->responses()->where('id', $id)->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

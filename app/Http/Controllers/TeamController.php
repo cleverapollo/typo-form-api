@@ -134,7 +134,7 @@ class TeamController extends Controller
      */
     public function destroy($application_id, $id)
     {
-        if (Application::find($application_id)->teams()->destroy($id)) {
+        if (Application::find($application_id)->teams()->where('id', $id)->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
 

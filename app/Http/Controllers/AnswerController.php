@@ -124,7 +124,7 @@ class AnswerController extends Controller
      */
     public function destroy($question_id, $id)
     {
-        if (Question::find($question_id)->answers()->destroy($id)) {
+        if (Question::find($question_id)->answers()->where('id', $id)->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([

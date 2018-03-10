@@ -122,7 +122,7 @@ class FormController extends Controller
      */
     public function destroy($application_id, $id)
     {
-        if (Application::find($application_id)->forms()->destroy($id)) {
+        if (Application::find($application_id)->forms()->where('id', $id)->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([
