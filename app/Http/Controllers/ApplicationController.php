@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApplicationUser;
 use Auth;
 use App\Models\Application;
 use Illuminate\Http\Request;
@@ -45,6 +46,16 @@ class ApplicationController extends Controller
         ]);
 
         $user = Auth::user();
+
+        // Check whether user is SuperAdmin or not
+        if ($user->role != "SuperAdmin") {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to create application.'
+            ], 403);
+        }
+
+        // Create application
         $application = $user->applications()->create($request->only(['name']));
         if ($application) {
             // Send invitation
@@ -56,6 +67,8 @@ class ApplicationController extends Controller
                 'application' => $application
             ], 200);
         }
+
+        // Send error if application is not created
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 503, 'store')
@@ -77,6 +90,7 @@ class ApplicationController extends Controller
                 'application' => $application
             ], 200);
         }
+
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 404, 'show')
@@ -96,19 +110,38 @@ class ApplicationController extends Controller
             'name' => 'filled'
         ]);
 
-        $application = Auth::user()->applications()->where('id', $id)->first();
+        $user = Auth::user();
+        $application = $user->applications()->where('application_id', $id)->first();
+
+        // Send error if application does not exist
         if (!$application) {
             return response()->json([
                 'status' => 'fail',
                 'message' => $this->generateErrorMessage('application', 404, 'update')
             ], 404);
         }
+
+        // Check whether user have permission to update
+        $role = ApplicationUser::where([
+            'user_id' => $user->id,
+            'application_id' => $application->id
+        ])->value('role');
+        if ($user->role != "SuperAdmin" && $role != "Admin") {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to create application.'
+            ], 403);
+        }
+
+        // Update application
         if ($application->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
                 'application' => $application
             ], 200);
         }
+
+        // Send error if there is an error on update
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 503, 'update')
@@ -123,7 +156,22 @@ class ApplicationController extends Controller
      */
     public function destroy($id)
     {
-        if (Application::destroy($id)) {
+        $user = Auth::user();
+        $application = Application::find($id);
+
+        // Check whether user have permission to update
+        $role = ApplicationUser::where([
+            'user_id' => $user->id,
+            'application_id' => $application->id
+        ])->value('role');
+        if ($user->role != "SuperAdmin" && $role != "Admin") {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to create application.'
+            ], 403);
+        }
+
+        if ($application->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([
