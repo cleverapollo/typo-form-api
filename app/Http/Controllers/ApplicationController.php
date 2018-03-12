@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ApplicationUser;
 use Auth;
 use App\Models\Application;
+use App\Models\ApplicationUser;
 use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
@@ -83,7 +83,7 @@ class ApplicationController extends Controller
      */
     public function show($id)
     {
-        $application = Auth::user()->applications()->where('id', $id)->first();
+        $application = Auth::user()->applications()->where('application_id', $id)->first();
         if ($application) {
             return response()->json([
                 'status' => 'success',
