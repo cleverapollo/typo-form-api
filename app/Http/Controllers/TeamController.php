@@ -176,6 +176,7 @@ class TeamController extends Controller
         ])) {
             $teamInvitation->token = null;
             $teamInvitation->status = 1;
+            $teamInvitation->save();
 
             return response()->json([
                 'status' => 'success',
