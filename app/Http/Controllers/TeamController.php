@@ -146,6 +146,12 @@ class TeamController extends Controller
         ], 503);
     }
 
+    /**
+     * Accept invitation request
+     *
+     * @param $token
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function invitation($token)
     {
         $teamInvitation = TeamInvitation::where([
@@ -161,7 +167,7 @@ class TeamController extends Controller
         }
 
         // Send request to create if the user is not registered
-        $user = User::where('email', $teamInvitation->invitee);
+        $user = User::where('email', $teamInvitation->invitee)->first();
         if (!$user) {
             return response()->json([
                 'status' => 'success',
