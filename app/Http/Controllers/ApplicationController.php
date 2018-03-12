@@ -154,7 +154,7 @@ class ApplicationController extends Controller
         if ($user->role != "SuperAdmin" && $role != "Admin") {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'You do not have permission to create application.'
+                'message' => 'You do not have permission to update application.'
             ], 403);
         }
 
@@ -192,7 +192,7 @@ class ApplicationController extends Controller
         if ($user->role != "SuperAdmin" && $role != "Admin") {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'You do not have permission to create application.'
+                'message' => 'You do not have permission to delete application.'
             ], 403);
         }
 

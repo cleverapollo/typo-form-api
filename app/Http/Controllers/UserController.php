@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,7 +27,10 @@ class UserController extends Controller
     public function show()
     {
         $user = Auth::user();
-        return response()->json($user);
+        return response()->json([
+            'status' => 'success',
+            'application' => new UserResource($user)
+        ], 200);
     }
 
     /**
@@ -48,7 +51,7 @@ class UserController extends Controller
         if ($user->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
-                'user' => $user
+                'user' => new UserResource($user)
             ], 200);
         }
         return response()->json([
@@ -91,7 +94,7 @@ class UserController extends Controller
             if ($user->update(['email' => $request->input('email')])) {
                 return response()->json([
                     'status' => 'success',
-                    'user' => $user
+                    'user' => new UserResource($user)
                 ], 200);
             }
             return response()->json([
@@ -123,7 +126,7 @@ class UserController extends Controller
             if ($user->update(['password' => app('hash')->make($request->input('newPassword'))])) {
                 return response()->json([
                     'status' => 'success',
-                    'user' => $user
+                    'user' => new UserResource($user)
                 ], 200);
             }
             return response()->json([
