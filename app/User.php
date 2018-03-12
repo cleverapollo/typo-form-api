@@ -40,7 +40,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function teams()
     {
-        return $this->belongsToMany('App\Models\Team', 'user_teams');
+        return $this->belongsToMany('App\Models\Team', 'user_teams')->withPivot('role');
     }
 
     /**
@@ -48,7 +48,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function applications()
     {
-        return $this->belongsToMany('App\Models\Application', 'application_users');
+        return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role');
     }
 
     /**

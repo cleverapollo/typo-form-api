@@ -20,7 +20,7 @@ class Team extends Model
      */
     public function users()
     {
-        return $this->belongsToMany('App\User', 'user_teams');
+        return $this->belongsToMany('App\User', 'user_teams')->withPivot('role');
     }
 
     /**
