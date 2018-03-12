@@ -29,7 +29,7 @@ class UserController extends Controller
         $user = Auth::user();
         return response()->json([
             'status' => 'success',
-            'application' => new UserResource($user)
+            'user' => new UserResource($user)
         ], 200);
     }
 

@@ -43,6 +43,15 @@ class Controller extends BaseController
                     $token = base64_encode(str_random(40));
                 }
 
+                // Input to the invitations table
+                DB::table($type . '_invitations')->insert([
+                    'inviter_id' => $user->id,
+                    'invitee' => $invitation['email'],
+                    $type . '_id' => $data->id,
+                    'role' => $invitation['role'],
+                    'token' => $token
+                ]);
+
                 // Send email to the invitee
                 Mail::send('emails.invitation', [
                     'type' => $type,
@@ -54,15 +63,6 @@ class Controller extends BaseController
                     $message->from('info@informed365.com', 'Informed 365');
                     $message->to($invitation['email']);
                 });
-
-                // Input to the invitations table
-                DB::table($type . '_invitations')->insert([
-                    'inviter_id' => $user->id,
-                    'invitee' => $invitation['email'],
-                    $type . '_id' => $data->id,
-                    'role' => $invitation['role'],
-                    'token' => $token
-                ]);
             }
         }
     }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TeamInvitation extends Model
+class ApplicationInvitation extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,7 +12,7 @@ class TeamInvitation extends Model
      * @var array
      */
     protected $fillable = [
-        'inviter_id', 'invitee', 'team_id', 'role', 'token', 'status'
+        'inviter_id', 'invitee', 'application_id', 'role', 'token', 'status'
     ];
 
     /**
@@ -24,10 +24,10 @@ class TeamInvitation extends Model
     }
 
     /**
-     * Get the team that owns the Invitation.
+     * Get the application that owns the Invitation.
      */
-    public function team()
+    public function application()
     {
-        return $this->belongsTo('App\Models\Team');
+        return $this->belongsTo('App\Models\Application');
     }
 }

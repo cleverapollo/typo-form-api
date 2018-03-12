@@ -21,6 +21,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'Auth\RegisterController@register');
     $router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
     $router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
+    $router->post('team/invitation/{token}', 'TeamController@invitation');
+    $router->post('application/invitation/{token}', 'ApplicationController@invitation');
 
     $router->group(['prefix' => 'user'], function () use ($router) {
         $router->get('/', 'UserController@show');

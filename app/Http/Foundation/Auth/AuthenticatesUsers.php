@@ -92,7 +92,7 @@ trait AuthenticatesUsers
             $user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
             return User::where('id', $user->id)
                 ->select('id', 'first_name', 'last_name', 'email', 'role', 'api_token')
-                ->get();
+                ->first();
         }
 
         return null;

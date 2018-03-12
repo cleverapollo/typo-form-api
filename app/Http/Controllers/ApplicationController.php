@@ -217,4 +217,9 @@ class ApplicationController extends Controller
             'message' => $this->generateErrorMessage('application', 503, 'delete')
         ], 503);
     }
+
+    public function invitation()
+    {
+
+    }
 }

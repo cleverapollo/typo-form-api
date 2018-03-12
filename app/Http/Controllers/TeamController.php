@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TeamInvitation;
 use Auth;
 use App\Models\Team;
 use App\Models\Application;
@@ -16,7 +17,7 @@ class TeamController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api')->except('invitation');
     }
 
     /**
@@ -142,5 +143,22 @@ class TeamController extends Controller
             'status' => 'fail',
             'message' => $this->generateErrorMessage('team', 503, 'delete')
         ], 503);
+    }
+
+    public function invitation($token)
+    {
+        $teamInvitation = TeamInvitation::where([
+            'token' => $token
+        ])->first();
+
+        // Send error if token does not exist
+        if (!$teamInvitation) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Invalid token.'
+            ], 404);
+        }
+
+
     }
 }
