@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TeamInvitation;
 use Auth;
-use App\Models\Team;
+use App\Models\User;
 use App\Models\Application;
+use App\Models\TeamInvitation;
+use App\Models\UserTeam;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -17,7 +18,7 @@ class TeamController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api')->except('invitation');
+        $this->middleware('auth:api', ['except' => ['invitation']]);
     }
 
     /**
@@ -159,6 +160,33 @@ class TeamController extends Controller
             ], 404);
         }
 
+        // Send request to create if the user is not registered
+        $user = User::where('email', $teamInvitation->invitee);
+        if (!$user) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User need to create account.'
+            ], 201);
+        }
 
+        if (UserTeam::create([
+            'user_id' => $user->id,
+            'team_id' => $teamInvitation->team_id,
+            'role' => $teamInvitation->role
+        ])) {
+            $teamInvitation->token = null;
+            $teamInvitation->status = 1;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Invitation has been successfully accepted.'
+            ], 200);
+        };
+
+        // Send error
+        return response()->json([
+            'status' => 'fail',
+            'message' => 'You cannot accept the invitation now. Please try again later.'
+        ], 503);
     }
 }
