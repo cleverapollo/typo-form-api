@@ -34,6 +34,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->get('/', 'ApplicationController@index');
         $router->post('/', 'ApplicationController@store');
         $router->get('{id}', 'ApplicationController@show');
+        $router->get('{id}/users', 'ApplicationController@getUsers');
         $router->put('{id}', 'ApplicationController@update');
         $router->delete('{id}', 'ApplicationController@destroy');
 

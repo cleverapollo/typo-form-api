@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\Application;
 use App\Models\ApplicationUser;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\ApplicationResource;
 use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
@@ -29,7 +31,7 @@ class ApplicationController extends Controller
         $applications = Auth::user()->applications()->get();
         return response()->json([
             'status' => 'success',
-            'applications' => $applications
+            'applications' => ApplicationResource::collection($applications)
         ], 200);
     }
 
@@ -64,7 +66,7 @@ class ApplicationController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'application' => $application
+                'application' => new ApplicationResource($application)
             ], 200);
         }
 
@@ -87,13 +89,36 @@ class ApplicationController extends Controller
         if ($application) {
             return response()->json([
                 'status' => 'success',
-                'application' => $application
+                'application' => new ApplicationResource($application)
             ], 200);
         }
 
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('application', 404, 'show')
+        ], 404);
+    }
+
+    /**
+     * Get users for the Application.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function getUsers($id)
+    {
+        $application = Application::find($id);
+        if ($application) {
+            $users = $application->users()->get();
+            return response()->json([
+                'status' => 'success',
+                'users' => UserResource::collection($users)
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('application', 404, 'show users')
         ], 404);
     }
 
@@ -137,7 +162,7 @@ class ApplicationController extends Controller
         if ($application->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
-                'application' => $application
+                'application' => new ApplicationResource($application)
             ], 200);
         }
 
