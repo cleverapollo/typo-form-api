@@ -109,6 +109,19 @@ class ApplicationController extends Controller
     {
         $application = Application::find($id);
         if ($application) {
+            // Check whether user have permission to delete
+            $user = Auth::user();
+            $role = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->value('role');
+            if ($user->role != "SuperAdmin" && $role != "Admin") {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'You do not have permission to see the users of application.'
+                ], 403);
+            }
+
             $users = $application->users()->get();
             return response()->json([
                 'status' => 'success',
@@ -184,7 +197,7 @@ class ApplicationController extends Controller
         $user = Auth::user();
         $application = Application::find($id);
 
-        // Check whether user have permission to update
+        // Check whether user have permission to delete
         $role = ApplicationUser::where([
             'user_id' => $user->id,
             'application_id' => $application->id
