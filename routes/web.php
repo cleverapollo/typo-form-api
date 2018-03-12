@@ -44,6 +44,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->get('/', 'TeamController@index');
             $router->post('/', 'TeamController@store');
             $router->get('{id}', 'TeamController@show');
+            $router->get('{id}/users', 'TeamController@getUsers');
             $router->put('{id}', 'TeamController@update');
             $router->delete('{id}', 'TeamController@destroy');
         });

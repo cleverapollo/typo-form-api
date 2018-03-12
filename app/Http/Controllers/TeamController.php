@@ -7,6 +7,8 @@ use App\User;
 use App\Models\Application;
 use App\Models\TeamInvitation;
 use App\Models\UserTeam;
+use App\Http\Resources\TeamResource;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -32,7 +34,7 @@ class TeamController extends Controller
         $teams = Application::find($application_id)->teams()->get();
         return response()->json([
             'status' => 'success',
-            'teams' => $teams
+            'teams' => TeamResource::collection($teams)
         ], 200);
     }
 
@@ -63,7 +65,7 @@ class TeamController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'team' => new TeamResource($team)
             ], 200);
         }
         return response()->json([
@@ -85,12 +87,36 @@ class TeamController extends Controller
         if ($team) {
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'team' => new TeamResource($team)
             ], 200);
         }
         return response()->json([
             'status' => 'fail',
             'message' => $this->generateErrorMessage('team', 404, 'show')
+        ], 404);
+    }
+
+    /**
+     * Get users for the Team.
+     *
+     * @param  int $application_id
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function getUsers($application_id, $id)
+    {
+        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+        if ($team) {
+            $users = $team->users()->get();
+            return response()->json([
+                'status' => 'success',
+                'users' => UserResource::collection($users)
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('team', 404, 'show users')
         ], 404);
     }
 
@@ -118,7 +144,7 @@ class TeamController extends Controller
         if ($team->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
-                'team' => $team
+                'team' => new TeamResource($team)
             ], 200);
         }
         return response()->json([

@@ -20,7 +20,7 @@ class ApplicationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api', ['except' => ['invitation']]);
     }
 
     /**
@@ -111,7 +111,7 @@ class ApplicationController extends Controller
     {
         $application = Application::find($id);
         if ($application) {
-            // Check whether user have permission to delete
+            // Check whether user have permission to get
             $user = Auth::user();
             $role = ApplicationUser::where([
                 'user_id' => $user->id,
