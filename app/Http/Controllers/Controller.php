@@ -122,9 +122,14 @@ class Controller extends BaseController
             ], 201);
         }
 
+        if ($type == 'team') {
+            $dataId = $invitation->team_id;
+        } else {
+            $dataId = $invitation->application_id;
+        }
         if (DB::table($type . '_users')->create([
             'user_id' => $user->id,
-            $type . '_id' => $invitation[$type . '_id'],
+            $type . '_id' => $dataId,
             'role' => $invitation->role
         ])) {
             $invitation->token = null;
