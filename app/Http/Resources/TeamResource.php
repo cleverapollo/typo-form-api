@@ -19,6 +19,7 @@ class TeamResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'application_id' => $this->application_id,
+            'role' => $this->role,
             'pivot' => $this->pivot
         ];
     }
