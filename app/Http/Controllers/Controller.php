@@ -124,7 +124,7 @@ class Controller extends BaseController
 
         if (DB::table($type . '_users')->create([
             'user_id' => $user->id,
-            $type . '_id' => $invitation->team_id,
+            $type . '_id' => $invitation[$type . '_id'],
             'role' => $invitation->role
         ])) {
             $invitation->token = null;
