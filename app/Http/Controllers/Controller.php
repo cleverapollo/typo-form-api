@@ -127,14 +127,15 @@ class Controller extends BaseController
         } else {
             $dataId = $invitation->application_id;
         }
-        if (DB::table($type . '_users')->create([
+        if (DB::table($type . '_users')->insert([
             'user_id' => $user->id,
             $type . '_id' => $dataId,
             'role' => $invitation->role
         ])) {
-            $invitation->token = null;
-            $invitation->status = 1;
-            $invitation->save();
+            DB::table($type . '_invitations')->where('id', $invitation->id)->update([
+                'token' => null,
+                'status' => 1
+            ]);
 
             return response()->json([
                 'status' => 'success',
