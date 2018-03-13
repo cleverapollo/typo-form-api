@@ -77,35 +77,32 @@ class Controller extends BaseController
      */
     protected function generateInvitationLink($type, $data)
     {
-//        if ($invitations && count($invitations) > 0) {
-//            foreach ($invitations as $invitation) {
-//                $token = base64_encode(str_random(40));
-//                while (!is_null(DB::table($type . '_invitations')->where('token', $token)->first())) {
-//                    $token = base64_encode(str_random(40));
-//                }
-//
-//                // Input to the invitations table
-//                DB::table($type . '_invitations')->insert([
-//                    'inviter_id' => $user->id,
-//                    'invitee' => $invitation['email'],
-//                    $type . '_id' => $data->id,
-//                    'role' => $invitation['role'],
-//                    'token' => $token
-//                ]);
-//
-//                // Send email to the invitee
-//                Mail::send('emails.invitation', [
-//                    'type' => $type,
-//                    'name' => $data->name,
-//                    'userName' => $user->first_name . " " . $user->last_name,
-//                    'role' => $invitation['role'],
-//                    'token' => $token
-//                ], function ($message) use ($invitation) {
-//                    $message->from('info@informed365.com', 'Informed 365');
-//                    $message->to($invitation['email']);
-//                });
-//            }
-//        }
+        $user = Auth::user();
+        $token = base64_encode(str_random(40));
+        while (!is_null(DB::table($type . '_invitations')->where('token', $token)->first())) {
+            $token = base64_encode(str_random(40));
+        }
+
+//        // Input to the invitations table
+//        DB::table($type . '_invitations')->insert([
+//            'inviter_id' => $user->id,
+//            'invitee' => $invitation['email'],
+//            $type . '_id' => $data->id,
+//            'role' => $invitation['role'],
+//            'token' => $token
+//        ]);
+
+//        // Send email to the invitee
+//        Mail::send('emails.invitation', [
+//            'type' => $type,
+//            'name' => $data->name,
+//            'userName' => $user->first_name . " " . $user->last_name,
+//            'role' => $invitation['role'],
+//            'token' => $token
+//        ], function ($message) use ($invitation) {
+//            $message->from('info@informed365.com', 'Informed 365');
+//            $message->to($invitation['email']);
+//        });
     }
 
     /**

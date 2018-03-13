@@ -49,8 +49,7 @@ class TeamController extends Controller
             'name' => 'required|max:191'
         ]);
 
-        $user = Auth::user();
-        $team = $user->teams()->create([
+        $team = Auth::user()->teams()->create([
             'name' => $request->input('name'),
             'description' => $request->input('description', null),
             'application_id' => $application_id
@@ -210,6 +209,20 @@ class TeamController extends Controller
     {
         $team = Application::find($application_id)->teams()->where('id', $id)->first();
         if ($team) {
+            $user = Auth::user();
+
+            // Check whether user have permission to generate invitation link
+            $role = TeamUser::where([
+                'user_id' => $user->id,
+                'team_id' => $team->id
+            ])->value('role');
+            if ($user->role != "SuperAdmin" && $role != "Admin") {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'You do not have permission to delete team.'
+                ], 403);
+            }
+
             $this->generateInvitationLink('team', $team);
         }
         return response()->json([
