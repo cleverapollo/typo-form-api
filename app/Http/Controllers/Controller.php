@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Carbon\Carbon;
 use App\User;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -72,7 +73,9 @@ class Controller extends BaseController
                         'invitee' => $invitation['email'],
                         $type . '_id' => $data->id,
                         'role' => $invitation['role'],
-                        'token' => $token
+                        'token' => $token,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
                     ]);
 
                     // Send email to the invitee
@@ -130,11 +133,14 @@ class Controller extends BaseController
         if (DB::table($type . '_users')->insert([
             'user_id' => $user->id,
             $type . '_id' => $dataId,
-            'role' => $invitation->role
+            'role' => $invitation->role,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
         ])) {
             DB::table($type . '_invitations')->where('id', $invitation->id)->update([
                 'token' => null,
-                'status' => 1
+                'status' => 1,
+                'updated_at' => Carbon::now()
             ]);
 
             return response()->json([
