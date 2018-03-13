@@ -87,7 +87,11 @@ class TeamController extends Controller
      */
     public function show($application_id, $id)
     {
-        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+        $team = Auth::user()->teams()->where([
+            'id' => $id,
+            'application_id' => $application_id
+        ])->first();
+
         if ($team) {
             return response()->json([
                 'status' => 'success',
