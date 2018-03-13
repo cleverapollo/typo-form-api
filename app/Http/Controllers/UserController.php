@@ -67,7 +67,7 @@ class UserController extends Controller
      */
     public function destroy()
     {
-        if (Auth::user()->destroy()) {
+        if (Auth::user()->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
         return response()->json([
