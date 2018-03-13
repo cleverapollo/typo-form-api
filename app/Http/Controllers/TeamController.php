@@ -19,7 +19,7 @@ class TeamController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['invitation']]);
+        $this->middleware('auth:api', ['except' => ['invitation', 'join']]);
     }
 
     /**
@@ -206,7 +206,7 @@ class TeamController extends Controller
     }
 
     /**
-     * Get Team invitation token
+     * Get Team invitation token.
      *
      * @param $application_id
      * @param $id
@@ -242,12 +242,24 @@ class TeamController extends Controller
     }
 
     /**
-     * Accept invitation request
+     * Accept invitation request.
      *
      * @param $token
      */
     public function invitation($token)
     {
         $this->acceptInvitation('team', $token);
+    }
+
+    /**
+     * Join to the Team.
+     *
+     * @param $token
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function join($token, Request $request)
+    {
+
     }
 }

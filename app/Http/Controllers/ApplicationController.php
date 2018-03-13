@@ -18,7 +18,7 @@ class ApplicationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['invitation']]);
+        $this->middleware('auth:api', ['except' => ['invitation', 'join']]);
     }
 
     /**
@@ -226,7 +226,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Get Application invitation token
+     * Get Application invitation token.
      *
      * @param $id
      * @return \Illuminate\Http\JsonResponse
@@ -261,12 +261,24 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Accept invitation request
+     * Accept invitation request.
      *
      * @param $token
      */
     public function invitation($token)
     {
         $this->acceptInvitation('application', $token);
+    }
+
+    /**
+     * Join to the Application.
+     *
+     * @param $token
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function join($token, Request $request)
+    {
+
     }
 }

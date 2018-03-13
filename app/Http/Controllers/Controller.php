@@ -14,22 +14,23 @@ class Controller extends BaseController
     use AuthorizesRequests;
 
     /**
-     * Generate error message for status and action
+     * Generate error message for status and action.
      *
      * @param  $data
      * @param  $status
      * @param  $action
      * @return string
      */
-    protected function generateErrorMessage($data, $status, $action) {
+    protected function generateErrorMessage($data, $status, $action)
+    {
         if ($status == 404) {
             return 'There is no ' . $data . ' with this ID.';
         }
-        return 'Failed to ' . $action . ' '. $data . '. Please try again later.';
+        return 'Failed to ' . $action . ' ' . $data . '. Please try again later.';
     }
 
     /**
-     * Send invitation
+     * Send invitation.
      *
      * @param $type
      * @param $data
@@ -45,32 +46,53 @@ class Controller extends BaseController
                     $token = base64_encode(str_random(40));
                 }
 
-                // Input to the invitations table
-                DB::table($type . '_invitations')->insert([
-                    'inviter_id' => $user->id,
-                    'invitee' => $invitation['email'],
-                    $type . '_id' => $data->id,
-                    'role' => $invitation['role'],
-                    'token' => $token
-                ]);
+                // Check if user is already included in the Team or Application
+                $invitee = User::where('email', $invitation['email'])->first();
+                if ($invitee) {
+                    $isIncluded = DB::table($type . '_users')->where([
+                        'user_id' => $invitee->id,
+                        $type . '_id' => $data->id
+                    ])->first();
 
-                // Send email to the invitee
-                Mail::send('emails.invitation', [
-                    'type' => $type,
-                    'name' => $data->name,
-                    'userName' => $user->first_name . " " . $user->last_name,
-                    'role' => $invitation['role'],
-                    'token' => $token
-                ], function ($message) use ($invitation) {
-                    $message->from('info@informed365.com', 'Informed 365');
-                    $message->to($invitation['email']);
-                });
+                    if ($isIncluded) {
+                        continue;
+                    }
+                }
+
+                // Check if the user is already invited
+                $previousInvitation = DB::table($type . '_invitations')->where([
+                    'invitee' => $invitation['email'],
+                    $type . '_id' => $data->id
+                ])->first();
+
+                if (!$previousInvitation) {
+                    // Input to the invitations table
+                    DB::table($type . '_invitations')->insert([
+                        'inviter_id' => $user->id,
+                        'invitee' => $invitation['email'],
+                        $type . '_id' => $data->id,
+                        'role' => $invitation['role'],
+                        'token' => $token
+                    ]);
+
+                    // Send email to the invitee
+                    Mail::send('emails.invitation', [
+                        'type' => $type,
+                        'name' => $data->name,
+                        'userName' => $user->first_name . " " . $user->last_name,
+                        'role' => $invitation['role'],
+                        'token' => $token
+                    ], function ($message) use ($invitation) {
+                        $message->from('info@informed365.com', 'Informed 365');
+                        $message->to($invitation['email']);
+                    });
+                }
             }
         }
     }
 
     /**
-     * Accept invitation request
+     * Accept invitation request.
      *
      * @param $type
      * @param $token
@@ -79,7 +101,8 @@ class Controller extends BaseController
     protected function acceptInvitation($type, $token)
     {
         $invitation = DB::table($type . '_invitations')->where([
-            'token' => $token
+            'token' => $token,
+            'status' => 0
         ])->first();
 
         // Send error if token does not exist
