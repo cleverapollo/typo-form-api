@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddShareableLinkToApplicationsTable extends Migration
+class AddShareTokenToApplicationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddShareableLinkToApplicationsTable extends Migration
     public function up()
     {
         Schema::table('applications', function (Blueprint $table) {
-            $table->string('shareable_link')->unique()->after('name');
+            $table->string('share_token')->unique()->after('name');
         });
     }
 
@@ -26,7 +26,7 @@ class AddShareableLinkToApplicationsTable extends Migration
     public function down()
     {
         Schema::table('applications', function (Blueprint $table) {
-            $table->dropColumn('shareable_link');
+            $table->dropColumn('share_token');
         });
     }
 }

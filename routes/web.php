@@ -37,6 +37,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/', 'ApplicationController@store');
         $router->get('{id}', 'ApplicationController@show');
         $router->get('{id}/users', 'ApplicationController@getUsers');
+        $router->post('{id}/invite', 'TeamController@getInvitationToken');
         $router->put('{id}', 'ApplicationController@update');
         $router->delete('{id}', 'ApplicationController@destroy');
 
@@ -45,7 +46,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->post('/', 'TeamController@store');
             $router->get('{id}', 'TeamController@show');
             $router->get('{id}/users', 'TeamController@getUsers');
-            $router->post('{id}/invite', 'TeamController@generateInvitation');
+            $router->post('{id}/invite', 'TeamController@getInvitationToken');
             $router->put('{id}', 'TeamController@update');
             $router->delete('{id}', 'TeamController@destroy');
         });

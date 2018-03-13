@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\Models\Team;
 use App\Models\Application;
 use App\Models\TeamUser;
 use App\Http\Resources\TeamResource;
@@ -49,10 +50,16 @@ class TeamController extends Controller
             'name' => 'required|max:191'
         ]);
 
+        $share_token = base64_encode(str_random(40));
+        while (!is_null(Team::where('share_token', $share_token)->first())) {
+            $share_token = base64_encode(str_random(40));
+        }
+
         $team = Auth::user()->teams()->create([
             'name' => $request->input('name'),
             'description' => $request->input('description', null),
-            'application_id' => $application_id
+            'application_id' => $application_id,
+            'share_token' => $share_token
         ]);
 
         if ($team) {
@@ -199,19 +206,19 @@ class TeamController extends Controller
     }
 
     /**
-     * Generate Team invitation link
+     * Get Team invitation token
      *
      * @param $application_id
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateInvitation($application_id, $id)
+    public function getInvitationToken($application_id, $id)
     {
         $team = Application::find($application_id)->teams()->where('id', $id)->first();
         if ($team) {
             $user = Auth::user();
 
-            // Check whether user have permission to generate invitation link
+            // Check whether user have permission to get invitation token
             $role = TeamUser::where([
                 'user_id' => $user->id,
                 'team_id' => $team->id
@@ -219,15 +226,18 @@ class TeamController extends Controller
             if ($user->role != "SuperAdmin" && $role != "Admin") {
                 return response()->json([
                     'status' => 'fail',
-                    'message' => 'You do not have permission to delete team.'
+                    'message' => 'You do not have permission to get invitation token.'
                 ], 403);
             }
 
-            $this->generateInvitationLink('team', $team);
+            return response()->json([
+                'status' => 'success',
+                'shareToken' => $team->share_token
+            ], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 404, 'send invitation')
+            'message' => $this->generateErrorMessage('team', 404, 'get invitation token')
         ], 404);
     }
 

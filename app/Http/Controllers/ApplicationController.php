@@ -47,9 +47,8 @@ class ApplicationController extends Controller
             'name' => 'required|max:191'
         ]);
 
-        $user = Auth::user();
-
         // Check whether user is SuperAdmin or not
+        $user = Auth::user();
         if ($user->role != "SuperAdmin") {
             return response()->json([
                 'status' => 'fail',
@@ -57,8 +56,16 @@ class ApplicationController extends Controller
             ], 403);
         }
 
+        $share_token = base64_encode(str_random(40));
+        while (!is_null(Application::where('share_token', $share_token)->first())) {
+            $share_token = base64_encode(str_random(40));
+        }
+
         // Create application
-        $application = $user->applications()->create($request->only(['name']));
+        $application = $user->applications()->create([
+            'name' => $request->input('name'),
+            'share_token' => $share_token
+        ]);
         if ($application) {
             // Send invitation
             $invitations = $request->input('invitations', []);
@@ -219,20 +226,37 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Generate Application invitation link
+     * Get Application invitation token
      *
-     * @param $application_id
+     * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function generateInvitation($application_id)
+    public function getInvitationToken($id)
     {
-        $application = Application::find($application_id);
+        $application = Application::find($id);
         if ($application) {
-            $this->generateInvitationLink('application', $application);
+            $user = Auth::user();
+
+            // Check whether user have permission to get invitation token
+            $role = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->value('role');
+            if ($user->role != "SuperAdmin" && $role != "Admin") {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'You do not have permission to get invitation token.'
+                ], 403);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'shareToken' => $application->share_token
+            ], 200);
         }
         return response()->json([
             'status' => 'fail',
-            'message' => $this->generateErrorMessage('application', 404, 'send invitation')
+            'message' => $this->generateErrorMessage('application', 404, 'get invitation token')
         ], 404);
     }
 

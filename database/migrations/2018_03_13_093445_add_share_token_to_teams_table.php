@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddShareableLinkToTeamsTable extends Migration
+class AddShareTokenToTeamsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddShareableLinkToTeamsTable extends Migration
     public function up()
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->string('shareable_link')->unique()->after('application_id');
+            $table->string('share_token')->unique()->after('application_id');
         });
     }
 
@@ -26,7 +26,7 @@ class AddShareableLinkToTeamsTable extends Migration
     public function down()
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->dropColumn('shareable_link');
+            $table->dropColumn('share_token');
         });
     }
 }
