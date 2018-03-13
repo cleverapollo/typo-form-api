@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use Illuminate\Http\Request;
@@ -64,7 +62,7 @@ class ApplicationController extends Controller
         if ($application) {
             // Send invitation
             $invitations = $request->input('invitations', []);
-            $this->sendInvitation('application', $application, $user, $invitations);
+            $this->sendInvitation('application', $application, $invitations);
 
             return response()->json([
                 'status' => 'success',
@@ -221,53 +219,30 @@ class ApplicationController extends Controller
     }
 
     /**
+     * Generate Application invitation link
+     *
+     * @param $application_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function generateInvitation($application_id)
+    {
+        $application = Application::find($application_id);
+        if ($application) {
+            $this->generateInvitationLink('application', $application);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('application', 404, 'send invitation')
+        ], 404);
+    }
+
+    /**
      * Accept invitation request
      *
      * @param $token
-     * @return \Illuminate\Http\JsonResponse
      */
     public function invitation($token)
     {
-        $applicationInvitation = ApplicationInvitation::where([
-            'token' => $token
-        ])->first();
-
-        // Send error if token does not exist
-        if (!$applicationInvitation) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Invalid token.'
-            ], 404);
-        }
-
-        // Send request to create if the user is not registered
-        $user = User::where('email', $applicationInvitation->invitee)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'User need to create account.'
-            ], 201);
-        }
-
-        if (ApplicationUser::create([
-            'user_id' => $user->id,
-            'application_id' => $applicationInvitation->team_id,
-            'role' => $applicationInvitation->role
-        ])) {
-            $applicationInvitation->token = null;
-            $applicationInvitation->status = 1;
-            $applicationInvitation->save();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Invitation has been successfully accepted.'
-            ], 200);
-        };
-
-        // Send error
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'You cannot accept the invitation now. Please try again later.'
-        ], 503);
+        $this->acceptInvitation('application', $token);
     }
 }

@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
 use App\Models\Application;
-use App\Models\TeamInvitation;
-use App\Models\UserTeam;
+use App\Models\TeamUser;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -61,7 +59,7 @@ class TeamController extends Controller
         if ($team) {
             // Send invitation
             $invitations = $request->input('invitations', []);
-            $this->sendInvitation('team', $team, $user, $invitations);
+            $this->sendInvitation('team', $team, $invitations);
 
             return response()->json([
                 'status' => 'success',
@@ -141,6 +139,20 @@ class TeamController extends Controller
                 'message' => $this->generateErrorMessage('team', 404, 'update')
             ], 404);
         }
+
+        // Check whether user have permission to update
+        $user = Auth::user();
+        $role = TeamUser::where([
+            'user_id' => $user->id,
+            'team_id' => $team->id
+        ])->value('role');
+        if ($user->role != "SuperAdmin" && $role != "Admin") {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to update the team.'
+            ], 403);
+        }
+
         if ($team->fill($request->all())->save()) {
             return response()->json([
                 'status' => 'success',
@@ -162,7 +174,22 @@ class TeamController extends Controller
      */
     public function destroy($application_id, $id)
     {
-        if (Application::find($application_id)->teams()->where('id', $id)->delete()) {
+        $user = Auth::user();
+        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+
+        // Check whether user have permission to delete
+        $role = TeamUser::where([
+            'user_id' => $user->id,
+            'team_id' => $team->id
+        ])->value('role');
+        if ($user->role != "SuperAdmin" && $role != "Admin") {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'You do not have permission to delete team.'
+            ], 403);
+        }
+
+        if ($team->delete()) {
             return response()->json(['status' => 'success'], 200);
         }
 
@@ -173,53 +200,31 @@ class TeamController extends Controller
     }
 
     /**
+     * Generate Team invitation link
+     *
+     * @param $application_id
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function generateInvitation($application_id, $id)
+    {
+        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+        if ($team) {
+            $this->generateInvitationLink('team', $team);
+        }
+        return response()->json([
+            'status' => 'fail',
+            'message' => $this->generateErrorMessage('team', 404, 'send invitation')
+        ], 404);
+    }
+
+    /**
      * Accept invitation request
      *
      * @param $token
-     * @return \Illuminate\Http\JsonResponse
      */
     public function invitation($token)
     {
-        $teamInvitation = TeamInvitation::where([
-            'token' => $token
-        ])->first();
-
-        // Send error if token does not exist
-        if (!$teamInvitation) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Invalid token.'
-            ], 404);
-        }
-
-        // Send request to create if the user is not registered
-        $user = User::where('email', $teamInvitation->invitee)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'User need to create account.'
-            ], 201);
-        }
-
-        if (UserTeam::create([
-            'user_id' => $user->id,
-            'team_id' => $teamInvitation->team_id,
-            'role' => $teamInvitation->role
-        ])) {
-            $teamInvitation->token = null;
-            $teamInvitation->status = 1;
-            $teamInvitation->save();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Invitation has been successfully accepted.'
-            ], 200);
-        };
-
-        // Send error
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'You cannot accept the invitation now. Please try again later.'
-        ], 503);
+        $this->acceptInvitation('team', $token);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserTeam extends Model
+class TeamUser extends Model
 {
     /**
      * The attributes that are mass assignable.
