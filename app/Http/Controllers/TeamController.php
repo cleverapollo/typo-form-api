@@ -30,7 +30,9 @@ class TeamController extends Controller
      */
     public function index($application_id)
     {
-        $teams = Application::find($application_id)->teams()->get();
+        $teams = Auth::user()->teams()->where([
+            'application_id' => $application_id
+        ])->get();
         return response()->json([
             'status' => 'success',
             'teams' => TeamResource::collection($teams)
@@ -88,7 +90,7 @@ class TeamController extends Controller
     public function show($application_id, $id)
     {
         $team = Auth::user()->teams()->where([
-            'id' => $id,
+            'team_id' => $id,
             'application_id' => $application_id
         ])->first();
 
