@@ -19,7 +19,9 @@ class TeamResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'application_id' => $this->application_id,
-            'pivot' => $this->pivot
+            'pivot' => $this->whenPivotLoaded('team_users', function () {
+	            return $this->pivot;
+            })
         ];
     }
 }

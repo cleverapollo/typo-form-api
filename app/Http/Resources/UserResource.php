@@ -20,7 +20,12 @@ class UserResource extends JsonResource
             'last_name' => $this->last_name,
             'email' => $this->email,
             'role' => $this->role,
-            'pivot' => $this->pivot
+            'team_pivot' => $this->whenPivotLoaded('team_users', function () {
+	            return $this->pivot;
+            }),
+            'application_pivot' => $this->whenPivotLoaded('application_users', function () {
+	            return $this->pivot;
+            })
         ];
     }
 }
