@@ -43,7 +43,7 @@ class Controller extends BaseController
             $user = Auth::user();
             foreach ($invitations as $invitation) {
                 $token = base64_encode(str_random(40));
-                while (!is_null(DB::table($type . '_invitations')->where('token', $token)->first())) {
+                while (DB::table($type . '_invitations')->where('token', $token)->first()) {
                     $token = base64_encode(str_random(40));
                 }
 
@@ -103,7 +103,10 @@ class Controller extends BaseController
      */
     protected function acceptInvitation($type, $token)
     {
+	    $user = Auth::user();
+
         $invitation = DB::table($type . '_invitations')->where([
+        	'invitee' => $user->email,
             'token' => $token,
             'status' => 0
         ])->first();
@@ -113,23 +116,26 @@ class Controller extends BaseController
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Invalid token.'
-            ], 404);
+            ], 403);
         }
 
-        // Send request to create if the user is not registered
-        $user = User::where('email', $invitation->invitee)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'User need to create account.'
-            ], 201);
+	    if ($type == 'team') {
+		    $dataId = $invitation->team_id;
+	    } else {
+		    $dataId = $invitation->application_id;
+	    }
+
+	    // Send error if user already exists in the Team or Application
+        if (DB::table($type . '_users')->where([
+        	'user_id' => $user->id,
+            $type . '_id' => $dataId
+        ])->first()) {
+	        return response()->json([
+		        'status' => 'fail',
+		        'message' => 'User is already included in the ' . $type
+	        ], 403);
         }
 
-        if ($type == 'team') {
-            $dataId = $invitation->team_id;
-        } else {
-            $dataId = $invitation->application_id;
-        }
         if (DB::table($type . '_users')->insert([
             'user_id' => $user->id,
             $type . '_id' => $dataId,
@@ -137,6 +143,7 @@ class Controller extends BaseController
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ])) {
+        	// Remove token and update status at invitations table
             DB::table($type . '_invitations')->where('id', $invitation->id)->update([
                 'token' => null,
                 'status' => 1,
@@ -155,4 +162,63 @@ class Controller extends BaseController
             'message' => 'You cannot accept the invitation now. Please try again later.'
         ], 503);
     }
+
+	/**
+	 * Accept invitation request.
+	 *
+	 * @param $type
+	 * @param $token
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	protected function acceptJoin($type, $token)
+	{
+		$user = Auth::user();
+
+		$data = DB::table($type . 's')->where([
+			'share_token' => $token,
+		])->first();
+
+		// Send error if token does not exist
+		if (!$data) {
+			return response()->json([
+				'status' => 'fail',
+				'message' => 'Invalid token.'
+			], 403);
+		}
+
+		if ($type == 'team') {
+			$dataId = $data->team_id;
+		} else {
+			$dataId = $data->application_id;
+		}
+
+		// Send error if user already exists in the Team or Application
+		if (DB::table($type . '_users')->where([
+			'user_id' => $user->id,
+			$type . '_id' => $dataId
+		])->first()) {
+			return response()->json([
+				'status' => 'fail',
+				'message' => 'User is already included in the ' . $type
+			], 403);
+		}
+
+		if (DB::table($type . '_users')->insert([
+			'user_id' => $user->id,
+			$type . '_id' => $dataId,
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now()
+		])) {
+			return response()->json([
+				'status' => 'success',
+				'message' => 'You have joined the ' . $type . ' successfully.'
+			], 200);
+		};
+
+		// Send error
+		return response()->json([
+			'status' => 'fail',
+			'message' => 'You cannot join the ' . $type . ' right now. Please try again later.'
+		], 503);
+	}
 }

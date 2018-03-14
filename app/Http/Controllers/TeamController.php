@@ -262,11 +262,10 @@ class TeamController extends Controller
      * Join to the Team.
      *
      * @param $token
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function join($token, Request $request)
+    public function join($token)
     {
-
+	    return $this->acceptJoin('team', $token);
     }
 }

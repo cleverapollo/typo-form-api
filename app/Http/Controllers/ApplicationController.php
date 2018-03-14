@@ -264,21 +264,21 @@ class ApplicationController extends Controller
      * Accept invitation request.
      *
      * @param $token
+     * @return \Illuminate\Http\JsonResponse
      */
     public function invitation($token)
     {
-        $this->acceptInvitation('application', $token);
+        return $this->acceptInvitation('application', $token);
     }
 
     /**
      * Join to the Application.
      *
      * @param $token
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function join($token, Request $request)
+    public function join($token)
     {
-
+	    return $this->acceptJoin('application', $token);
     }
 }
