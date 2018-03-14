@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\Models\Team;
-use App\Models\Application;
 use App\Models\TeamUser;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
@@ -33,10 +32,7 @@ class TeamController extends Controller
         $teams = Auth::user()->teams()->where([
             'application_id' => $application_id
         ])->get();
-        return response()->json([
-            'status' => 'success',
-            'teams' => TeamResource::collection($teams)
-        ], 200);
+        return $this->returnSuccessMessage('teams', TeamResource::collection($teams));
     }
 
     /**
@@ -44,7 +40,7 @@ class TeamController extends Controller
      *
      * @param  int $application_id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store($application_id, Request $request)
     {
@@ -69,15 +65,11 @@ class TeamController extends Controller
             $invitations = $request->input('invitations', []);
             $this->sendInvitation('team', $team, $invitations);
 
-            return response()->json([
-                'status' => 'success',
-                'team' => new TeamResource($team)
-            ], 200);
+            return $this->returnSuccessMessage('team', new TeamResource($team));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'store')
-        ], 503);
+
+	    // Send error if team is not created
+	    return $this->returnErrorMessage('team', 503, 'create');
     }
 
     /**
@@ -85,7 +77,7 @@ class TeamController extends Controller
      *
      * @param  int $application_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($application_id, $id)
     {
@@ -95,15 +87,11 @@ class TeamController extends Controller
         ])->first();
 
         if ($team) {
-            return response()->json([
-                'status' => 'success',
-                'team' => new TeamResource($team)
-            ], 200);
+	        return $this->returnSuccessMessage('team', new TeamResource($team));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 404, 'show')
-        ], 404);
+
+	    // Send error if application does not exist
+	    return $this->returnErrorMessage('team', 404, 'show');
     }
 
     /**
@@ -111,23 +99,22 @@ class TeamController extends Controller
      *
      * @param  int $application_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getUsers($application_id, $id)
     {
-        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+	    $team = Auth::user()->teams()->where([
+		    'team_id' => $id,
+		    'application_id' => $application_id
+	    ])->first();
+
         if ($team) {
             $users = $team->users()->get();
-            return response()->json([
-                'status' => 'success',
-                'users' => UserResource::collection($users)
-            ], 200);
+	        return $this->returnSuccessMessage('users', UserResource::collection($users));
         }
 
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 404, 'show users')
-        ], 404);
+	    // Send error if application does not exist
+	    return $this->returnErrorMessage('team', 404, 'show users');
     }
 
     /**
@@ -136,7 +123,7 @@ class TeamController extends Controller
      * @param  int $application_id
      * @param  int $id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update($application_id, $id, Request $request)
     {
@@ -144,37 +131,29 @@ class TeamController extends Controller
             'name' => 'filled'
         ]);
 
-        $team = Application::find($application_id)->teams()->where('id', $id)->first();
-        if (!$team) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('team', 404, 'update')
-            ], 404);
-        }
-
-        // Check whether user have permission to update
         $user = Auth::user();
-        $role = TeamUser::where([
-            'user_id' => $user->id,
-            'team_id' => $team->id
-        ])->value('role');
-        if ($user->role != "SuperAdmin" && $role != "Admin") {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'You do not have permission to update the team.'
-            ], 403);
+	    $team = $user->teams()->where([
+		    'team_id' => $id,
+		    'application_id' => $application_id
+	    ])->first();
+
+	    // Send error if team does not exist
+	    if (!$team) {
+		    return $this->returnErrorMessage('team', 404, 'update');
+	    }
+
+	    // Check whether user has permission to update
+	    if (!$this->hasPermission($user, $team)) {
+		    return $this->returnErrorMessage('team', 403, 'update');
+	    }
+
+	    // Update team
+        if ($team->fill($request->all())->save()) {
+	        return $this->returnSuccessMessage('team', new TeamResource($team));
         }
 
-        if ($team->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'team' => new TeamResource($team)
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'update')
-        ], 503);
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('team', 503, 'update');
     }
 
     /**
@@ -182,33 +161,27 @@ class TeamController extends Controller
      *
      * @param  int $application_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($application_id, $id)
     {
         $user = Auth::user();
-        $team = Application::find($application_id)->teams()->where('id', $id)->first();
+	    $team = $user->teams()->where([
+		    'team_id' => $id,
+		    'application_id' => $application_id
+	    ])->first();
 
-        // Check whether user have permission to delete
-        $role = TeamUser::where([
-            'user_id' => $user->id,
-            'team_id' => $team->id
-        ])->value('role');
-        if ($user->role != "SuperAdmin" && $role != "Admin") {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'You do not have permission to delete team.'
-            ], 403);
-        }
+	    // Check whether user has permission to delete
+	    if (!$this->hasPermission($user, $team)) {
+		    return $this->returnErrorMessage('team', 403, 'delete');
+	    }
 
         if ($team->delete()) {
-            return response()->json(['status' => 'success'], 200);
+	        return $this->returnSuccessMessage('message', 'Team has been deleted successfully.');
         }
 
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 503, 'delete')
-        ], 503);
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('team', 503, 'delete');
     }
 
     /**
@@ -220,32 +193,57 @@ class TeamController extends Controller
      */
     public function getInvitationToken($application_id, $id)
     {
-        $team = Application::find($application_id)->teams()->where('id', $id)->first();
-        if ($team) {
-            $user = Auth::user();
+	    $user = Auth::user();
+	    $team = $user->teams()->where([
+		    'team_id' => $id,
+		    'application_id' => $application_id
+	    ])->first();
 
-            // Check whether user have permission to get invitation token
-            $role = TeamUser::where([
-                'user_id' => $user->id,
-                'team_id' => $team->id
-            ])->value('role');
-            if ($user->role != "SuperAdmin" && $role != "Admin") {
-                return response()->json([
-                    'status' => 'fail',
-                    'message' => 'You do not have permission to get invitation token.'
-                ], 403);
-            }
+	    // Send error if team does not exist
+	    if (!$team) {
+		    return $this->returnErrorMessage('team', 404, 'get invitation token');
+	    }
 
-            return response()->json([
-                'status' => 'success',
-                'shareToken' => $team->share_token
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('team', 404, 'get invitation token')
-        ], 404);
+	    // Check whether user has permission to delete
+	    if (!$this->hasPermission($user, $team)) {
+		    return $this->returnErrorMessage('team', 403, 'get invitation token');
+	    }
+
+	    return $this->returnSuccessMessage('shareToken', $team->share_token);
     }
+
+	/**
+	 * Invite users to the Team.
+	 *
+	 * @param $application_id
+	 * @param $id
+	 * @param  \Illuminate\Http\Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function inviteUsers($application_id, $id, Request $request)
+	{
+		$user = Auth::user();
+		$team = $user->teams()->where([
+			'team_id' => $id,
+			'application_id' => $application_id
+		])->first();
+
+		// Send error if team does not exist
+		if (!$team) {
+			return $this->returnErrorMessage('team', 404, 'send invitation');
+		}
+
+		// Check whether user has permission to send invitation
+		if (!$this->hasPermission($user, $team)) {
+			return $this->returnErrorMessage('team', 403, 'send invitation');
+		}
+
+		// Send invitation
+		$invitations = $request->input('invitations', []);
+		$this->sendInvitation('team', $team, $invitations);
+
+		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
+	}
 
     /**
      * Accept invitation request.
@@ -268,4 +266,26 @@ class TeamController extends Controller
     {
 	    return $this->acceptJoin('team', $token);
     }
+
+	/**
+	 * Check whether user has permission or not
+	 *
+	 * @param $user
+	 * @param $team
+	 *
+	 * @return bool
+	 */
+	protected function hasPermission($user, $team)
+	{
+		$role = TeamUser::where([
+			'user_id' => $user->id,
+			'team_id' => $team->id
+		])->value('role');
+
+		if ($user->role != "SuperAdmin" && $role != "Admin") {
+			return false;
+		}
+
+		return true;
+	}
 }

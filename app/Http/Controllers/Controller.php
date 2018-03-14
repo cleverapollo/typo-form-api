@@ -14,21 +14,47 @@ class Controller extends BaseController
 {
     use AuthorizesRequests;
 
-    /**
-     * Generate error message for status and action.
-     *
-     * @param  $data
-     * @param  $status
-     * @param  $action
-     * @return string
-     */
-    protected function generateErrorMessage($data, $status, $action)
+	/**
+	 * Return error response
+	 *
+	 * @param $data
+	 * @param $status
+	 * @param $action
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+    protected function returnErrorMessage($data, $status, $action)
     {
-        if ($status == 404) {
-            return 'There is no ' . $data . ' with this ID.';
-        }
-        return 'Failed to ' . $action . ' ' . $data . '. Please try again later.';
+	    $errorMsg = "";
+	    if ($status == 404) {
+		    $errorMsg = 'There is no ' . $data . ' with this ID.';
+	    } else if ($status == 503) {
+		    $errorMsg = 'Failed to ' . $action . ' ' . $data . '. Please try again later.';
+	    } else if ($status == 403) {
+		    $errorMsg = 'You do not have permission to ' . $action . '.';
+	    }
+
+	    return response()->json([
+		    'status' => 'fail',
+		    'message' => $errorMsg
+	    ], $status);
     }
+
+	/**
+	 * Return success response
+	 *
+	 * @param $key
+	 * @param $data
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	protected function returnSuccessMessage($key, $data)
+	{
+		return response()->json([
+			'status' => 'success',
+			$key => $data
+		], 200);
+	}
 
     /**
      * Send invitation.
@@ -159,12 +185,12 @@ class Controller extends BaseController
         // Send error
         return response()->json([
             'status' => 'fail',
-            'message' => 'You cannot accept the invitation now. Please try again later.'
+            'message' => 'You cannot accept the invitation right now. Please try again later.'
         ], 503);
     }
 
 	/**
-	 * Accept invitation request.
+	 * Accept join request.
 	 *
 	 * @param $type
 	 * @param $token
