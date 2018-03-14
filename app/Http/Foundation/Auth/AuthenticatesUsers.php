@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-trait AuthenticatesUsers {
+trait AuthenticatesUsers
+{
 	use RedirectsUsers, ThrottlesLogins;
 
 	/**
@@ -16,8 +17,9 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function showLoginForm() {
-		return view( 'auth.login' );
+	public function showLoginForm()
+	{
+		return view('auth.login');
 	}
 
 	/**
@@ -27,29 +29,30 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse
 	 */
-	public function login( Request $request ) {
-		$this->validateLogin( $request );
+	public function login(Request $request)
+	{
+		$this->validateLogin($request);
 
 		// If the class is using the ThrottlesLogins trait, we can automatically throttle
 		// the login attempts for this application. We'll key this by the username and
 		// the IP address of the client making these requests into this application.
-		if ( $this->hasTooManyLoginAttempts( $request ) ) {
-			$this->fireLockoutEvent( $request );
+		if ($this->hasTooManyLoginAttempts($request)) {
+			$this->fireLockoutEvent($request);
 
-			return $this->sendLockoutResponse( $request );
+			return $this->sendLockoutResponse($request);
 		}
 
-		$user = $this->attemptLogin( $request );
-		if ( $user ) {
-			return $this->sendLoginResponse( $request, $user );
+		$user = $this->attemptLogin($request);
+		if ($user) {
+			return $this->sendLoginResponse($request, $user);
 		}
 
 		// If the login attempt was unsuccessful we will increment the number of attempts
 		// to login and redirect the user back to the login form. Of course, when this
 		// user surpasses their maximum number of attempts they will get locked out.
-		$this->incrementLoginAttempts( $request );
+		$this->incrementLoginAttempts($request);
 
-		return $this->sendFailedLoginResponse( $request );
+		return $this->sendFailedLoginResponse($request);
 	}
 
 	/**
@@ -59,11 +62,12 @@ trait AuthenticatesUsers {
 	 *
 	 * @return void
 	 */
-	protected function validateLogin( Request $request ) {
-		$this->validate( $request, [
+	protected function validateLogin(Request $request)
+	{
+		$this->validate($request, [
 			$this->username() => 'required|string',
 			'password'        => 'required|string',
-		] );
+		]);
 	}
 
 	/**
@@ -73,21 +77,22 @@ trait AuthenticatesUsers {
 	 *
 	 * @return bool
 	 */
-	protected function attemptLogin( Request $request ) {
+	protected function attemptLogin(Request $request)
+	{
 //        return $this->guard()->attempt(
 //            $this->credentials($request), $request->filled('remember')
 //        );
-		$user = User::where( 'email', $request->input( 'email' ) )->first();
-		if ( $user && Hash::check( $request->input( 'password' ), $user->password ) ) {
-			$api_token = base64_encode( str_random( 40 ) );
-			while ( ! is_null( User::where( 'api_token', $api_token )->first() ) ) {
-				$api_token = base64_encode( str_random( 40 ) );
+		$user = User::where('email', $request->input('email'))->first();
+		if ($user && Hash::check($request->input('password'), $user->password)) {
+			$api_token = base64_encode(str_random(40));
+			while (!is_null(User::where('api_token', $api_token)->first())) {
+				$api_token = base64_encode(str_random(40));
 			}
 			$expire_date = Carbon::now();
-			$user->update( [ 'api_token' => $api_token, 'expire_date' => $expire_date ] );
+			$user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
 
-			return User::where( 'id', $user->id )
-			           ->select( 'id', 'first_name', 'last_name', 'email', 'role', 'api_token' )
+			return User::where('id', $user->id)
+			           ->select('id', 'first_name', 'last_name', 'email', 'role', 'api_token')
 			           ->first();
 		}
 
@@ -101,8 +106,9 @@ trait AuthenticatesUsers {
 	 *
 	 * @return array
 	 */
-	protected function credentials( Request $request ) {
-		return $request->only( $this->username(), 'password' );
+	protected function credentials(Request $request)
+	{
+		return $request->only($this->username(), 'password');
 	}
 
 	/**
@@ -113,12 +119,13 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	protected function sendLoginResponse( Request $request, $user ) {
+	protected function sendLoginResponse(Request $request, $user)
+	{
 //        $request->session()->regenerate();
 
-		$this->clearLoginAttempts( $request );
+		$this->clearLoginAttempts($request);
 
-		return response()->json( [ 'status' => 'success', 'user' => $user ], 200 );
+		return response()->json(['status' => 'success', 'user' => $user], 200);
 
 //        return $this->authenticated($request, $this->guard()->user())
 //                ?: redirect()->intended($this->redirectPath());
@@ -132,7 +139,8 @@ trait AuthenticatesUsers {
 	 *
 	 * @return mixed
 	 */
-	protected function authenticated( Request $request, $user ) {
+	protected function authenticated(Request $request, $user)
+	{
 		//
 	}
 
@@ -143,11 +151,12 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	protected function sendFailedLoginResponse( Request $request ) {
-		return response()->json( [
+	protected function sendFailedLoginResponse(Request $request)
+	{
+		return response()->json([
 			'status'  => 'fail',
 			'message' => 'Invalid email or password.'
-		], 401 );
+		], 401);
 //        throw ValidationException::withMessages([
 //            $this->username() => [trans('auth.failed')],
 //        ]);
@@ -158,7 +167,8 @@ trait AuthenticatesUsers {
 	 *
 	 * @return string
 	 */
-	public function username() {
+	public function username()
+	{
 		return 'email';
 	}
 
@@ -169,16 +179,17 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function logout( Request $request ) {
+	public function logout(Request $request)
+	{
 		$user = Auth::user();
-		if ( ! $user ) {
-			$user = User::where( 'api_token', $request->input( 'api_token' ) )->first();
+		if (!$user) {
+			$user = User::where('api_token', $request->input('api_token'))->first();
 		}
 		$user->api_token   = null;
 		$user->expire_date = null;
 		$user->save();
 
-		return response()->json( [ 'status' => 'success' ], 200 );
+		return response()->json(['status' => 'success'], 200);
 
 //        $this->guard()->logout();
 //        $request->session()->invalidate();
@@ -190,7 +201,8 @@ trait AuthenticatesUsers {
 	 *
 	 * @return \Illuminate\Contracts\Auth\StatefulGuard
 	 */
-	protected function guard() {
+	protected function guard()
+	{
 		return Auth::guard();
 	}
 }
