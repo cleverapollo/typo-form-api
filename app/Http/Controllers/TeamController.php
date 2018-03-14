@@ -19,7 +19,7 @@ class TeamController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['invitation', 'join']]);
+        $this->middleware('auth:api');
     }
 
     /**
@@ -251,10 +251,11 @@ class TeamController extends Controller
      * Accept invitation request.
      *
      * @param $token
+     * @return \Illuminate\Http\JsonResponse
      */
     public function invitation($token)
     {
-        $this->acceptInvitation('team', $token);
+        return $this->acceptInvitation('team', $token);
     }
 
     /**

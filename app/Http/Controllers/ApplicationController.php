@@ -18,7 +18,7 @@ class ApplicationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['invitation', 'join']]);
+        $this->middleware('auth:api');
     }
 
     /**
