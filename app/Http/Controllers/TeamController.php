@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\TeamUser;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\TeamUserResource;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -265,6 +266,53 @@ class TeamController extends Controller
     public function join($token)
     {
 	    return $this->acceptJoin('team', $token);
+    }
+
+	/**
+	 * Update user role in the Team.
+	 *
+	 * @param $application_id
+	 * @param $team_id
+	 * @param $id
+	 * @param Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+    public function updateUser($application_id, $team_id, $id, Request $request)
+    {
+	    $user = Auth::user();
+	    $team = $user->teams()->where([
+		    'team_id' => $team_id,
+		    'application_id' => $application_id
+	    ])->first();
+
+	    // Send error if team does not exist
+	    if (!$team) {
+		    return $this->returnErrorMessage('team', 404, 'update user');
+	    }
+
+	    $teamUser = TeamUser::where([
+		    'user_id' => $id,
+		    'team_id' => $team->id
+	    ])->first();
+
+	    // Send error if user does not exist in the team
+	    if (!$teamUser) {
+		    return $this->returnErrorMessage('user', 404, 'update role');
+	    }
+
+	    // Check whether user has permission to delete
+	    if (!$this->hasPermission($user, $team)) {
+		    return $this->returnErrorMessage('team', 403, 'update user');
+	    }
+
+	    $teamUser->role = $request->input('role');
+	    if ($teamUser->save()) {
+		    return $this->returnSuccessMessage('user', new TeamUserResource($teamUser));
+	    }
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('user role', 503, 'update');
     }
 
 	/**

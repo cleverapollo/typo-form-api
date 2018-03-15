@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
+use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
@@ -250,6 +251,51 @@ class ApplicationController extends Controller
     {
 	    return $this->acceptJoin('application', $token);
     }
+
+	/**
+	 * Update user role in the Application.
+	 *
+	 * @param $application_id
+	 * @param $id
+	 * @param Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function updateUser($application_id, $id, Request $request)
+	{
+		$user = Auth::user();
+		$application = $user->applications()->where([
+			'application_id' => $application_id
+		])->first();
+
+		// Send error if application does not exist
+		if (!$application) {
+			return $this->returnErrorMessage('application', 404, 'update user');
+		}
+
+		$applicationUser = ApplicationUser::where([
+			'user_id' => $id,
+			'application_id' => $application->id
+		])->first();
+
+		// Send error if user does not exist in the team
+		if (!$applicationUser) {
+			return $this->returnErrorMessage('user', 404, 'update role');
+		}
+
+		// Check whether user has permission to delete
+		if (!$this->hasPermission($user, $application)) {
+			return $this->returnErrorMessage('application', 403, 'update user');
+		}
+
+		$applicationUser->role = $request->input('role');
+		if ($applicationUser->save()) {
+			return $this->returnSuccessMessage('user', new ApplicationUserResource($applicationUser));
+		}
+
+		// Send error if there is an error on update
+		return $this->returnErrorMessage('user role', 503, 'update');
+	}
 
 	/**
 	 * Check whether user has permission or not

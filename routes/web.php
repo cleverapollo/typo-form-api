@@ -21,6 +21,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'Auth\RegisterController@register');
     $router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
     $router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
+
     $router->post('invitation/team/{token}', 'TeamController@invitation');
     $router->post('invitation/application/{token}', 'ApplicationController@invitation');
     $router->post('join/team/{token}', 'TeamController@join');
@@ -38,21 +39,29 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->get('/', 'ApplicationController@index');
         $router->post('/', 'ApplicationController@store');
         $router->get('{id}', 'ApplicationController@show');
-        $router->get('{id}/users', 'ApplicationController@getUsers');
-        $router->get('{id}/get-token', 'ApplicationController@getInvitationToken');
-	    $router->post('{id}/invite', 'ApplicationController@inviteUsers');
         $router->put('{id}', 'ApplicationController@update');
         $router->delete('{id}', 'ApplicationController@destroy');
+
+	    $router->get('{id}/users', 'ApplicationController@getUsers');
+	    $router->get('{id}/get-token', 'ApplicationController@getInvitationToken');
+	    $router->post('{id}/invite', 'ApplicationController@inviteUsers');
+
+	    $router->put('{application_id}/user/{id}', 'ApplicationController@updateUser');
+	    $router->delete('{application_id}/user/{id}', 'ApplicationController@deleteUser');
 
         $router->group(['prefix' => '{application_id}/team'], function () use ($router) {
             $router->get('/', 'TeamController@index');
             $router->post('/', 'TeamController@store');
             $router->get('{id}', 'TeamController@show');
-            $router->get('{id}/users', 'TeamController@getUsers');
-            $router->get('{id}/get-token', 'TeamController@getInvitationToken');
-	        $router->get('{id}/invite', 'TeamController@inviteUsers');
             $router->put('{id}', 'TeamController@update');
             $router->delete('{id}', 'TeamController@destroy');
+
+	        $router->get('{id}/users', 'TeamController@getUsers');
+	        $router->get('{id}/get-token', 'TeamController@getInvitationToken');
+	        $router->get('{id}/invite', 'TeamController@inviteUsers');
+
+	        $router->put('{team_id}/user/{id}', 'TeamController@updateUser');
+	        $router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');
         });
 
         $router->group(['prefix' => '{application_id}/form'], function () use ($router) {
