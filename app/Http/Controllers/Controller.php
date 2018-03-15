@@ -213,16 +213,10 @@ class Controller extends BaseController
 			], 403);
 		}
 
-		if ($type == 'team') {
-			$dataId = $data->team_id;
-		} else {
-			$dataId = $data->application_id;
-		}
-
 		// Send error if user already exists in the Team or Application
 		if (DB::table($type . '_users')->where([
 			'user_id' => $user->id,
-			$type . '_id' => $dataId
+			$type . '_id' => $data->id
 		])->first()) {
 			return response()->json([
 				'status' => 'fail',
@@ -232,7 +226,8 @@ class Controller extends BaseController
 
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
-			$type . '_id' => $dataId,
+			$type . '_id' => $data->id,
+            'role' => 'User',
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {
