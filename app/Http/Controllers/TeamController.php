@@ -316,6 +316,51 @@ class TeamController extends Controller
     }
 
 	/**
+	 * Delete user from the Team.
+	 *
+	 * @param $application_id
+	 * @param $team_id
+	 * @param $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteUser($application_id, $team_id, $id)
+	{
+		$user = Auth::user();
+		$team = $user->teams()->where([
+			'team_id' => $team_id,
+			'application_id' => $application_id
+		])->first();
+
+		// Send error if team does not exist
+		if (!$team) {
+			return $this->returnErrorMessage('team', 404, 'delete user');
+		}
+
+		$teamUser = TeamUser::where([
+			'user_id' => $id,
+			'team_id' => $team->id
+		])->first();
+
+		// Send error if user does not exist in the team
+		if (!$teamUser) {
+			return $this->returnErrorMessage('user', 404, 'delete');
+		}
+
+		// Check whether user has permission to delete
+		if (!$this->hasPermission($user, $team)) {
+			return $this->returnErrorMessage('team', 403, 'delete user');
+		}
+
+		if ($teamUser->delete()) {
+			return $this->returnSuccessMessage('message', 'User has been removed successfully.');
+		}
+
+		// Send error if there is an error on delete
+		return $this->returnErrorMessage('user', 503, 'delete');
+	}
+
+	/**
 	 * Check whether user has permission or not
 	 *
 	 * @param $user

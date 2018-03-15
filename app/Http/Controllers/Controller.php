@@ -89,7 +89,8 @@ class Controller extends BaseController
                 // Check if the user is already invited
                 $previousInvitation = DB::table($type . '_invitations')->where([
                     'invitee' => $invitation['email'],
-                    $type . '_id' => $data->id
+                    $type . '_id' => $data->id,
+	                'status' => 0
                 ])->first();
 
                 if (!$previousInvitation) {

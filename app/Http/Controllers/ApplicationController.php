@@ -298,6 +298,49 @@ class ApplicationController extends Controller
 	}
 
 	/**
+	 * Delete user from the Application.
+	 *
+	 * @param $application_id
+	 * @param $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteUser($application_id, $id)
+	{
+		$user = Auth::user();
+		$application = $user->applications()->where([
+			'application_id' => $application_id
+		])->first();
+
+		// Send error if application does not exist
+		if (!$application) {
+			return $this->returnErrorMessage('application', 404, 'delete user');
+		}
+
+		$applicationUser = ApplicationUser::where([
+			'user_id' => $id,
+			'application_id' => $application->id
+		])->first();
+
+		// Send error if user does not exist in the team
+		if (!$applicationUser) {
+			return $this->returnErrorMessage('user', 404, 'delete');
+		}
+
+		// Check whether user has permission to delete
+		if (!$this->hasPermission($user, $application)) {
+			return $this->returnErrorMessage('application', 403, 'delete user');
+		}
+
+		if ($applicationUser->delete()) {
+			return $this->returnSuccessMessage('message', 'User has been removed successfully.');
+		}
+
+		// Send error if there is an error on delete
+		return $this->returnErrorMessage('user', 503, 'delete');
+	}
+
+	/**
 	 * Check whether user has permission or not
 	 *
 	 * @param $user
