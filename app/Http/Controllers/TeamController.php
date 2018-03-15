@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\Team;
 use App\Models\TeamUser;
+use App\Models\TeamInvitation;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\TeamUserResource;
@@ -110,8 +111,25 @@ class TeamController extends Controller
 	    ])->first();
 
         if ($team) {
-            $users = $team->users()->get();
-	        return $this->returnSuccessMessage('users', UserResource::collection($users));
+	        $currentUsers = $team->users()->get();
+
+	        $invitedUsers = TeamInvitation::where([
+		        'team_id' => $team->id,
+		        'status' => 0
+	        ])->get();
+
+	        $unacceptedUsers = [];
+	        foreach ($invitedUsers as $invitedUser) {
+		        $unacceptedUser = User::where('email', $invitedUser->invitee)->first();
+		        if ($unacceptedUser) {
+			        array_push($unacceptedUsers, new UserResource($unacceptedUser));
+		        }
+	        }
+
+	        return $this->returnSuccessMessage('users', [
+		        'current' => UserResource::collection($currentUsers),
+		        'unaccepted' => $unacceptedUsers
+	        ]);
         }
 
 	    // Send error if application does not exist

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\Application;
 use App\Models\ApplicationUser;
+use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
@@ -109,8 +110,25 @@ class ApplicationController extends Controller
 	            return $this->returnErrorMessage('application', 403, 'see the users of');
             }
 
-            $users = $application->users()->get();
-	        return $this->returnSuccessMessage('users', UserResource::collection($users));
+            $currentUsers = $application->users()->get();
+
+            $invitedUsers = ApplicationInvitation::where([
+            	'application_id' => $application->id,
+	            'status' => 0
+            ])->get();
+
+            $unacceptedUsers = [];
+            foreach ($invitedUsers as $invitedUser) {
+            	$unacceptedUser = User::where('email', $invitedUser->invitee)->first();
+            	if ($unacceptedUser) {
+		            array_push($unacceptedUsers, new UserResource($unacceptedUser));
+	            }
+	        }
+
+	        return $this->returnSuccessMessage('users', [
+	        	'current' => UserResource::collection($currentUsers),
+	            'unaccepted' => $unacceptedUsers
+	        ]);
         }
 
         // Send error if application does not exist
