@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use App\Models\Form;
+use App\Http\Resources\SubmissionResource;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -26,15 +27,8 @@ class SubmissionController extends Controller
      */
     public function index($form_id)
     {
-        if (Auth::user()->role == "SuperAdmin") {
-            $submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
-        } else {
-            $submissions = Form::find($form_id)->submissions()->get();
-        }
-        return response()->json([
-            'status' => 'success',
-            'submissions' => $submissions
-        ], 200);
+    	$submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
+	    return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
     }
 
     /**
@@ -42,30 +36,31 @@ class SubmissionController extends Controller
      *
      * @param  int $form_id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store($form_id, Request $request)
     {
-        $this->validate($request, [
-            'form_id' => 'required'
+	    $form = Form::find($form_id);
+
+	    // Send error if form does not exist
+	    if (!$form) {
+		    return $this->returnErrorMessage('form', 404, 'create submission');
+	    }
+
+	    // Create submission
+        $submission = $form->submissions()->create([
+            'user_id' => Auth::user()->id,
+            'team_id' => $request->input('team_id', null),
+            'period_start' => $request->input('period_start', null),
+            'period_end' => $request->input('period_end', null)
         ]);
 
-        $submission = Auth::user()->submissions()->create([
-            'form_id' => $form_id,
-            'team_id' => $request->input('team_id'. null),
-            'period_start' => $request->input('period_start'. null),
-            'period_end' => $request->input('period_end'. null)
-        ]);
         if ($submission) {
-            return response()->json([
-                'status' => 'success',
-                'submission' => $submission
-            ], 200);
+	        return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('submission', 503, 'store')
-        ], 503);
+
+	    // Send error if submission is not created
+	    return $this->returnErrorMessage('submission', 503, 'create');
     }
 
     /**
@@ -73,29 +68,29 @@ class SubmissionController extends Controller
      *
      * @param  int $form_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($form_id, $id)
     {
-        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
+	    $form = Form::find($form_id);
+
+	    // Send error if form does not exist
+	    if (!$form) {
+		    return $this->returnErrorMessage('form', 404, 'show submission');
+	    }
+
+        $submission = $form->submissions()->where('id', $id)->first();
         if ($submission) {
             $user = Auth::user();
             if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
-                return response()->json([
-                    'status' => 'fail',
-                    'message' => 'You do not have permission to see this submission.'
-                ], 404);
+	            return $this->returnErrorMessage('submission', 403, 'see');
             }
 
-            return response()->json([
-                'status' => 'success',
-                'submission' => $submission
-            ], 200);
+	        return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('submission', 404, 'show')
-        ], 404);
+
+        // Send error if submission does not exist
+	    return $this->returnErrorMessage('submission', 404, 'show');
     }
 
     /**
@@ -104,40 +99,34 @@ class SubmissionController extends Controller
      * @param  int $form_id
      * @param  \Illuminate\Http\Request $request
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update($form_id, Request $request, $id)
     {
-        $this->validate($request, [
-            'form_id' => 'filled'
-        ]);
+	    $form = Form::find($form_id);
 
-        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
+	    // Send error if form does not exist
+	    if (!$form) {
+		    return $this->returnErrorMessage('form', 404, 'update submission');
+	    }
+
+        $submission = $form->submissions()->where([
+        	'id' => $id,
+	        'user_id' => Auth::user()->id
+        ])->first();
+
+	    // Send error if submission does not exist
         if (!$submission) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('submission', 404, 'update')
-            ], 404);
+	        return $this->returnErrorMessage('submission', 404, 'update');
         }
 
-        $user = Auth::user();
-        if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'You do not have permission to update this submission.'
-            ], 404);
+        // Update submission
+        if ($submission->fill($request->only('period_start', 'period_end'))->save()) {
+	        return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
         }
 
-        if ($submission->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'submission' => $submission
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('submission', 503, 'update')
-        ], 503);
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('submission', 503, 'update');
     }
 
     /**
@@ -145,25 +134,32 @@ class SubmissionController extends Controller
      *
      * @param  int $form_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($form_id, $id)
     {
-        $submission = Form::find($form_id)->submissions()->where('id', $id)->first();
-        $user = Auth::user();
-        if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'You do not have permission to delete this submission.'
-            ], 404);
-        }
+	    $form = Form::find($form_id);
+
+	    // Send error if form does not exist
+	    if (!$form) {
+		    return $this->returnErrorMessage('form', 404, 'delete submission');
+	    }
+
+	    $submission = $form->submissions()->where([
+		    'id' => $id,
+		    'user_id' => Auth::user()->id
+	    ])->first();
+
+	    // Send error if submission does not exist
+	    if (!$submission) {
+		    return $this->returnErrorMessage('submission', 404, 'delete');
+	    }
 
         if ($submission->delete()) {
-            return response()->json(['status' => 'success'], 200);
+	        return $this->returnSuccessMessage('message', 'Submission has been deleted successfully.');
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('submission', 503, 'delete')
-        ], 503);
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('submission', 503, 'delete');
     }
 }
