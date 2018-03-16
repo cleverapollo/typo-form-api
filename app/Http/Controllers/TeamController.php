@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\User;
 use App\Models\Team;
 use App\Models\TeamUser;
 use App\Models\TeamInvitation;
