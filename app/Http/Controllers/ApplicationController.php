@@ -162,7 +162,7 @@ class ApplicationController extends Controller
 	    }
 
         // Update application
-        if ($application->fill($request->all())->save()) {
+        if ($application->fill($request->only('name'))->save()) {
 	        return $this->returnSuccessMessage('application', new ApplicationResource($application));
         }
 
@@ -306,8 +306,8 @@ class ApplicationController extends Controller
 			return $this->returnErrorMessage('application', 403, 'update user');
 		}
 
-		$applicationUser->role = $request->input('role');
-		if ($applicationUser->save()) {
+		// Update user role
+		if ($applicationUser->fill($request->only('role'))->save()) {
 			return $this->returnSuccessMessage('user', new ApplicationUserResource($applicationUser));
 		}
 

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Application;
+use Auth;
+use App\Http\Resources\FormResource;
 use Illuminate\Http\Request;
 
 class FormController extends Controller
@@ -17,27 +18,30 @@ class FormController extends Controller
         $this->middleware('auth:api');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  int $application_id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index($application_id)
-    {
-        $forms = Application::find($application_id)->forms()->get();
-        return response()->json([
-            'status' => 'success',
-            'forms' => $forms
-        ], 200);
-    }
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @param  int $application_id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function index($application_id)
+	{
+		$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+
+		// Send error if application does not exist
+		if (!$application) {
+			return $this->returnErrorMessage('application', 404, 'get forms');
+		}
+
+		return $this->returnSuccessMessage('teams', FormResource::collection($application->forms()->get()));
+	}
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  int $application_id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store($application_id, Request $request)
     {
@@ -45,17 +49,20 @@ class FormController extends Controller
             'name' => 'required|max:191'
         ]);
 
-        $form = Application::find($application_id)->forms()->create($request->all());
+	    $application = Auth::user()->applications()->where('application_id', $application_id)->first();
+
+	    // Send error if application does not exist
+	    if (!$application) {
+		    return $this->returnErrorMessage('application', 404, 'create form');
+	    }
+
+        $form = $application->forms()->create($request->all());
         if ($form) {
-            return response()->json([
-                'status' => 'success',
-                'form' => $form
-            ], 200);
+	        return $this->returnSuccessMessage('form', new FormResource($form));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('form', 503, 'store')
-        ], 503);
+
+	    // Send error if form is not created
+	    return $this->returnErrorMessage('form', 503, 'create');
     }
 
     /**
@@ -63,21 +70,24 @@ class FormController extends Controller
      *
      * @param  int $application_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($application_id, $id)
     {
-        $form = Application::find($application_id)->forms()->where('id', $id)->first();
+	    $application = Auth::user()->applications()->where('application_id', $application_id)->first();
+
+	    // Send error if application does not exist
+	    if (!$application) {
+		    return $this->returnErrorMessage('application', 404, 'show form');
+	    }
+
+        $form = $application->forms()->where('id', $id)->first();
         if ($form) {
-            return response()->json([
-                'status' => 'success',
-                'form' => $form
-            ], 200);
+	        return $this->returnSuccessMessage('form', new FormResource($form));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('form', 404, 'show')
-        ], 404);
+
+	    // Send error if form does not exist
+	    return $this->returnErrorMessage('form', 404, 'show');
     }
 
     /**
@@ -86,7 +96,7 @@ class FormController extends Controller
      * @param  int $application_id
      * @param  int $id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update($application_id, $id, Request $request)
     {
@@ -94,23 +104,27 @@ class FormController extends Controller
             'name' => 'filled'
         ]);
 
-        $form = Application::find($application_id)->forms()->where('id', $id)->first();
-        if (!$form) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('form', 404, 'update')
-            ], 404);
-        }
-        if ($form->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'form' => $form
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('form', 503, 'update')
-        ], 503);
+	    $application = Auth::user()->applications()->where('application_id', $application_id)->first();
+
+	    // Send error if application does not exist
+	    if (!$application) {
+		    return $this->returnErrorMessage('application', 404, 'update form');
+	    }
+
+        $form = $application->forms()->where('id', $id)->first();
+
+	    // Send error if form does not exist
+	    if (!$form) {
+		    return $this->returnErrorMessage('form', 404, 'update');
+	    }
+
+	    // Update form
+	    if ($form->fill($request->all())->save()) {
+		    return $this->returnSuccessMessage('form', new FormResource($form));
+	    }
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('form', 503, 'update');
     }
 
     /**
@@ -118,16 +132,22 @@ class FormController extends Controller
      *
      * @param  int $application_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($application_id, $id)
     {
-        if (Application::find($application_id)->forms()->where('id', $id)->delete()) {
-            return response()->json(['status' => 'success'], 200);
+	    $application = Auth::user()->applications()->where('application_id', $application_id)->first();
+
+	    // Send error if application does not exist
+	    if (!$application) {
+		    return $this->returnErrorMessage('application', 404, 'delete form');
+	    }
+
+        if ($application->forms()->where('id', $id)->delete()) {
+	        return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('form', 503, 'delete')
-        ], 503);
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('form', 503, 'delete');
     }
 }

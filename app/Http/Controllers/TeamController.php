@@ -167,7 +167,7 @@ class TeamController extends Controller
 	    }
 
 	    // Update team
-        if ($team->fill($request->all())->save()) {
+        if ($team->fill($request->only('name', 'description'))->save()) {
 	        return $this->returnSuccessMessage('team', new TeamResource($team));
         }
 
@@ -324,8 +324,8 @@ class TeamController extends Controller
 		    return $this->returnErrorMessage('team', 403, 'update user');
 	    }
 
-	    $teamUser->role = $request->input('role');
-	    if ($teamUser->save()) {
+	    // Update user role
+	    if ($teamUser->fill($request->only('role'))->save()) {
 		    return $this->returnSuccessMessage('user', new TeamUserResource($teamUser));
 	    }
 
