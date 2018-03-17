@@ -372,7 +372,7 @@ class TeamController extends Controller
 		}
 
 		if ($teamUser->delete()) {
-			return $this->returnSuccessMessage('message', 'User has been removed successfully.');
+			return $this->returnSuccessMessage('message', 'User has been removed from team successfully.');
 		}
 
 		// Send error if there is an error on delete

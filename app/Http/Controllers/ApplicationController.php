@@ -352,7 +352,7 @@ class ApplicationController extends Controller
 		}
 
 		if ($applicationUser->delete()) {
-			return $this->returnSuccessMessage('message', 'User has been removed successfully.');
+			return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
 		}
 
 		// Send error if there is an error on delete

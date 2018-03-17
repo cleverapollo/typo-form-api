@@ -139,7 +139,7 @@ class QuestionController extends Controller
 		}
 
 		if ($question->delete()) {
-			return $this->returnSuccessMessage('message', 'Group has been deleted successfully.');
+			return $this->returnSuccessMessage('message', 'Question has been deleted successfully.');
 		}
 
 		// Send error if there is an error on update

@@ -22,22 +22,19 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show()
     {
         $user = Auth::user();
-        return response()->json([
-            'status' => 'success',
-            'user' => new UserResource($user)
-        ], 200);
+	    return $this->returnSuccessMessage('user', new UserResource($user));
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request)
     {
@@ -48,39 +45,34 @@ class UserController extends Controller
         ]);
 
         $user = Auth::user();
-        if ($user->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'user' => new UserResource($user)
-            ], 200);
+        if ($user->fill($request->only('first_name', 'last_name', 'email'))->save()) {
+	        return $this->returnSuccessMessage('user', new UserResource($user));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('user', 503, 'update')
-        ], 503);
+
+	    // Send error if user is not updated
+	    return $this->returnErrorMessage('user', 503, 'update');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy()
     {
         if (Auth::user()->delete()) {
-            return response()->json(['status' => 'success'], 200);
+	        return $this->returnSuccessMessage('message', 'User has been deleted successfully.');
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('user', 503, 'delete')
-        ], 503);
+
+	    // Send error if there is an error on delete
+	    return $this->returnErrorMessage('user', 503, 'delete');
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updateEmail(Request $request)
     {
@@ -92,27 +84,24 @@ class UserController extends Controller
         $user = Auth::user();
         if (Hash::check($request->input('password'), $user->password)) {
             if ($user->update(['email' => $request->input('email')])) {
-                return response()->json([
-                    'status' => 'success',
-                    'user' => new UserResource($user)
-                ], 200);
+	            return $this->returnSuccessMessage('user', new UserResource($user));
             }
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('user email', 503, 'update')
-            ], 503);
+
+	        // Send error if there is an error on update user email
+	        return $this->returnErrorMessage('user email', 503, 'update');
         }
+
         return response()->json([
             'status' => 'fail',
             'message' => 'Invalid password.'
-        ], 400);
+        ], 403);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updatePassword(Request $request)
     {
@@ -124,19 +113,16 @@ class UserController extends Controller
         $user = Auth::user();
         if (Hash::check($request->input('password'), $user->password)) {
             if ($user->update(['password' => app('hash')->make($request->input('newPassword'))])) {
-                return response()->json([
-                    'status' => 'success',
-                    'user' => new UserResource($user)
-                ], 200);
+	            return $this->returnSuccessMessage('user', new UserResource($user));
             }
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('user password', 503, 'update')
-            ], 503);
+
+	        // Send error if there is an error on update user password
+	        return $this->returnErrorMessage('user password', 503, 'update');
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'Invalid password.'
-        ], 400);
+
+	    return response()->json([
+		    'status' => 'fail',
+		    'message' => 'Invalid password.'
+	    ], 403);
     }
 }

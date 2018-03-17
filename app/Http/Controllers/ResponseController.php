@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Submission;
+use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
 class ResponseController extends Controller
@@ -26,10 +27,7 @@ class ResponseController extends Controller
     public function index($submission_id)
     {
         $responses = Submission::find($submission_id)->responses()->get();
-        return response()->json([
-            'status' => 'success',
-            'responses' => $responses
-        ], 200);
+	    return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
     }
 
     /**
@@ -37,26 +35,29 @@ class ResponseController extends Controller
      *
      * @param  int $submission_id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store($submission_id, Request $request)
     {
         $this->validate($request, [
             'response' => 'required',
-            'response_id' => 'required'
+            'answer_id' => 'required'
         ]);
 
-        $response = Submission::find($submission_id)->responses()->create($request->all());
+	    $submission = Submission::find($submission_id);
+
+	    // Send error if submission does not exist
+	    if (!$submission) {
+		    return $this->returnErrorMessage('submission', 404, 'create response');
+	    }
+
+        $response = $submission->responses()->create($request->only('response', 'answer_id'));
         if ($response) {
-            return response()->json([
-                'status' => 'success',
-                'response' => $response
-            ], 200);
+	        return $this->returnSuccessMessage('response', new ResponseResource($response));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('response', 503, 'store')
-        ], 503);
+
+	    // Send error if response is not created
+	    return $this->returnErrorMessage('response', 503, 'create');
     }
 
     /**
@@ -64,21 +65,24 @@ class ResponseController extends Controller
      *
      * @param  int $submission_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($submission_id, $id)
     {
-        $response = Submission::find($submission_id)->responses()->where('id', $id)->first();
+	    $submission = Submission::find($submission_id);
+
+	    // Send error if submission does not exist
+	    if (!$submission) {
+		    return $this->returnErrorMessage('submission', 404, 'show response');
+	    }
+
+        $response = $submission->responses()->where('id', $id)->first();
         if ($response) {
-            return response()->json([
-                'status' => 'success',
-                'response' => $response
-            ], 200);
+	        return $this->returnSuccessMessage('response', new ResponseResource($response));
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('response', 404, 'show')
-        ], 404);
+
+	    // Send error if response does not exist
+	    return $this->returnErrorMessage('response', 404, 'show');
     }
 
     /**
@@ -87,35 +91,38 @@ class ResponseController extends Controller
      * @param  int $submission_id
      * @param  int $id
      * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update($submission_id, $id, Request $request)
     {
         $this->validate($request, [
             'response' => 'filled',
-            'response_id' => 'filled'
+            'answer_id' => 'filled'
         ]);
 
-        $response = Submission::find($submission_id)->responses()->where('id', $id)->first();
-        if (!$response) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('response', 404, 'update')
-            ], 404);
-        }
-        $newResponse = $response->fill($request->all())->except(['id']);
-        if (Submission::find($submission_id)->responses()->where('id', $id)->delete()) {
+	    $submission = Submission::find($submission_id);
+
+	    // Send error if submission does not exist
+	    if (!$submission) {
+		    return $this->returnErrorMessage('submission', 404, 'show response');
+	    }
+
+        $response = $submission->responses()->where('id', $id)->first();
+	    // Send error if response does not exist
+	    if (!$response) {
+		    return $this->returnErrorMessage('response', 404, 'update');
+	    }
+
+        $newResponse = $response->fill($request->only('response', 'answer_id'))->except(['id']);
+
+        if ($submission->responses()->where('id', $id)->delete()) {
             if ($newResponse->save()) {
-                return response()->json([
-                    'status' => 'success',
-                    'response' => $response
-                ], 200);
+	            return $this->returnSuccessMessage('response', new ResponseResource($newResponse));
             }
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('response', 503, 'update')
-        ], 503);
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('response', 503, 'update');
     }
 
     /**
@@ -123,16 +130,29 @@ class ResponseController extends Controller
      *
      * @param  int $submission_id
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($submission_id, $id)
     {
-        if (Submission::find($submission_id)->responses()->where('id', $id)->delete()) {
-            return response()->json(['status' => 'success'], 200);
+	    $submission = Submission::find($submission_id);
+
+	    // Send error if submission does not exist
+	    if (!$submission) {
+		    return $this->returnErrorMessage('submission', 404, 'show response');
+	    }
+
+	    $response = $submission->responses()->where('id', $id)->first();
+
+	    // Send error if response does not exist
+	    if (!$response) {
+		    return $this->returnErrorMessage('response', 404, 'delete');
+	    }
+
+	    if ($response->delete()) {
+	        return $this->returnSuccessMessage('message', 'Response has been deleted successfully.');
         }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('response', 503, 'delete')
-        ], 503);
+
+	    // Send error if there is an error on update
+	    return $this->returnErrorMessage('response', 503, 'delete');
     }
 }
