@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Section;
+use App\Http\Resources\QuestionResource;
 use Illuminate\Http\Request;
 
 class QuestionController extends Controller
@@ -17,119 +18,131 @@ class QuestionController extends Controller
         $this->middleware('auth:api');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  int $section_id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index($section_id)
-    {
-        $questions = Section::find($section_id)->questions()->get();
-        return response()->json([
-            'status' => 'success',
-            'questions' => $questions
-        ], 200);
-    }
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @param  int $section_id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function index($section_id)
+	{
+		$questions = Section::find($section_id)->questions()->get();
+		return $this->returnSuccessMessage('questions', QuestionResource::collection($questions));
+	}
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  int $section_id
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store($section_id, Request $request)
-    {
-        $this->validate($request, [
-            'question' => 'required',
-            'order' => 'required'
-        ]);
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  int $section_id
+	 * @param  \Illuminate\Http\Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function store($section_id, Request $request)
+	{
+		$section = Section::find($section_id);
 
-        $question = Section::find($section_id)->questions()->create($request->all());
-        if ($question) {
-            return response()->json([
-                'status' => 'success',
-                'question' => $question
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('question', 503, 'store')
-        ], 503);
-    }
+		// Send error if section does not exist
+		if (!$section) {
+			return $this->returnErrorMessage('section', 404, 'create question');
+		}
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int $section_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($section_id, $id)
-    {
-        $question = Section::find($section_id)->questions()->where('id', $id)->first();
-        if ($question) {
-            return response()->json([
-                'status' => 'success',
-                'question' => $question
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('question', 404, 'show')
-        ], 404);
-    }
+		// Create question
+		$question = $section->questions()->create($request->only('question', 'description', 'mandatory', 'group_id', 'question_type_id', 'order'));
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  int $section_id
-     * @param  int $id
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function update($section_id, $id, Request $request)
-    {
-        $this->validate($request, [
-            'question' => 'filled',
-            'order' => 'filled'
-        ]);
+		if ($question) {
+			return $this->returnSuccessMessage('question', new QuestionResource($question));
+		}
 
-        $question = Section::find($section_id)->questions()->where('id', $id)->first();
-        if (!$question) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => $this->generateErrorMessage('question', 404, 'update')
-            ], 404);
-        }
-        if ($question->fill($request->all())->save()) {
-            return response()->json([
-                'status' => 'success',
-                'question' => $question
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('question', 503, 'update')
-        ], 503);
-    }
+		// Send error if question is not created
+		return $this->returnErrorMessage('question', 503, 'create');
+	}
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $section_id
-     * @param  int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($section_id, $id)
-    {
-        if (Section::find($section_id)->questions()->where('id', $id)->delete()) {
-            return response()->json(['status' => 'success'], 200);
-        }
-        return response()->json([
-            'status' => 'fail',
-            'message' => $this->generateErrorMessage('question', 503, 'delete')
-        ], 503);
-    }
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int $section_id
+	 * @param  int $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function show($section_id, $id)
+	{
+		$section = Section::find($section_id);
+
+		// Send error if section does not exist
+		if (!$section) {
+			return $this->returnErrorMessage('section', 404, 'show question');
+		}
+
+		$question = $section->questions()->where('id', $id)->first();
+		if ($question) {
+			return $this->returnSuccessMessage('question', new QuestionResource($question));
+		}
+
+		// Send error if question does not exist
+		return $this->returnErrorMessage('question', 404, 'show');
+	}
+
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  int $section_id
+	 * @param  \Illuminate\Http\Request $request
+	 * @param  int $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function update($section_id, Request $request, $id)
+	{
+		$section = Section::find($section_id);
+
+		// Send error if section does not exist
+		if (!$section) {
+			return $this->returnErrorMessage('section', 404, 'update question');
+		}
+
+		$question = $section->questions()->where('id', $id)->first();
+
+		// Send error if question does not exist
+		if (!$question) {
+			return $this->returnErrorMessage('question', 404, 'update');
+		}
+
+		// Update question
+		if ($question->fill($request->only('question', 'description', 'mandatory', 'group_id', 'question_type_id', 'order'))->save()) {
+			return $this->returnSuccessMessage('question', new QuestionResource($question));
+		}
+
+		// Send error if there is an error on update
+		return $this->returnErrorMessage('question', 503, 'update');
+	}
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int $section_id
+	 * @param  int $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function destroy($section_id, $id)
+	{
+		$section = Section::find($section_id);
+
+		// Send error if section does not exist
+		if (!$section) {
+			return $this->returnErrorMessage('section', 404, 'delete question');
+		}
+
+		$question = $section->questions()->where('id', $id)->first();
+
+		// Send error if question does not exist
+		if (!$question) {
+			return $this->returnErrorMessage('question', 404, 'delete');
+		}
+
+		if ($question->delete()) {
+			return $this->returnSuccessMessage('message', 'Group has been deleted successfully.');
+		}
+
+		// Send error if there is an error on update
+		return $this->returnErrorMessage('question', 503, 'delete');
+	}
 }
