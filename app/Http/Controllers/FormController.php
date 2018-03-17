@@ -33,7 +33,7 @@ class FormController extends Controller
 			return $this->returnErrorMessage('application', 404, 'get forms');
 		}
 
-		return $this->returnSuccessMessage('teams', FormResource::collection($application->forms()->get()));
+		return $this->returnSuccessMessage('forms', FormResource::collection($application->forms()->get()));
 	}
 
     /**
