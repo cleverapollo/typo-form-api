@@ -113,11 +113,16 @@ class ResponseController extends Controller
 		    return $this->returnErrorMessage('response', 404, 'update');
 	    }
 
-        $newResponse = $response->fill($request->only('response', 'answer_id'))->except(['id']);
+        $newResponse = $response->fill($request->only('response', 'answer_id'));
 
         if ($submission->responses()->where('id', $id)->delete()) {
-            if ($newResponse->save()) {
-	            return $this->returnSuccessMessage('response', new ResponseResource($newResponse));
+        	$new = $submission->responses()->create([
+        		'response' => $newResponse->response,
+		        'answer_id' => $newResponse->answer_id
+	        ]);
+
+            if ($new) {
+	            return $this->returnSuccessMessage('response', new ResponseResource($new));
             }
         }
 

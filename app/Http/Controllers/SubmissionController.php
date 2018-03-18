@@ -56,6 +56,7 @@ class SubmissionController extends Controller
         ]);
 
         if ($submission) {
+        	// TODO: reconsider about getting the submission from table because of default value
 	        return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
         }
 
