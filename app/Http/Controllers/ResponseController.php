@@ -2,162 +2,187 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Submission;
 use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
 class ResponseController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
+	/**
+	 * Create a new controller instance.
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		$this->middleware('auth:api');
+	}
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  int $submission_id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index($submission_id)
-    {
-        $responses = Submission::find($submission_id)->responses()->get();
-	    return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
-    }
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @param  int $submission_id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function index($submission_id)
+	{
+		$responses = Submission::find($submission_id)->responses()->get();
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  int $submission_id
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store($submission_id, Request $request)
-    {
-        $this->validate($request, [
-            'response' => 'required',
-            'answer_id' => 'required'
-        ]);
+		return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
+	}
 
-	    $submission = Submission::find($submission_id);
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  int $submission_id
+	 * @param  \Illuminate\Http\Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function store($submission_id, Request $request)
+	{
+		$this->validate($request, [
+			'response'  => 'required',
+			'answer_id' => 'required|integer|min:1'
+		]);
 
-	    // Send error if submission does not exist
-	    if (!$submission) {
-		    return $this->returnErrorMessage('submission', 404, 'create response');
-	    }
+		try {
+			$submission = Submission::find($submission_id);
 
-        $response = $submission->responses()->create($request->only('response', 'answer_id'));
-        if ($response) {
-	        return $this->returnSuccessMessage('response', new ResponseResource($response));
-        }
+			// Send error if submission does not exist
+			if (!$submission) {
+				return $this->returnError('submission', 404, 'create response');
+			}
 
-	    // Send error if response is not created
-	    return $this->returnErrorMessage('response', 503, 'create');
-    }
+			// Create response
+			$response = $submission->responses()->create($request->only('response', 'answer_id'));
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int $submission_id
-     * @param  int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show($submission_id, $id)
-    {
-	    $submission = Submission::find($submission_id);
+			if ($response) {
+				return $this->returnSuccessMessage('response', new ResponseResource($response));
+			}
 
-	    // Send error if submission does not exist
-	    if (!$submission) {
-		    return $this->returnErrorMessage('submission', 404, 'show response');
-	    }
+			// Send error if response is not created
+			return $this->returnError('response', 503, 'create');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+		}
+	}
 
-        $response = $submission->responses()->where('id', $id)->first();
-        if ($response) {
-	        return $this->returnSuccessMessage('response', new ResponseResource($response));
-        }
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int $submission_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function show($submission_id, $id)
+	{
+		$submission = Submission::find($submission_id);
 
-	    // Send error if response does not exist
-	    return $this->returnErrorMessage('response', 404, 'show');
-    }
+		// Send error if submission does not exist
+		if (!$submission) {
+			return $this->returnError('submission', 404, 'show response');
+		}
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  int $submission_id
-     * @param  int $id
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update($submission_id, $id, Request $request)
-    {
-        $this->validate($request, [
-            'response' => 'filled',
-            'answer_id' => 'filled'
-        ]);
+		$response = $submission->responses()->where('id', $id)->first();
+		if ($response) {
+			return $this->returnSuccessMessage('response', new ResponseResource($response));
+		}
 
-	    $submission = Submission::find($submission_id);
+		// Send error if response does not exist
+		return $this->returnError('response', 404, 'show');
+	}
 
-	    // Send error if submission does not exist
-	    if (!$submission) {
-		    return $this->returnErrorMessage('submission', 404, 'show response');
-	    }
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  int $submission_id
+	 * @param  int $id
+	 * @param  \Illuminate\Http\Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function update($submission_id, $id, Request $request)
+	{
+		$this->validate($request, [
+			'response'  => 'filled',
+			'answer_id' => 'filled|integer|min:1'
+		]);
 
-        $response = $submission->responses()->where('id', $id)->first();
-	    // Send error if response does not exist
-	    if (!$response) {
-		    return $this->returnErrorMessage('response', 404, 'update');
-	    }
+		try {
+			$submission = Submission::find($submission_id);
 
-        $newResponse = $response->fill($request->only('response', 'answer_id'));
+			// Send error if submission does not exist
+			if (!$submission) {
+				return $this->returnError('submission', 404, 'show response');
+			}
 
-        if ($submission->responses()->where('id', $id)->delete()) {
-        	$new = $submission->responses()->create([
-        		'response' => $newResponse->response,
-		        'answer_id' => $newResponse->answer_id
-	        ]);
+			$response = $submission->responses()->where('id', $id)->first();
 
-            if ($new) {
-	            return $this->returnSuccessMessage('response', new ResponseResource($new));
-            }
-        }
+			// Send error if response does not exist
+			if (!$response) {
+				return $this->returnError('response', 404, 'update');
+			}
 
-	    // Send error if there is an error on update
-	    return $this->returnErrorMessage('response', 503, 'update');
-    }
+			$newResponse = $response->fill($request->only('response', 'answer_id'));
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $submission_id
-     * @param  int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy($submission_id, $id)
-    {
-	    $submission = Submission::find($submission_id);
+			if ($submission->responses()->where('id', $id)->delete()) {
+				$new = $submission->responses()->create([
+					'response'  => $newResponse->response,
+					'answer_id' => $newResponse->answer_id
+				]);
 
-	    // Send error if submission does not exist
-	    if (!$submission) {
-		    return $this->returnErrorMessage('submission', 404, 'show response');
-	    }
+				if ($new) {
+					return $this->returnSuccessMessage('response', new ResponseResource($new));
+				}
+			}
 
-	    $response = $submission->responses()->where('id', $id)->first();
+			// Send error if there is an error on update
+			return $this->returnError('response', 503, 'update');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+		}
+	}
 
-	    // Send error if response does not exist
-	    if (!$response) {
-		    return $this->returnErrorMessage('response', 404, 'delete');
-	    }
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int $submission_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function destroy($submission_id, $id)
+	{
+		try {
+			$submission = Submission::find($submission_id);
 
-	    if ($response->delete()) {
-	        return $this->returnSuccessMessage('message', 'Response has been deleted successfully.');
-        }
+			// Send error if submission does not exist
+			if (!$submission) {
+				return $this->returnError('submission', 404, 'show response');
+			}
 
-	    // Send error if there is an error on update
-	    return $this->returnErrorMessage('response', 503, 'delete');
-    }
+			$response = $submission->responses()->where('id', $id)->first();
+
+			// Send error if response does not exist
+			if (!$response) {
+				return $this->returnError('response', 404, 'delete');
+			}
+
+			if ($response->delete()) {
+				return $this->returnSuccessMessage('message', 'Response has been deleted successfully.');
+			}
+
+			// Send error if there is an error on update
+			return $this->returnError('response', 503, 'delete');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+		}
+	}
 }
