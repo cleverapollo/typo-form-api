@@ -48,7 +48,7 @@ class Controller extends BaseController
 	protected function returnErrorMessage($status, $errorMsg)
 	{
 		return response()->json([
-			'status'  => 'fail',
+			'status' => 'fail',
 			'message' => $errorMsg
 		], $status);
 	}
@@ -65,7 +65,7 @@ class Controller extends BaseController
 	{
 		return response()->json([
 			'status' => 'success',
-			$key     => $data
+			$key => $data
 		], 200);
 	}
 
@@ -90,7 +90,7 @@ class Controller extends BaseController
 				$invitee = User::where('email', $invitation['email'])->first();
 				if ($invitee) {
 					$isIncluded = DB::table($type . '_users')->where([
-						'user_id'     => $invitee->id,
+						'user_id' => $invitee->id,
 						$type . '_id' => $data->id
 					])->first();
 
@@ -101,32 +101,31 @@ class Controller extends BaseController
 
 				// Check if the user is already invited
 				$previousInvitation = DB::table($type . '_invitations')->where([
-					'invitee'     => $invitation['email'],
+					'invitee' => $invitation['email'],
 					$type . '_id' => $data->id,
-					'status'      => 0
+					'status' => 0
 				])->first();
 
 				if (!$previousInvitation) {
 					// Input to the invitations table
 					DB::table($type . '_invitations')->insert([
-						'inviter_id'  => $user->id,
-						'invitee'     => $invitation['email'],
+						'inviter_id' => $user->id,
+						'invitee' => $invitation['email'],
 						$type . '_id' => $data->id,
-						'role'        => $invitation['role'],
-						'token'       => $token,
-						'created_at'  => Carbon::now(),
-						'updated_at'  => Carbon::now()
+						'role' => $invitation['role'],
+						'token' => $token,
+						'created_at' => Carbon::now(),
+						'updated_at' => Carbon::now()
 					]);
 
 					// Send email to the invitee
 					Mail::send('emails.invitation', [
-						'type'     => $type,
-						'name'     => $data->name,
+						'type' => $type,
+						'name' => $data->name,
 						'userName' => $user->first_name . " " . $user->last_name,
-						'role'     => $invitation['role'],
-						'token'    => $token
-					], function ($message) use ($invitation)
-					{
+						'role' => $invitation['role'],
+						'token' => $token
+					], function ($message) use ($invitation) {
 						$message->from('info@informed365.com', 'Informed 365');
 						$message->to($invitation['email']);
 					});
@@ -149,8 +148,8 @@ class Controller extends BaseController
 
 		$invitation = DB::table($type . '_invitations')->where([
 			'invitee' => $user->email,
-			'token'   => $token,
-			'status'  => 0
+			'token' => $token,
+			'status' => 0
 		])->first();
 
 		// Send error if token does not exist
@@ -166,23 +165,23 @@ class Controller extends BaseController
 
 		// Send error if user already exists in the Team or Application
 		if (DB::table($type . '_users')->where([
-			'user_id'     => $user->id,
+			'user_id' => $user->id,
 			$type . '_id' => $dataId
 		])->first()) {
 			return $this->returnErrorMessage(403, 'User is already included in the ' . $type);
 		}
 
 		if (DB::table($type . '_users')->insert([
-			'user_id'     => $user->id,
+			'user_id' => $user->id,
 			$type . '_id' => $dataId,
-			'role'        => $invitation->role,
-			'created_at'  => Carbon::now(),
-			'updated_at'  => Carbon::now()
+			'role' => $invitation->role,
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now()
 		])) {
 			// Remove token and update status at invitations table
 			DB::table($type . '_invitations')->where('id', $invitation->id)->update([
-				'token'      => null,
-				'status'     => 1,
+				'token' => null,
+				'status' => 1,
 				'updated_at' => Carbon::now()
 			]);
 
@@ -216,18 +215,18 @@ class Controller extends BaseController
 
 		// Send error if user already exists in the Team or Application
 		if (DB::table($type . '_users')->where([
-			'user_id'     => $user->id,
+			'user_id' => $user->id,
 			$type . '_id' => $data->id
 		])->first()) {
 			return $this->returnErrorMessage(403, 'User is already included in the ' . $type);
 		}
 
 		if (DB::table($type . '_users')->insert([
-			'user_id'     => $user->id,
+			'user_id' => $user->id,
 			$type . '_id' => $data->id,
-			'role'        => 'User',
-			'created_at'  => Carbon::now(),
-			'updated_at'  => Carbon::now()
+			'role' => 'User',
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now()
 		])) {
 			return $this->returnSuccessMessage('message', 'You have joined the ' . $type . ' successfully.');
 		};

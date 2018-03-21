@@ -45,7 +45,7 @@ class AnswerController extends Controller
 	{
 		$this->validate($request, [
 			'answer' => 'required',
-			'order'  => 'required|integer|min:0'
+			'order' => 'required|integer|min:0'
 		]);
 
 		try {
@@ -110,7 +110,7 @@ class AnswerController extends Controller
 	{
 		$this->validate($request, [
 			'answer' => 'filled',
-			'order'  => 'filled|integer|min:0'
+			'order' => 'filled|integer|min:0'
 		]);
 
 		try {

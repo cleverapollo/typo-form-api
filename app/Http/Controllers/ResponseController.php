@@ -44,7 +44,7 @@ class ResponseController extends Controller
 	public function store($submission_id, Request $request)
 	{
 		$this->validate($request, [
-			'response'  => 'required',
+			'response' => 'required',
 			'answer_id' => 'required|integer|min:1'
 		]);
 
@@ -109,7 +109,7 @@ class ResponseController extends Controller
 	public function update($submission_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'response'  => 'filled',
+			'response' => 'filled',
 			'answer_id' => 'filled|integer|min:1'
 		]);
 
@@ -132,7 +132,7 @@ class ResponseController extends Controller
 
 			if ($submission->responses()->where('id', $id)->delete()) {
 				$new = $submission->responses()->create([
-					'response'  => $newResponse->response,
+					'response' => $newResponse->response,
 					'answer_id' => $newResponse->answer_id
 				]);
 

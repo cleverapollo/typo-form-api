@@ -45,8 +45,7 @@ trait ResetsPasswords
 		// will update the password on an actual user model and persist it to the
 		// database. Otherwise we will parse the error and return the response.
 		$response = $this->broker()->reset(
-			$this->credentials($request), function ($user, $password)
-		{
+			$this->credentials($request), function ($user, $password) {
 			$this->resetPassword($user, $password);
 		}
 		);
@@ -67,8 +66,8 @@ trait ResetsPasswords
 	protected function rules()
 	{
 		return [
-			'token'    => 'required',
-			'email'    => 'required|email',
+			'token' => 'required',
+			'email' => 'required|email',
 			'password' => 'required|confirmed|min:6|max:191',
 		];
 	}
@@ -128,7 +127,7 @@ trait ResetsPasswords
 	protected function sendResetResponse($response)
 	{
 		return response()->json([
-			'status'  => 'success',
+			'status' => 'success',
 			'message' => trans($response)
 		], 200);
 //        return redirect($this->redirectPath())
@@ -146,7 +145,7 @@ trait ResetsPasswords
 	protected function sendResetFailedResponse(Request $request, $response)
 	{
 		return response()->json([
-			'status'  => 'fail',
+			'status' => 'fail',
 			'message' => trans($response)
 		], 503);
 //        return redirect()->back()

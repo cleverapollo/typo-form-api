@@ -66,7 +66,7 @@ trait AuthenticatesUsers
 	{
 		$this->validate($request, [
 			$this->username() => 'required|email',
-			'password'        => 'required|string',
+			'password' => 'required|string',
 		]);
 	}
 
@@ -92,8 +92,8 @@ trait AuthenticatesUsers
 			$user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
 
 			return User::where('id', $user->id)
-			           ->select('id', 'first_name', 'last_name', 'email', 'role', 'api_token')
-			           ->first();
+				->select('id', 'first_name', 'last_name', 'email', 'role', 'api_token')
+				->first();
 		}
 
 		return null;
@@ -154,7 +154,7 @@ trait AuthenticatesUsers
 	protected function sendFailedLoginResponse(Request $request)
 	{
 		return response()->json([
-			'status'  => 'fail',
+			'status' => 'fail',
 			'message' => 'Invalid email or password.'
 		], 401);
 //        throw ValidationException::withMessages([
@@ -185,7 +185,7 @@ trait AuthenticatesUsers
 		if (!$user) {
 			$user = User::where('api_token', $request->input('api_token'))->first();
 		}
-		$user->api_token   = null;
+		$user->api_token = null;
 		$user->expire_date = null;
 		$user->save();
 

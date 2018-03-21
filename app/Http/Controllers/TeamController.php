@@ -52,7 +52,8 @@ class TeamController extends Controller
 	public function store($application_id, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191'
+			'name' => 'required|max:191',
+			'invitations' => 'array'
 		]);
 
 		try {
@@ -63,10 +64,10 @@ class TeamController extends Controller
 
 			// Create team
 			$team = Auth::user()->teams()->create([
-				'name'           => $request->input('name'),
-				'description'    => $request->input('description', null),
+				'name' => $request->input('name'),
+				'description' => $request->input('description', null),
 				'application_id' => $application_id,
-				'share_token'    => $share_token
+				'share_token' => $share_token
 			]);
 
 			if ($team) {
@@ -96,7 +97,7 @@ class TeamController extends Controller
 	public function show($application_id, $id)
 	{
 		$team = Auth::user()->teams()->where([
-			'team_id'        => $id,
+			'team_id' => $id,
 			'application_id' => $application_id
 		])->first();
 
@@ -119,7 +120,7 @@ class TeamController extends Controller
 	public function getUsers($application_id, $id)
 	{
 		$team = Auth::user()->teams()->where([
-			'team_id'        => $id,
+			'team_id' => $id,
 			'application_id' => $application_id
 		])->first();
 
@@ -128,7 +129,7 @@ class TeamController extends Controller
 
 			$invitedUsers = TeamInvitation::where([
 				'team_id' => $team->id,
-				'status'  => 0
+				'status' => 0
 			])->get();
 
 			$unacceptedUsers = [];
@@ -140,7 +141,7 @@ class TeamController extends Controller
 			}
 
 			return $this->returnSuccessMessage('users', [
-				'current'    => UserResource::collection($currentUsers),
+				'current' => UserResource::collection($currentUsers),
 				'unaccepted' => $unacceptedUsers
 			]);
 		}
@@ -167,7 +168,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 			$team = $user->teams()->where([
-				'team_id'        => $id,
+				'team_id' => $id,
 				'application_id' => $application_id
 			])->first();
 
@@ -207,7 +208,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 			$team = $user->teams()->where([
-				'team_id'        => $id,
+				'team_id' => $id,
 				'application_id' => $application_id
 			])->first();
 
@@ -240,7 +241,7 @@ class TeamController extends Controller
 	{
 		$user = Auth::user();
 		$team = $user->teams()->where([
-			'team_id'        => $id,
+			'team_id' => $id,
 			'application_id' => $application_id
 		])->first();
 
@@ -270,7 +271,7 @@ class TeamController extends Controller
 	{
 		$user = Auth::user();
 		$team = $user->teams()->where([
-			'team_id'        => $id,
+			'team_id' => $id,
 			'application_id' => $application_id
 		])->first();
 
@@ -334,7 +335,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 			$team = $user->teams()->where([
-				'team_id'        => $team_id,
+				'team_id' => $team_id,
 				'application_id' => $application_id
 			])->first();
 
@@ -385,7 +386,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 			$team = $user->teams()->where([
-				'team_id'        => $team_id,
+				'team_id' => $team_id,
 				'application_id' => $application_id
 			])->first();
 

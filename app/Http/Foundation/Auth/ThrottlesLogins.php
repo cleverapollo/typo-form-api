@@ -54,7 +54,7 @@ trait ThrottlesLogins
 		);
 
 		return response()->json([
-			'status'  => 'fail',
+			'status' => 'fail',
 			'message' => 'Too much failed login attempt. Login is blocked. Please try again 3 minutes later.'
 		], 423);
 //        throw ValidationException::withMessages([

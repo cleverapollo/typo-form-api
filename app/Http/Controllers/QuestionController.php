@@ -44,12 +44,11 @@ class QuestionController extends Controller
 	public function store($section_id, Request $request)
 	{
 		$this->validate($request, [
-			'question'         => 'required',
-			'description'      => 'required',
-			'mandatory'        => 'boolean',
-			'group_id'         => 'nullable|integer|min:1',
+			'question' => 'required',
+			'description' => 'required',
+			'mandatory' => 'boolean',
 			'question_type_id' => 'required|integer|min:1',
-			'order'            => 'required|integer|min:0'
+			'order' => 'required|integer|min:0'
 		]);
 
 		try {
@@ -61,7 +60,7 @@ class QuestionController extends Controller
 			}
 
 			// Create question
-			$question = $section->questions()->create($request->only('question', 'description', 'mandatory', 'group_id', 'question_type_id', 'order'));
+			$question = $section->questions()->create($request->only('question', 'description', 'mandatory', 'question_type_id', 'order'));
 
 			if ($question) {
 				return $this->returnSuccessMessage('question', new QuestionResource($question));
@@ -113,12 +112,11 @@ class QuestionController extends Controller
 	public function update($section_id, Request $request, $id)
 	{
 		$this->validate($request, [
-			'question'         => 'filled',
-			'description'      => 'filled',
-			'mandatory'        => 'boolean',
-			'group_id'         => 'nullable|integer|min:1',
+			'question' => 'filled',
+			'description' => 'filled',
+			'mandatory' => 'boolean',
 			'question_type_id' => 'filled|integer|min:1',
-			'order'            => 'filled|integer|min:0'
+			'order' => 'filled|integer|min:0'
 		]);
 
 		try {
@@ -137,7 +135,7 @@ class QuestionController extends Controller
 			}
 
 			// Update question
-			if ($question->fill($request->only('question', 'description', 'mandatory', 'group_id', 'question_type_id', 'order'))->save()) {
+			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'order'))->save()) {
 				return $this->returnSuccessMessage('question', new QuestionResource($question));
 			}
 

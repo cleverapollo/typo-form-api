@@ -47,7 +47,8 @@ class ApplicationController extends Controller
 	public function store(Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191'
+			'name' => 'required|max:191',
+			'invitations' => 'array'
 		]);
 
 		try {
@@ -64,7 +65,7 @@ class ApplicationController extends Controller
 
 			// Create application
 			$application = $user->applications()->create([
-				'name'        => $request->input('name'),
+				'name' => $request->input('name'),
 				'share_token' => $share_token
 			]);
 
@@ -111,7 +112,7 @@ class ApplicationController extends Controller
 	 */
 	public function getUsers($id)
 	{
-		$user        = Auth::user();
+		$user = Auth::user();
 		$application = $user->applications()->where('application_id', $id)->first();
 
 		if ($application) {
@@ -125,7 +126,7 @@ class ApplicationController extends Controller
 
 			$invitedUsers = ApplicationInvitation::where([
 				'application_id' => $application->id,
-				'status'         => 0
+				'status' => 0
 			])->get();
 
 			$unacceptedUsers = [];
@@ -137,7 +138,7 @@ class ApplicationController extends Controller
 			}
 
 			return $this->returnSuccessMessage('users', [
-				'current'    => UserResource::collection($currentUsers),
+				'current' => UserResource::collection($currentUsers),
 				'unaccepted' => $unacceptedUsers
 			]);
 		}
@@ -161,7 +162,7 @@ class ApplicationController extends Controller
 		]);
 
 		try {
-			$user        = Auth::user();
+			$user = Auth::user();
 			$application = $user->applications()->where('application_id', $id)->first();
 
 			// Send error if application does not exist
@@ -197,7 +198,7 @@ class ApplicationController extends Controller
 	public function destroy($id)
 	{
 		try {
-			$user        = Auth::user();
+			$user = Auth::user();
 			$application = $user->applications()->where('application_id', $id)->first();
 
 			// Check whether user has permission to delete
@@ -227,7 +228,7 @@ class ApplicationController extends Controller
 	 */
 	public function getInvitationToken($id)
 	{
-		$user        = Auth::user();
+		$user = Auth::user();
 		$application = $user->applications()->where('application_id', $id)->first();
 
 		// Send error if application does not exist
@@ -253,7 +254,7 @@ class ApplicationController extends Controller
 	 */
 	public function inviteUsers($id, Request $request)
 	{
-		$user        = Auth::user();
+		$user = Auth::user();
 		$application = $user->applications()->where('application_id', $id)->first();
 
 		// Send error if application does not exist
@@ -313,7 +314,7 @@ class ApplicationController extends Controller
 		]);
 
 		try {
-			$user        = Auth::user();
+			$user = Auth::user();
 			$application = $user->applications()->where([
 				'application_id' => $application_id
 			])->first();
@@ -324,7 +325,7 @@ class ApplicationController extends Controller
 			}
 
 			$applicationUser = ApplicationUser::where([
-				'user_id'        => $id,
+				'user_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
@@ -362,7 +363,7 @@ class ApplicationController extends Controller
 	public function deleteUser($application_id, $id)
 	{
 		try {
-			$user        = Auth::user();
+			$user = Auth::user();
 			$application = $user->applications()->where([
 				'application_id' => $application_id
 			])->first();
@@ -373,7 +374,7 @@ class ApplicationController extends Controller
 			}
 
 			$applicationUser = ApplicationUser::where([
-				'user_id'        => $id,
+				'user_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
@@ -410,7 +411,7 @@ class ApplicationController extends Controller
 	protected function hasPermission($user, $application)
 	{
 		$role = ApplicationUser::where([
-			'user_id'        => $user->id,
+			'user_id' => $user->id,
 			'application_id' => $application->id
 		])->value('role');
 

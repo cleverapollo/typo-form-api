@@ -32,22 +32,22 @@ trait RegistersUsers
 //        $this->validator($request->all())->validate();
 		$this->validate($request, [
 			'first_name' => 'required|string|max:191',
-			'last_name'  => 'required|string|max:191',
-			'email'      => 'required|email|max:191|unique:users',
-			'password'   => 'required|string|min:6|max:191'
+			'last_name' => 'required|string|max:191',
+			'email' => 'required|email|max:191|unique:users',
+			'password' => 'required|string|min:6|max:191'
 		]);
 
 		event(new Registered($user = $this->create($request->all())));
 
 		if ($user) {
 			return response()->json([
-				'status'  => 'success',
+				'status' => 'success',
 				'message' => 'Congratulations! Your account has been created successfully.'
 			], 200);
 		}
 
 		return response()->json([
-			'status'  => 'fail',
+			'status' => 'fail',
 			'message' => 'Sorry. There was an error while creating account. Please try again later.'
 		], 503);
 	}

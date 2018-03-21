@@ -43,8 +43,8 @@ class UserController extends Controller
 	{
 		$this->validate($request, [
 			'first_name' => 'filled|max:191',
-			'last_name'  => 'filled|max:191',
-			'email'      => 'filled|email|max:191'
+			'last_name' => 'filled|max:191',
+			'email' => 'filled|email|max:191'
 		]);
 
 		try {
@@ -91,7 +91,7 @@ class UserController extends Controller
 	public function updateEmail(Request $request)
 	{
 		$this->validate($request, [
-			'email'    => 'required|email|max:191',
+			'email' => 'required|email|max:191',
 			'password' => 'required|min:6|max:191'
 		]);
 
@@ -123,7 +123,7 @@ class UserController extends Controller
 	public function updatePassword(Request $request)
 	{
 		$this->validate($request, [
-			'password'    => 'required|min:6|max:191',
+			'password' => 'required|min:6|max:191',
 			'newPassword' => 'required|min:6|max:191'
 		]);
 

@@ -45,7 +45,7 @@ class SubmissionController extends Controller
 	public function store($form_id, Request $request)
 	{
 		$this->validate($request, [
-			'team_id'      => 'nullable|integer|min:1',
+			'team_id' => 'nullable|integer|min:1',
 			'period_start' => 'nullable|date'
 		]);
 
@@ -59,10 +59,10 @@ class SubmissionController extends Controller
 
 			// Create submission
 			$submission = $form->submissions()->create([
-				'user_id'      => Auth::user()->id,
-				'team_id'      => $request->input('team_id', null),
+				'user_id' => Auth::user()->id,
+				'team_id' => $request->input('team_id', null),
 				'period_start' => $request->input('period_start', null),
-				'period_end'   => $request->input('period_end', null)
+				'period_end' => $request->input('period_end', null)
 			]);
 
 			if ($submission) {
@@ -122,7 +122,7 @@ class SubmissionController extends Controller
 	{
 		$this->validate($request, [
 			'period_start' => 'nullable|date',
-			'period_end'   => 'nullable|date'
+			'period_end' => 'nullable|date'
 		]);
 
 		try {
@@ -134,7 +134,7 @@ class SubmissionController extends Controller
 			}
 
 			$submission = $form->submissions()->where([
-				'id'      => $id,
+				'id' => $id,
 				'user_id' => Auth::user()->id
 			])->first();
 
@@ -175,7 +175,7 @@ class SubmissionController extends Controller
 			}
 
 			$submission = $form->submissions()->where([
-				'id'      => $id,
+				'id' => $id,
 				'user_id' => Auth::user()->id
 			])->first();
 

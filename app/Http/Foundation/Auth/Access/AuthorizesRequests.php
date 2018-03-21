@@ -110,11 +110,11 @@ trait AuthorizesRequests
 	protected function resourceAbilityMap()
 	{
 		return [
-			'show'    => 'view',
-			'create'  => 'create',
-			'store'   => 'create',
-			'edit'    => 'update',
-			'update'  => 'update',
+			'show' => 'view',
+			'create' => 'create',
+			'store' => 'create',
+			'edit' => 'update',
+			'update' => 'update',
 			'destroy' => 'delete',
 		];
 	}

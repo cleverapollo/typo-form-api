@@ -11,13 +11,11 @@
 |
 */
 
-$router->get('/', function () use ($router)
-{
+$router->get('/', function () use ($router) {
 	return $router->app->version();
 });
 
-$router->group(['prefix' => 'api'], function () use ($router)
-{
+$router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('login', 'Auth\LoginController@login');
 	$router->post('logout', 'Auth\LoginController@logout');
 	$router->post('register', 'Auth\RegisterController@register');
@@ -29,8 +27,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 	$router->post('join/team/{token}', 'TeamController@join');
 	$router->post('join/application/{token}', 'ApplicationController@join');
 
-	$router->group(['prefix' => 'user'], function () use ($router)
-	{
+	$router->group(['prefix' => 'user'], function () use ($router) {
 		$router->get('/', 'UserController@show');
 		$router->put('/', 'UserController@update');
 		$router->delete('/', 'UserController@destroy');
@@ -38,8 +35,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 		$router->put('/update-password', 'UserController@updatePassword');
 	});
 
-	$router->group(['prefix' => 'application'], function () use ($router)
-	{
+	$router->group(['prefix' => 'application'], function () use ($router) {
 		$router->get('/', 'ApplicationController@index');
 		$router->post('/', 'ApplicationController@store');
 		$router->get('{id}', 'ApplicationController@show');
@@ -53,8 +49,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 		$router->put('{application_id}/user/{id}', 'ApplicationController@updateUser');
 		$router->delete('{application_id}/user/{id}', 'ApplicationController@deleteUser');
 
-		$router->group(['prefix' => '{application_id}/team'], function () use ($router)
-		{
+		$router->group(['prefix' => '{application_id}/team'], function () use ($router) {
 			$router->get('/', 'TeamController@index');
 			$router->post('/', 'TeamController@store');
 			$router->get('{id}', 'TeamController@show');
@@ -69,8 +64,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 			$router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');
 		});
 
-		$router->group(['prefix' => '{application_id}/form'], function () use ($router)
-		{
+		$router->group(['prefix' => '{application_id}/form'], function () use ($router) {
 			$router->get('/', 'FormController@index');
 			$router->post('/', 'FormController@store');
 			$router->get('{id}', 'FormController@show');
@@ -79,10 +73,8 @@ $router->group(['prefix' => 'api'], function () use ($router)
 		});
 	});
 
-	$router->group(['prefix' => 'form'], function () use ($router)
-	{
-		$router->group(['prefix' => '{form_id}/submission'], function () use ($router)
-		{
+	$router->group(['prefix' => 'form'], function () use ($router) {
+		$router->group(['prefix' => '{form_id}/submission'], function () use ($router) {
 			$router->get('/', 'SubmissionController@index');
 			$router->post('/', 'SubmissionController@store');
 			$router->get('{id}', 'SubmissionController@show');
@@ -90,29 +82,18 @@ $router->group(['prefix' => 'api'], function () use ($router)
 			$router->delete('{id}', 'SubmissionController@destroy');
 		});
 
-		$router->group(['prefix' => '{form_id}/section'], function () use ($router)
-		{
+		$router->group(['prefix' => '{form_id}/section'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
+			$router->put('/', 'SectionController@updateSections');
 			$router->get('{id}', 'SectionController@show');
 			$router->put('{id}', 'SectionController@update');
 			$router->delete('{id}', 'SectionController@destroy');
 		});
 	});
 
-	$router->group(['prefix' => 'section'], function () use ($router)
-	{
-		$router->group(['prefix' => '{section_id}/group'], function () use ($router)
-		{
-			$router->get('/', 'GroupController@index');
-			$router->post('/', 'GroupController@store');
-			$router->get('{id}', 'GroupController@show');
-			$router->put('{id}', 'GroupController@update');
-			$router->delete('{id}', 'GroupController@destroy');
-		});
-
-		$router->group(['prefix' => '{section_id}/question'], function () use ($router)
-		{
+	$router->group(['prefix' => 'section'], function () use ($router) {
+		$router->group(['prefix' => '{section_id}/question'], function () use ($router) {
 			$router->get('/', 'QuestionController@index');
 			$router->post('/', 'QuestionController@store');
 			$router->get('{id}', 'QuestionController@show');
@@ -121,8 +102,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 		});
 	});
 
-	$router->group(['prefix' => 'question/{question_id}/answer'], function () use ($router)
-	{
+	$router->group(['prefix' => 'question/{question_id}/answer'], function () use ($router) {
 		$router->get('/', 'AnswerController@index');
 		$router->post('/', 'AnswerController@store');
 		$router->get('{id}', 'AnswerController@show');
@@ -130,8 +110,7 @@ $router->group(['prefix' => 'api'], function () use ($router)
 		$router->delete('{id}', 'AnswerController@destroy');
 	});
 
-	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router)
-	{
+	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
 		$router->get('/', 'ResponseController@index');
 		$router->post('/', 'ResponseController@store');
 		$router->get('{id}', 'ResponseController@show');

@@ -6,6 +6,8 @@ use Auth;
 use Exception;
 use App\Models\Form;
 use App\Http\Resources\SectionResource;
+use App\Http\Resources\QuestionResource;
+use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -31,6 +33,17 @@ class SectionController extends Controller
 	{
 		$sections = Form::find($form_id)->sections()->get();
 
+		foreach ($sections as $section) {
+			$questions = $section->questions()->get();
+
+			foreach ($questions as $question) {
+				$answers = $question->answers()->get();
+				$question['answers'] = AnswerResource::collection($answers);
+			}
+
+			$section['questions'] = QuestionResource::collection($questions);
+		}
+
 		return $this->returnSuccessMessage('sections', SectionResource::collection($sections));
 	}
 
@@ -45,10 +58,44 @@ class SectionController extends Controller
 	public function store($form_id, Request $request)
 	{
 		$this->validate($request, [
-			'name'       => 'required|max:191',
-			'section_id' => 'nullable|integer|min:1',
-			'order'      => 'required|integer|min:0'
+			'sections' => 'array'
 		]);
+
+		$sections = $request->input('sections', []);
+		if ($sections && count($sections) > 0) {
+			foreach ($sections as $section) {
+				$this->validate($section, [
+					'name' => 'required|max:191',
+					'order' => 'required|integer|min:0',
+					'section_id' => 'nullable|integer|min:1',
+					'questions' => 'array'
+				]);
+
+				$questions = $request->input('questions', []);
+				if ($questions && count($questions) > 0) {
+					foreach ($questions as $question) {
+						$this->validate($question, [
+							'question' => 'required',
+							'description' => 'required',
+							'mandatory' => 'boolean',
+							'question_type_id' => 'required|integer|min:1',
+							'order' => 'required|integer|min:0',
+							'answers' => 'array'
+						]);
+
+						$answers = $question['answers'];
+						if ($answers && count($answers) > 0) {
+							foreach ($answers as $answer) {
+								$this->validate($answer, [
+									'answer' => 'required',
+									'order' => 'required|integer|min:0'
+								]);
+							}
+						}
+					}
+				}
+			}
+		}
 
 		try {
 			$form = Form::find($form_id);
@@ -58,18 +105,26 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'create section');
 			}
 
-			// Create section
-			$section = $form->sections()->create($request->only('name', 'section_id', 'order'));
+			// Create sections
+			$createdSections = [];
+			foreach ($sections as $section) {
+				$createdSection = $form->sections()->create([
+					'name' => $section['name'],
+					'order' => $section['order'],
+					'section_id' => $section['section_id']
+				]);
 
-			if ($section) {
-				return $this->returnSuccessMessage('section', new SectionResource($section));
+				// ToDo: create relative questions and answers
+
+				array_push($createdSection, $createdSection);
 			}
 
-			// Send error if section is not created
-			return $this->returnError('section', 503, 'create');
+			return $this->returnSuccessMessage('sections', SectionResource::collection($createdSections));
 		} catch (Exception $e) {
+			// Send error if section is not created
+			return $this->returnError('sections', 503, 'create');
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+//			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
 		}
 	}
 
@@ -111,9 +166,9 @@ class SectionController extends Controller
 	public function update($form_id, Request $request, $id)
 	{
 		$this->validate($request, [
-			'name'       => 'filled|max:191',
-			'section_id' => 'nullable|integer|min:1',
-			'order'      => 'filled|integer|min:0'
+			'name' => 'filled|max:191',
+			'order' => 'filled|integer|min:0',
+			'section_id' => 'nullable|integer|min:1'
 		]);
 
 		try {
