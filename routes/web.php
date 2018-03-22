@@ -85,10 +85,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->group(['prefix' => '{form_id}/section'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
-			$router->put('/', 'SectionController@updateSections');
 			$router->get('{id}', 'SectionController@show');
 			$router->put('{id}', 'SectionController@update');
 			$router->delete('{id}', 'SectionController@destroy');
+
+			$router->post('/store', 'SectionController@storeSections');
+			$router->put('/update', 'SectionController@updateSections');
 		});
 	});
 
