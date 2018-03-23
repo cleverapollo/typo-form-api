@@ -26,6 +26,7 @@ class Response extends Model
 	];
 
 	/**
+	use Illuminate\Database\Eloquent\SoftDeletes;
 	 * Get the submission that owns the Response.
 	 */
 	public function submission()
