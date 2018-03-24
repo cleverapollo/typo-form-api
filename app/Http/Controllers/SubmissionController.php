@@ -6,6 +6,7 @@ use Auth;
 use Exception;
 use App\Models\Form;
 use App\Http\Resources\SubmissionResource;
+use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -30,6 +31,11 @@ class SubmissionController extends Controller
 	public function index($form_id)
 	{
 		$submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
+
+		foreach ($submissions as $submission) {
+			$responses = $submission->responses()->get();
+			$submission['responses'] = ResponseResource::collection($responses);
+		}
 
 		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
 	}
@@ -101,6 +107,9 @@ class SubmissionController extends Controller
 			if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
 				return $this->returnError('submission', 403, 'see');
 			}
+
+			$responses = $submission->responses()->get();
+			$submission['responses'] = ResponseResource::collection($responses);
 
 			return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 		}

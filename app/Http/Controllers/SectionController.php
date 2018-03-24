@@ -229,6 +229,15 @@ class SectionController extends Controller
 
 		$section = $form->sections()->where('id', $id)->first();
 		if ($section) {
+			$questions = $section->questions()->get();
+
+			foreach ($questions as $question) {
+				$answers = $question->answers()->get();
+				$question['answers'] = AnswerResource::collection($answers);
+			}
+
+			$section['questions'] = QuestionResource::collection($questions);
+
 			return $this->returnSuccessMessage('section', new SectionResource($section));
 		}
 

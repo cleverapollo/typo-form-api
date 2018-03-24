@@ -20,7 +20,8 @@ class SubmissionResource extends JsonResource
 			'user_id' => $this->user_id,
 			'team_id' => $this->team_id,
 			'period_start' => $this->period_start,
-			'period_end' => $this->period_end
+			'period_end' => $this->period_end,
+			'responses' => $this->responses
 		];
 	}
 }
