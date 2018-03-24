@@ -67,7 +67,7 @@ class ResponseController extends Controller
 			return $this->returnError('response', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -145,7 +145,7 @@ class ResponseController extends Controller
 			return $this->returnError('response', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -182,7 +182,7 @@ class ResponseController extends Controller
 			return $this->returnError('response', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }

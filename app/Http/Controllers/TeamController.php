@@ -82,7 +82,7 @@ class TeamController extends Controller
 			return $this->returnError('team', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -191,7 +191,7 @@ class TeamController extends Controller
 			return $this->returnError('team', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -225,7 +225,7 @@ class TeamController extends Controller
 			return $this->returnError('team', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -368,7 +368,7 @@ class TeamController extends Controller
 			return $this->returnError('user role', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -418,7 +418,7 @@ class TeamController extends Controller
 			return $this->returnError('user', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 

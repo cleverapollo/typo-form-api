@@ -57,7 +57,7 @@ class UserController extends Controller
 			return $this->returnError('user', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -77,7 +77,7 @@ class UserController extends Controller
 			return $this->returnError('user', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -109,7 +109,7 @@ class UserController extends Controller
 			return $this->returnErrorMessage(403, 'Invalid password.');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -141,7 +141,7 @@ class UserController extends Controller
 			return $this->returnErrorMessage(403, 'Invalid password.');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }

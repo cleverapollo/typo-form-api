@@ -82,7 +82,7 @@ class SectionController extends Controller
 			return $this->returnError('section', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -206,7 +206,7 @@ class SectionController extends Controller
 			// Send error if section is not created
 			return $this->returnError('sections', 503, 'create');
 			// Send error
-			// return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			// return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -277,7 +277,7 @@ class SectionController extends Controller
 			return $this->returnError('section', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -429,7 +429,7 @@ class SectionController extends Controller
 			// Send error if section is not created
 			return $this->returnError('sections', 503, 'update');
 			// Send error
-			// return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			// return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -466,7 +466,7 @@ class SectionController extends Controller
 			return $this->returnError('section', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }

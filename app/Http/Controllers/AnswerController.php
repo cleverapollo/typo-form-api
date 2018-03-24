@@ -67,7 +67,7 @@ class AnswerController extends Controller
 			return $this->returnError('answer', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -137,7 +137,7 @@ class AnswerController extends Controller
 			return $this->returnError('answer', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -174,7 +174,7 @@ class AnswerController extends Controller
 			return $this->returnError('answer', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage($e->getCode(), $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }
