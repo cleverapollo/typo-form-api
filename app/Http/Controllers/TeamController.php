@@ -56,6 +56,14 @@ class TeamController extends Controller
 			'invitations' => 'array'
 		]);
 
+		$invitations = $request->input('invitations', []);
+		foreach ($invitations as $invitation) {
+			$this->validate($invitation, [
+				'email' => 'required|email',
+				'role_id' => 'required|integer|min:1|max:3'
+			]);
+		}
+
 		try {
 			$share_token = base64_encode(str_random(40));
 			while (!is_null(Team::where('share_token', $share_token)->first())) {
@@ -72,7 +80,6 @@ class TeamController extends Controller
 
 			if ($team) {
 				// Send invitation
-				$invitations = $request->input('invitations', []);
 				$this->sendInvitation('team', $team, $invitations);
 
 				return $this->returnSuccessMessage('team', new TeamResource($team));
@@ -269,6 +276,14 @@ class TeamController extends Controller
 	 */
 	public function inviteUsers($application_id, $id, Request $request)
 	{
+		$invitations = $request->input('invitations', []);
+		foreach ($invitations as $invitation) {
+			$this->validate($invitation, [
+				'email' => 'required|email',
+				'role_id' => 'required|integer|min:1|max:3'
+			]);
+		}
+
 		$user = Auth::user();
 		$team = $user->teams()->where([
 			'team_id' => $id,
@@ -286,7 +301,6 @@ class TeamController extends Controller
 		}
 
 		// Send invitation
-		$invitations = $request->input('invitations', []);
 		$this->sendInvitation('team', $team, $invitations);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
@@ -329,7 +343,7 @@ class TeamController extends Controller
 	public function updateUser($application_id, $team_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'role' => 'required|max:191'
+			'role_id' => 'required|integer|min:2|max:3'
 		]);
 
 		try {
@@ -360,7 +374,7 @@ class TeamController extends Controller
 			}
 
 			// Update user role
-			if ($teamUser->fill($request->only('role'))->save()) {
+			if ($teamUser->fill($request->only('role_id'))->save()) {
 				return $this->returnSuccessMessage('user', new TeamUserResource($teamUser));
 			}
 
@@ -432,12 +446,12 @@ class TeamController extends Controller
 	 */
 	protected function hasPermission($user, $team)
 	{
-		$role = TeamUser::where([
+		$role_id = TeamUser::where([
 			'user_id' => $user->id,
 			'team_id' => $team->id
-		])->value('role');
+		])->value('role_id');
 
-		if ($user->role != "SuperAdmin" && $role != "Admin") {
+		if ($user->role_id != 1 && $role_id != 2) {
 			return false;
 		}
 

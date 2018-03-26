@@ -104,7 +104,7 @@ class SubmissionController extends Controller
 		$submission = $form->submissions()->where('id', $id)->first();
 		if ($submission) {
 			$user = Auth::user();
-			if ($user->role != "SuperAdmin" || $submission->user_id != $user->id) {
+			if ($user->role_id != 1 || $submission->user_id != $user->id) {
 				return $this->returnError('submission', 403, 'see');
 			}
 

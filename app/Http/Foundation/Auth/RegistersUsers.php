@@ -37,7 +37,7 @@ trait RegistersUsers
 			'password' => 'required|string|min:6|max:191'
 		]);
 
-		event(new Registered($user = $this->create($request->all())));
+		event(new Registered($user = $this->create($request->only('first_name', 'last_name', 'email', 'password'))));
 
 		if ($user) {
 			return response()->json([

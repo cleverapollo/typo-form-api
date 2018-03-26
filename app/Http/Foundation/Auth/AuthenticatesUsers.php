@@ -4,6 +4,7 @@ namespace App\Http\Foundation\Auth;
 
 use App\User;
 use Carbon\Carbon;
+use App\Http\Resources\AuthResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -73,9 +74,8 @@ trait AuthenticatesUsers
 	/**
 	 * Attempt to log the user into the application.
 	 *
-	 * @param  \Illuminate\Http\Request $request
-	 *
-	 * @return bool
+	 * @param Request $request
+	 * @return AuthResource|null
 	 */
 	protected function attemptLogin(Request $request)
 	{
@@ -90,10 +90,7 @@ trait AuthenticatesUsers
 			}
 			$expire_date = Carbon::now();
 			$user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
-
-			return User::where('id', $user->id)
-				->select('id', 'first_name', 'last_name', 'email', 'role', 'api_token')
-				->first();
+			return new AuthResource($user);
 		}
 
 		return null;

@@ -51,10 +51,18 @@ class ApplicationController extends Controller
 			'invitations' => 'array'
 		]);
 
+		$invitations = $request->input('invitations', []);
+		foreach ($invitations as $invitation) {
+			$this->validate($invitation, [
+				'email' => 'required|email',
+				'role_id' => 'required|integer|min:1|max:3'
+			]);
+		}
+
 		try {
 			// Check whether user is SuperAdmin or not
 			$user = Auth::user();
-			if ($user->role != "SuperAdmin") {
+			if ($user->role_id != 1) {
 				return $this->returnError('application', 403, 'create');
 			}
 
@@ -71,7 +79,6 @@ class ApplicationController extends Controller
 
 			if ($application) {
 				// Send invitation
-				$invitations = $request->input('invitations', []);
 				$this->sendInvitation('application', $application, $invitations);
 
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
@@ -254,6 +261,14 @@ class ApplicationController extends Controller
 	 */
 	public function inviteUsers($id, Request $request)
 	{
+		$invitations = $request->input('invitations', []);
+		foreach ($invitations as $invitation) {
+			$this->validate($invitation, [
+				'email' => 'required|email',
+				'role_id' => 'required|integer|min:1|max:3'
+			]);
+		}
+
 		$user = Auth::user();
 		$application = $user->applications()->where('application_id', $id)->first();
 
@@ -268,7 +283,6 @@ class ApplicationController extends Controller
 		}
 
 		// Send invitation
-		$invitations = $request->input('invitations', []);
 		$this->sendInvitation('application', $application, $invitations);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
@@ -310,7 +324,7 @@ class ApplicationController extends Controller
 	public function updateUser($application_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'role' => 'required|max:191'
+			'role_id' => 'required|integer|min:1|max:3'
 		]);
 
 		try {
@@ -340,7 +354,7 @@ class ApplicationController extends Controller
 			}
 
 			// Update user role
-			if ($applicationUser->fill($request->only('role'))->save()) {
+			if ($applicationUser->fill($request->only('role_id'))->save()) {
 				return $this->returnSuccessMessage('user', new ApplicationUserResource($applicationUser));
 			}
 
@@ -410,12 +424,12 @@ class ApplicationController extends Controller
 	 */
 	protected function hasPermission($user, $application)
 	{
-		$role = ApplicationUser::where([
+		$role_id = ApplicationUser::where([
 			'user_id' => $user->id,
 			'application_id' => $application->id
-		])->value('role');
+		])->value('role_id');
 
-		if ($user->role != "SuperAdmin" && $role != "Admin") {
+		if ($user->role_id != 1 && $role_id != 2) {
 			return false;
 		}
 

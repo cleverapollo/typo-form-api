@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Carbon\Carbon;
 use App\User;
+use App\Models\Role;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class Controller extends BaseController
 	 */
 	protected function returnError($data, $status, $action)
 	{
-		$errorMsg = "";
+		$errorMsg = '';
 		if ($status == 404) {
 			$errorMsg = 'There is no ' . $data . ' with this ID.';
 		} else if ($status == 503) {
@@ -79,8 +80,12 @@ class Controller extends BaseController
 	protected function sendInvitation($type, $data, $invitations)
 	{
 		if ($invitations && count($invitations) > 0) {
-			$user = Auth::user();
 			foreach ($invitations as $invitation) {
+				$this->validate($invitation, [
+					'email' => 'required|email',
+					'role_id' => 'required|integer|min:1|max:3'
+				]);
+
 				$token = base64_encode(str_random(40));
 				while (DB::table($type . '_invitations')->where('token', $token)->first()) {
 					$token = base64_encode(str_random(40));
@@ -107,12 +112,14 @@ class Controller extends BaseController
 				])->first();
 
 				if (!$previousInvitation) {
+					$user = Auth::user();
+
 					// Input to the invitations table
 					DB::table($type . '_invitations')->insert([
 						'inviter_id' => $user->id,
 						'invitee' => $invitation['email'],
 						$type . '_id' => $data->id,
-						'role' => $invitation['role'],
+						'role_id' => $invitation['role_id'],
 						'token' => $token,
 						'created_at' => Carbon::now(),
 						'updated_at' => Carbon::now()
@@ -123,7 +130,7 @@ class Controller extends BaseController
 						'type' => $type,
 						'name' => $data->name,
 						'userName' => $user->first_name . " " . $user->last_name,
-						'role' => $invitation['role'],
+						'role' => Role::find($invitation['role_id'])->role,
 						'token' => $token
 					], function ($message) use ($invitation) {
 						$message->from('info@informed365.com', 'Informed 365');
@@ -174,7 +181,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $dataId,
-			'role' => $invitation->role,
+			'role_id' => $invitation->role_id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {
@@ -224,7 +231,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $data->id,
-			'role' => 'User',
+			'role_id' => 3,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {

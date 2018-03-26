@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ApplicationUserResource extends JsonResource
+class AuthResource extends JsonResource
 {
 	/**
 	 * Transform the resource into an array.
@@ -16,9 +15,12 @@ class ApplicationUserResource extends JsonResource
 	public function toArray($request)
 	{
 		return [
-			'user_id' => $this->user_id,
-			'application_id' => $this->application_id,
-			'role' => Role::find($this->role_id)->role
+			'id' => $this->id,
+			'first_name' => $this->first_name,
+			'last_name' => $this->last_name,
+			'email' => $this->email,
+			'role' => $this->role->role,
+			'api_token' => $this->api_token
 		];
 	}
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
@@ -19,12 +20,11 @@ class UserResource extends JsonResource
 			'first_name' => $this->first_name,
 			'last_name' => $this->last_name,
 			'email' => $this->email,
-			'role' => $this->role,
-			'team_pivot' => $this->whenPivotLoaded('team_users', function () {
-				return $this->pivot;
+			'team_role' => $this->whenPivotLoaded('team_users', function () {
+				return Role::find($this->pivot->role_id)->role;
 			}),
-			'application_pivot' => $this->whenPivotLoaded('application_users', function () {
-				return $this->pivot;
+			'application_role' => $this->whenPivotLoaded('application_users', function () {
+				return Role::find($this->pivot->role_id)->role;
 			})
 		];
 	}

@@ -12,7 +12,7 @@ class TeamInvitation extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'inviter_id', 'invitee', 'team_id', 'role', 'token', 'status'
+		'inviter_id', 'invitee', 'team_id', 'role_id', 'token', 'status'
 	];
 
 	/**

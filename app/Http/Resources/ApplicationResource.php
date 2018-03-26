@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ApplicationResource extends JsonResource
@@ -17,8 +18,8 @@ class ApplicationResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'name' => $this->name,
-			'pivot' => $this->whenPivotLoaded('application_users', function () {
-				return $this->pivot;
+			'role' => $this->whenPivotLoaded('application_users', function () {
+				return Role::find($this->pivot->role_id)->role;
 			})
 		];
 	}

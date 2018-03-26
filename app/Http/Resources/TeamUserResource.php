@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class TeamUserResource extends JsonResource
@@ -17,7 +18,7 @@ class TeamUserResource extends JsonResource
 		return [
 			'user_id' => $this->user_id,
 			'team_id' => $this->team_id,
-			'role' => $this->role
+			'role' => Role::find($this->role_id)->role
 		];
 	}
 }

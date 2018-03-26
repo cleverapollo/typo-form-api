@@ -23,7 +23,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 * @var array
 	 */
 	protected $fillable = [
-		'first_name', 'last_name', 'email', 'password', 'api_token'
+		'first_name', 'last_name', 'email', 'password', 'role_id', 'api_token'
 	];
 
 	/**
@@ -40,7 +40,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function teams()
 	{
-		return $this->belongsToMany('App\Models\Team', 'team_users')->withPivot('role');
+		return $this->belongsToMany('App\Models\Team', 'team_users')->withPivot('role_id');
 	}
 
 	/**
@@ -48,7 +48,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function applications()
 	{
-		return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role');
+		return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role_id');
 	}
 
 	/**
@@ -57,5 +57,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	public function submissions()
 	{
 		return $this->hasMany('App\Models\Submission');
+	}
+
+	/**
+	 * Get user role
+	 */
+	public function role()
+	{
+		return $this->belongsTo('App\Models\Role');
 	}
 }
