@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Form;
+use App\Models\Section;
 use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
@@ -59,7 +60,7 @@ class SectionController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
-			'order' => 'required|integer|min:0',
+			'order' => 'filled|integer|min:0',
 			'section_id' => 'nullable|integer|min:1'
 		]);
 
@@ -71,8 +72,21 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'create section');
 			}
 
+			$order = $request->input('order');
+			if (!$order) {
+				if (Section::where('form_id', $form_id)->exists()) {
+					$order = Section::where('form_id', $form_id)->max('order') + 1;
+				} else {
+					$order = 0;
+				}
+			}
+
 			// Create section
-			$section = $form->sections()->create($request->only('name', 'section_id', 'order'));
+			$section = $form->sections()->create([
+				'name' => $request->input('name'),
+				'section_id' => $request->input('section_id'),
+				'order' => $order
+			]);
 
 			if ($section) {
 				return $this->returnSuccessMessage('section', new SectionResource($section));
@@ -105,7 +119,7 @@ class SectionController extends Controller
 			foreach ($sections as $section) {
 				$this->validate($section, [
 					'name' => 'required|max:191',
-					'order' => 'required|integer|min:0',
+					'order' => 'filled|integer|min:0',
 					'section_id' => 'nullable|integer|min:1',
 					'questions' => 'array'
 				]);
@@ -147,9 +161,18 @@ class SectionController extends Controller
 			// Create sections
 			$createdSections = [];
 			foreach ($sections as $section) {
+				$order = $section['order'];
+				if (!$order) {
+					if (Section::where('form_id', $form_id)->exists()) {
+						$order = Section::where('form_id', $form_id)->max('order') + 1;
+					} else {
+						$order = 0;
+					}
+				}
+
 				$createdSection = $form->sections()->create([
 					'name' => $section['name'],
-					'order' => $section['order'],
+					'order' => $order,
 					'section_id' => $section['section_id']
 				]);
 

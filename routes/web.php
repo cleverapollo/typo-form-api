@@ -119,4 +119,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->put('{id}', 'ResponseController@update');
 		$router->delete('{id}', 'ResponseController@destroy');
 	});
+
+	$router->group(['prefix' => 'question_types'], function () use ($router) {
+		$router->get('/', 'QuestionTypeController@index');
+		$router->post('/', 'QuestionTypeController@store');
+		$router->get('{id}', 'QuestionTypeController@show');
+		$router->put('{id}', 'QuestionTypeController@update');
+		$router->delete('{id}', 'QuestionTypeController@destroy');
+	});
 });

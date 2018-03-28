@@ -32,10 +32,10 @@ class SubmissionController extends Controller
 	{
 		$submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
 
-		foreach ($submissions as $submission) {
-			$responses = $submission->responses()->get();
-			$submission['responses'] = ResponseResource::collection($responses);
-		}
+//		foreach ($submissions as $submission) {
+//			$responses = $submission->responses()->get();
+//			$submission['responses'] = ResponseResource::collection($responses);
+//		}
 
 		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
 	}
