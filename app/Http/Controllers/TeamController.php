@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\User;
 use Exception;
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\TeamUser;
 use App\Models\TeamInvitation;
@@ -34,9 +35,7 @@ class TeamController extends Controller
 	 */
 	public function index($application_id)
 	{
-		$teams = Auth::user()->teams()->where([
-			'application_id' => $application_id
-		])->get();
+		$teams = Auth::user()->teams()->where('application_id', $application_id)->get();
 
 		return $this->returnSuccessMessage('teams', TeamResource::collection($teams));
 	}
@@ -60,7 +59,7 @@ class TeamController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'role_id' => 'required|integer|min:1|max:3'
+				'team_role' => 'required'
 			]);
 		}
 
@@ -280,7 +279,7 @@ class TeamController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'role_id' => 'required|integer|min:1|max:3'
+				'team_role' => 'required'
 			]);
 		}
 
@@ -343,10 +342,16 @@ class TeamController extends Controller
 	public function updateUser($application_id, $team_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'role_id' => 'required|integer|min:2|max:3'
+			'team_role' => 'required'
 		]);
 
 		try {
+			// Check whether the role exists or not
+			$role = Role::where('name', $request->input('team_role'))->first();
+			if (!$role) {
+				return $this->returnError('role', 404, 'update user');
+			}
+
 			$user = Auth::user();
 			$team = $user->teams()->where([
 				'team_id' => $team_id,
@@ -374,7 +379,7 @@ class TeamController extends Controller
 			}
 
 			// Update user role
-			if ($teamUser->fill($request->only('role_id'))->save()) {
+			if ($teamUser->fill(['role_id' => $role->id])->save()) {
 				return $this->returnSuccessMessage('user', new TeamUserResource($teamUser));
 			}
 
@@ -451,7 +456,7 @@ class TeamController extends Controller
 			'team_id' => $team->id
 		])->value('role_id');
 
-		if ($user->role_id != 1 && $role_id != 2) {
+		if ($user->role->name != 'Super Admin' && Role::find($role_id)->name != 'Admin') {
 			return false;
 		}
 

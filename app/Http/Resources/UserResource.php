@@ -20,12 +20,12 @@ class UserResource extends JsonResource
 			'first_name' => $this->first_name,
 			'last_name' => $this->last_name,
 			'email' => $this->email,
-			'role' => $this->role->role,
+			'role' => $this->role->name,
 			'team_role' => $this->whenPivotLoaded('team_users', function () {
-				return Role::find($this->pivot->role_id)->role;
+				return Role::find($this->pivot->role_id)->name;
 			}),
 			'application_role' => $this->whenPivotLoaded('application_users', function () {
-				return Role::find($this->pivot->role_id)->role;
+				return Role::find($this->pivot->role_id)->name;
 			})
 		];
 	}

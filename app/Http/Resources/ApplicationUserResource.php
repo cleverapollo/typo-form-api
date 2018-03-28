@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ApplicationUserResource extends JsonResource
@@ -18,7 +17,7 @@ class ApplicationUserResource extends JsonResource
 		return [
 			'user_id' => $this->user_id,
 			'application_id' => $this->application_id,
-			'role' => Role::find($this->role_id)->role
+			'application_role' => $this->role->name
 		];
 	}
 }

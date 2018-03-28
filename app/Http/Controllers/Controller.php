@@ -81,10 +81,11 @@ class Controller extends BaseController
 	{
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
-				$this->validate($invitation, [
-					'email' => 'required|email',
-					'role_id' => 'required|integer|min:1|max:3'
-				]);
+				// Check whether the role exists or not
+				$role = Role::where('role', $invitation[$type . '_role'])->first();
+				if (!$role) {
+					continue;
+				}
 
 				$token = base64_encode(str_random(40));
 				while (DB::table($type . '_invitations')->where('token', $token)->first()) {
@@ -119,7 +120,7 @@ class Controller extends BaseController
 						'inviter_id' => $user->id,
 						'invitee' => $invitation['email'],
 						$type . '_id' => $data->id,
-						'role_id' => $invitation['role_id'],
+						'role_id' => $role->id,
 						'token' => $token,
 						'created_at' => Carbon::now(),
 						'updated_at' => Carbon::now()
@@ -130,7 +131,7 @@ class Controller extends BaseController
 						'type' => $type,
 						'name' => $data->name,
 						'userName' => $user->first_name . " " . $user->last_name,
-						'role' => Role::find($invitation['role_id'])->role,
+						'role' => $role->name,
 						'token' => $token
 					], function ($message) use ($invitation) {
 						$message->from('info@informed365.com', 'Informed 365');
@@ -181,7 +182,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $dataId,
-			'role_id' => $invitation->role_id,
+			'role_id' => Role::where('name', 'User')->id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {
@@ -231,7 +232,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $data->id,
-			'role_id' => 3,
+			'role_id' => Role::where('name', 'User')->id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {

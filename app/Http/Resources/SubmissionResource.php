@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SubmissionResource extends JsonResource
@@ -23,10 +22,10 @@ class SubmissionResource extends JsonResource
 				'last_name' => $this->user->last_name,
 				'email' => $this->user->email
 			],
-			'team' => [
+			'team' => $this->team ? [
 				'name' => $this->team->name,
 				'description' => $this->team->description
-			],
+			] : null,
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
 			'responses' => ResponseResource::collection($this->responses)

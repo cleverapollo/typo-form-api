@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\User;
 use Exception;
+use App\Models\Role;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\ApplicationInvitation;
@@ -55,7 +56,7 @@ class ApplicationController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'role_id' => 'required|integer|min:1|max:3'
+				'application_role' => 'required'
 			]);
 		}
 
@@ -265,7 +266,7 @@ class ApplicationController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'role_id' => 'required|integer|min:1|max:3'
+				'application_role' => 'required'
 			]);
 		}
 
@@ -324,10 +325,16 @@ class ApplicationController extends Controller
 	public function updateUser($application_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'role_id' => 'required|integer|min:1|max:3'
+			'application_role' => 'required'
 		]);
 
 		try {
+			// Check whether the role exists or not
+			$role = Role::where('name', $request->input('application_role'))->first();
+			if (!$role) {
+				return $this->returnError('role', 404, 'update user');
+			}
+
 			$user = Auth::user();
 			$application = $user->applications()->where([
 				'application_id' => $application_id
@@ -354,7 +361,7 @@ class ApplicationController extends Controller
 			}
 
 			// Update user role
-			if ($applicationUser->fill($request->only('role_id'))->save()) {
+			if ($applicationUser->fill(['role_id' => $role->id])->save()) {
 				return $this->returnSuccessMessage('user', new ApplicationUserResource($applicationUser));
 			}
 
@@ -429,7 +436,7 @@ class ApplicationController extends Controller
 			'application_id' => $application->id
 		])->value('role_id');
 
-		if ($user->role_id != 1 && $role_id != 2) {
+		if ($user->role->name != 'Super Admin' && Role::find($role_id)->name != 'Admin') {
 			return false;
 		}
 

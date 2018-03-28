@@ -13,20 +13,26 @@ class RolesTableSeeder extends Seeder
      */
     public function run()
     {
+	    // Delete all record
+	    DB::table('roles')->delete();
+
 	    DB::table('roles')->insert([
-		    'role' => 'Super Admin',
+	    	'id' => 1,
+		    'name' => 'Super Admin',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('roles')->insert([
-		    'role' => 'Admin',
+		    'id' => 2,
+		    'name' => 'Admin',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('roles')->insert([
-		    'role' => 'User',
+		    'id' => 3,
+		    'name' => 'User',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

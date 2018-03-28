@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Form;
+use App\Models\Submission;
 use App\Http\Resources\SubmissionResource;
-use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -32,11 +32,6 @@ class SubmissionController extends Controller
 	{
 		$submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
 
-//		foreach ($submissions as $submission) {
-//			$responses = $submission->responses()->get();
-//			$submission['responses'] = ResponseResource::collection($responses);
-//		}
-
 		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
 	}
 
@@ -52,7 +47,8 @@ class SubmissionController extends Controller
 	{
 		$this->validate($request, [
 			'team_id' => 'nullable|integer|min:1',
-			'period_start' => 'nullable|date'
+			'period_start' => 'nullable|date',
+			'period_end' => 'nullable|date'
 		]);
 
 		try {
@@ -72,8 +68,7 @@ class SubmissionController extends Controller
 			]);
 
 			if ($submission) {
-				// TODO: reconsider about getting the submission from table because of default value
-				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
+				return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
 			}
 
 			// Send error if submission is not created
@@ -107,9 +102,6 @@ class SubmissionController extends Controller
 			if ($user->role_id != 1 || $submission->user_id != $user->id) {
 				return $this->returnError('submission', 403, 'see');
 			}
-
-			$responses = $submission->responses()->get();
-			$submission['responses'] = ResponseResource::collection($responses);
 
 			return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 		}

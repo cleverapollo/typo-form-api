@@ -18,7 +18,7 @@ class TeamUserResource extends JsonResource
 		return [
 			'user_id' => $this->user_id,
 			'team_id' => $this->team_id,
-			'role' => Role::find($this->role_id)->role
+			'team_role' => $this->role->name
 		];
 	}
 }

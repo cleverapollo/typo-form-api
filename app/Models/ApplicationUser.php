@@ -14,4 +14,12 @@ class ApplicationUser extends Model
 	protected $fillable = [
 		'user_id', 'application_id', 'role_id'
 	];
+
+	/**
+	 * Get the role
+	 */
+	public function role()
+	{
+		return $this->belongsTo('App\Models\Role');
+	}
 }
