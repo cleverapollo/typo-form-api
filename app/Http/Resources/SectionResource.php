@@ -19,7 +19,7 @@ class SectionResource extends JsonResource
 			'name' => $this->name,
 			'order' => $this->order,
 			'section_id' => $this->section_id,
-			'questions' => $this->questions
+			'questions' => QuestionResource::collection($this->questions)
 		];
 	}
 }
