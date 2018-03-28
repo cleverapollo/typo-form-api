@@ -9,8 +9,6 @@ use App\Models\Section;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Http\Resources\SectionResource;
-use App\Http\Resources\QuestionResource;
-use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
