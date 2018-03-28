@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Section;
+use App\Models\Question;
 use App\Http\Resources\QuestionResource;
 use Illuminate\Http\Request;
 
@@ -46,9 +47,9 @@ class QuestionController extends Controller
 		$this->validate($request, [
 			'question' => 'required',
 			'description' => 'required',
-			'mandatory' => 'boolean',
+			'mandatory' => 'required|boolean',
 			'question_type_id' => 'required|integer|min:1',
-			'order' => 'required|integer|min:0'
+			'order' => 'filled|integer|min:0'
 		]);
 
 		try {
@@ -59,8 +60,23 @@ class QuestionController extends Controller
 				return $this->returnError('section', 404, 'create question');
 			}
 
+			$order = $request->input('order');
+			if (!$order) {
+				if (Question::where('section_id', $section_id)->exists()) {
+					$order = Question::where('section_id', $section_id)->max('order') + 1;
+				} else {
+					$order = 0;
+				}
+			}
+
 			// Create question
-			$question = $section->questions()->create($request->only('question', 'description', 'mandatory', 'question_type_id', 'order'));
+			$question = $section->questions()->create([
+				'question' => $request->input('question'),
+				'description' => $request->input('description'),
+				'mandatory' => $request->input('mandatory'),
+				'question_type_id' => $request->input('question_type_id'),
+				'order' => $order
+			]);
 
 			if ($question) {
 				return $this->returnSuccessMessage('question', new QuestionResource($question));
@@ -114,7 +130,7 @@ class QuestionController extends Controller
 		$this->validate($request, [
 			'question' => 'filled',
 			'description' => 'filled',
-			'mandatory' => 'boolean',
+			'mandatory' => 'filled|boolean',
 			'question_type_id' => 'filled|integer|min:1',
 			'order' => 'filled|integer|min:0'
 		]);

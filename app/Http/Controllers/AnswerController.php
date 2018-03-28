@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Question;
+use App\Models\Answer;
 use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,7 @@ class AnswerController extends Controller
 	{
 		$this->validate($request, [
 			'answer' => 'required',
-			'order' => 'required|integer|min:0'
+			'order' => 'filled|integer|min:0'
 		]);
 
 		try {
@@ -56,8 +57,20 @@ class AnswerController extends Controller
 				return $this->returnError('question', 404, 'create answer');
 			}
 
+			$order = $request->input('order');
+			if (!$order) {
+				if (Answer::where('question_id', $question_id)->exists()) {
+					$order = Answer::where('question_id', $question_id)->max('order') + 1;
+				} else {
+					$order = 0;
+				}
+			}
+
 			// Create answer
-			$answer = $question->answers()->create($request->only('answer', 'order'));
+			$answer = $question->answers()->create([
+				'answer' => $request->input('answer'),
+				'order' => $order
+			]);
 
 			if ($answer) {
 				return $this->returnSuccessMessage('answer', new AnswerResource($answer));

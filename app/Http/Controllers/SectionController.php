@@ -6,6 +6,8 @@ use Auth;
 use Exception;
 use App\Models\Form;
 use App\Models\Section;
+use App\Models\Question;
+use App\Models\Answer;
 use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
@@ -33,17 +35,6 @@ class SectionController extends Controller
 	public function index($form_id)
 	{
 		$sections = Form::find($form_id)->sections()->get();
-
-		foreach ($sections as $section) {
-			$questions = $section->questions()->get();
-
-			foreach ($questions as $question) {
-				$answers = $question->answers()->get();
-				$question['answers'] = AnswerResource::collection($answers);
-			}
-
-			$section['questions'] = QuestionResource::collection($questions);
-		}
 
 		return $this->returnSuccessMessage('sections', SectionResource::collection($sections));
 	}
@@ -130,9 +121,9 @@ class SectionController extends Controller
 						$this->validate($question, [
 							'question' => 'required',
 							'description' => 'required',
-							'mandatory' => 'boolean',
+							'mandatory' => 'required|boolean',
 							'question_type_id' => 'required|integer|min:1',
-							'order' => 'required|integer|min:0',
+							'order' => 'filled|integer|min:0',
 							'answers' => 'array'
 						]);
 
@@ -141,7 +132,7 @@ class SectionController extends Controller
 							foreach ($answers as $answer) {
 								$this->validate($answer, [
 									'answer' => 'required',
-									'order' => 'required|integer|min:0'
+									'order' => 'filled|integer|min:0'
 								]);
 							}
 						}
@@ -182,12 +173,21 @@ class SectionController extends Controller
 						// Create questions
 						$createdQuestions = [];
 						foreach ($questions as $question) {
+							$order = $question['order'];
+							if (!$order) {
+								if (Question::where('section_id', $createdSection->id)->exists()) {
+									$order = Question::where('section_id', $createdSection->id)->max('order') + 1;
+								} else {
+									$order = 0;
+								}
+							}
+
 							$createdQuestion = $createdSection->questions()->create([
 								'question' => $question['question'],
 								'description' => $question['description'],
 								'mandatory' => $question['mandatory'],
 								'question_type_id' => $question['question_type_id'],
-								'order' => $question['order']
+								'order' => $order
 							]);
 
 							if ($createdQuestion) {
@@ -195,28 +195,37 @@ class SectionController extends Controller
 								if ($answers && count($answers) > 0) {
 									$createdAnswers = [];
 									foreach ($answers as $answer) {
+										$order = $answer['order'];
+										if (!$order) {
+											if (Answer::where('question_id', $createdQuestion->id)->exists()) {
+												$order = Answer::where('question_id', $createdQuestion->id)->max('order') + 1;
+											} else {
+												$order = 0;
+											}
+										}
+
 										$createdAnswer = $createdQuestion->answers()->create([
 											'answer' => $answer['answer'],
-											'order' => $answer['order']
+											'order' => $order
 										]);
 
-										if ($createdAnswer) {
-											// Push the created answer to return array
-											array_push($createdAnswers, $createdAnswer);
-										}
+//										if ($createdAnswer) {
+//											// Push the created answer to return array
+//											array_push($createdAnswers, $createdAnswer);
+//										}
 									}
 
-									// Push the created answers to parent question
-									$createdQuestion['answers'] = AnswerResource::collection($createdAnswers);
+//									// Push the created answers to parent question
+//									$createdQuestion['answers'] = AnswerResource::collection($createdAnswers);
 								}
 
-								// Push the created question to return array
-								array_push($createdQuestions, $createdQuestion);
+//								// Push the created question to return array
+//								array_push($createdQuestions, $createdQuestion);
 							}
 						}
 
-						// Push the created questions to parent section
-						$createdSection['questions'] = QuestionResource::collection($createdQuestions);
+//						// Push the created questions to parent section
+//						$createdSection['questions'] = QuestionResource::collection($createdQuestions);
 					}
 
 					// Push the created section to return array
@@ -252,15 +261,6 @@ class SectionController extends Controller
 
 		$section = $form->sections()->where('id', $id)->first();
 		if ($section) {
-			$questions = $section->questions()->get();
-
-			foreach ($questions as $question) {
-				$answers = $question->answers()->get();
-				$question['answers'] = AnswerResource::collection($answers);
-			}
-
-			$section['questions'] = QuestionResource::collection($questions);
-
 			return $this->returnSuccessMessage('section', new SectionResource($section));
 		}
 
@@ -345,7 +345,7 @@ class SectionController extends Controller
 							'id' => 'filled|integer|min:1',
 							'question' => 'filled',
 							'description' => 'filled',
-							'mandatory' => 'boolean',
+							'mandatory' => 'filled|boolean',
 							'question_type_id' => 'filled|integer|min:1',
 							'order' => 'filled|integer|min:0',
 							'answers' => 'array'
@@ -432,23 +432,23 @@ class SectionController extends Controller
 											]);
 										}
 
-										if ($updatedAnswer) {
-											// Push the updated answer to return array
-											array_push($updatedAnswers, $updatedAnswer);
-										}
+//										if ($updatedAnswer) {
+//											// Push the updated answer to return array
+//											array_push($updatedAnswers, $updatedAnswer);
+//										}
 									}
 
-									// Push the updated answers to parent question
-									$updatedQuestion['answers'] = AnswerResource::collection($updatedAnswers);
+//									// Push the updated answers to parent question
+//									$updatedQuestion['answers'] = AnswerResource::collection($updatedAnswers);
 								}
 
-								// Push the updated question to return array
-								array_push($updatedQuestions, $updatedQuestion);
+//								// Push the updated question to return array
+//								array_push($updatedQuestions, $updatedQuestion);
 							}
 						}
 
-						// Push the updated questions to parent section
-						$updatedSection['questions'] = QuestionResource::collection($updatedQuestions);
+//						// Push the updated questions to parent section
+//						$updatedSection['questions'] = QuestionResource::collection($updatedQuestions);
 					}
 
 					// Push the updated section to return array
