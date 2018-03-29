@@ -96,7 +96,7 @@ class SubmissionController extends Controller
 			return $this->returnError('form', 404, 'show submission');
 		}
 
-		$submission = $form->submissions()->where('id', $id)->first();
+		$submission = $form->submissions()->find($id);
 		if ($submission) {
 			$user = Auth::user();
 			if ($user->role_id != 1 || $submission->user_id != $user->id) {

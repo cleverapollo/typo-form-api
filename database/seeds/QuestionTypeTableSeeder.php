@@ -32,7 +32,7 @@ class QuestionTypeTableSeeder extends Seeder
 
 		DB::table('question_types')->insert([
 			'id' => 3,
-			'type' => 'Multiple Choice',
+			'type' => 'Multiple choice',
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		]);

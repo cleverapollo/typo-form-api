@@ -107,7 +107,7 @@ class QuestionController extends Controller
 			return $this->returnError('section', 404, 'show question');
 		}
 
-		$question = $section->questions()->where('id', $id)->first();
+		$question = $section->questions()->find($id);
 		if ($question) {
 			return $this->returnSuccessMessage('question', new QuestionResource($question));
 		}
@@ -143,7 +143,7 @@ class QuestionController extends Controller
 				return $this->returnError('section', 404, 'update question');
 			}
 
-			$question = $section->questions()->where('id', $id)->first();
+			$question = $section->questions()->find($id);
 
 			// Send error if question does not exist
 			if (!$question) {
@@ -181,7 +181,7 @@ class QuestionController extends Controller
 				return $this->returnError('section', 404, 'delete question');
 			}
 
-			$question = $section->questions()->where('id', $id)->first();
+			$question = $section->questions()->find($id);
 
 			// Send error if question does not exist
 			if (!$question) {

@@ -17,6 +17,24 @@ class Form extends Model
 	protected $dates = ['deleted_at'];
 
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($form) {
+			$form->sections->each(function ($section) {
+				$section->delete();
+			});
+
+			$form->submissions->each(function ($submission) {
+				$submission->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
@@ -24,6 +42,14 @@ class Form extends Model
 	protected $fillable = [
 		'name', 'application_id'
 	];
+
+	/**
+	 * Get the application that owns the Form.
+	 */
+	public function application()
+	{
+		return $this->belongsTo('App\Models\Application');
+	}
 
 	/**
 	 * Get the sections for the Form.
@@ -39,14 +65,6 @@ class Form extends Model
 	public function submissions()
 	{
 		return $this->hasMany('App\Models\Submission');
-	}
-
-	/**
-	 * Get the application that owns the Form.
-	 */
-	public function application()
-	{
-		return $this->belongsTo('App\Models\Application');
 	}
 
 	/**

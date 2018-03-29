@@ -85,6 +85,55 @@ class AnswerController extends Controller
 	}
 
 	/**
+	 * Duplicate a resource in storage.
+	 *
+	 * @param  int $question_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function duplicate($question_id, $id)
+	{
+		try {
+			$question = Question::find($question_id);
+
+			// Send error if question does not exist
+			if (!$question) {
+				return $this->returnError('question', 404, 'create answer');
+			}
+
+			$answer = $question->answers()->find($id);
+
+			// Send error if answer does not exist
+			if (!$answer) {
+				return $this->returnError('answer', 404, 'duplicate');
+			}
+
+			// Duplicate answer
+			$newAnswer = $question->answers()->create([
+				'answer' => $answer->answer,
+				'order' => ($answer->order + 1)
+			]);
+
+			if ($newAnswer) {
+				// Update other answers order
+				$question->answers()->where('order', '>=', $newAnswer->order)->get()->each(function ($other) {
+					$other->order += 1;
+					$other->save();
+				});
+
+				return $this->returnSuccessMessage('answer', new AnswerResource($newAnswer));
+			}
+
+			// Send error if answer is not created
+			return $this->returnError('answer', 503, 'create');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
 	 * Display the specified resource.
 	 *
 	 * @param  int $question_id
@@ -101,7 +150,7 @@ class AnswerController extends Controller
 			return $this->returnError('question', 404, 'show answer');
 		}
 
-		$answer = $question->answers()->where('id', $id)->first();
+		$answer = $question->answers()->find($id);
 		if ($answer) {
 			return $this->returnSuccessMessage('answer', new AnswerResource($answer));
 		}
@@ -134,7 +183,7 @@ class AnswerController extends Controller
 				return $this->returnError('question', 404, 'update answer');
 			}
 
-			$answer = $question->answers()->where('id', $id)->first();
+			$answer = $question->answers()->find($id);
 
 			// Send error if answer does not exist
 			if (!$answer) {
@@ -172,7 +221,7 @@ class AnswerController extends Controller
 				return $this->returnError('question', 404, 'delete answer');
 			}
 
-			$answer = $question->answers()->where('id', $id)->first();
+			$answer = $question->answers()->find($id);
 
 			// Send error if answer does not exist
 			if (!$answer) {

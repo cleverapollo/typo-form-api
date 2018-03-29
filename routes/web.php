@@ -86,6 +86,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
 			$router->get('{id}', 'SectionController@show');
+			$router->post('{id}', 'SectionController@duplicate');
 			$router->put('{id}', 'SectionController@update');
 			$router->delete('{id}', 'SectionController@destroy');
 
@@ -108,6 +109,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->get('/', 'AnswerController@index');
 		$router->post('/', 'AnswerController@store');
 		$router->get('{id}', 'AnswerController@show');
+		$router->post('{id}', 'AnswerController@duplicate');
 		$router->put('{id}', 'AnswerController@update');
 		$router->delete('{id}', 'AnswerController@destroy');
 	});
@@ -120,7 +122,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->delete('{id}', 'ResponseController@destroy');
 	});
 
-	$router->group(['prefix' => 'question_types'], function () use ($router) {
+	$router->group(['prefix' => 'question-type'], function () use ($router) {
 		$router->get('/', 'QuestionTypeController@index');
 		$router->post('/', 'QuestionTypeController@store');
 		$router->get('{id}', 'QuestionTypeController@show');

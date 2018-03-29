@@ -90,6 +90,56 @@ class SectionController extends Controller
 	}
 
 	/**
+	 * Duplicate a resource in storage.
+	 *
+	 * @param  int $form_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function duplicate($form_id, $id)
+	{
+		try {
+			$form = Form::find($form_id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'duplicate section');
+			}
+
+			$section = $form->sections()->find($id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'duplicate');
+			}
+
+			// Duplicate section
+			$newSection = $form->sections()->create([
+				'name' => $section->name,
+				'section_id' => $section->section_id,
+				'order' => ($section->order + 1)
+			]);
+
+			if ($newSection) {
+				// Update other sections order
+				$form->sections()->where('order', '>=', $newSection->order)->get()->each(function ($other) {
+					$other->order += 1;
+					$other->save();
+				});
+
+				return $this->returnSuccessMessage('section', new SectionResource($newSection));
+			}
+
+			// Send error if section is not duplicated
+			return $this->returnError('section', 503, 'duplicate');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
 	 * Store resources in storage.
 	 *
 	 * @param  int $form_id
@@ -207,23 +257,23 @@ class SectionController extends Controller
 											'order' => $order
 										]);
 
-//										if ($createdAnswer) {
-//											// Push the created answer to return array
-//											array_push($createdAnswers, $createdAnswer);
-//										}
+										if ($createdAnswer) {
+											// Push the created answer to return array
+											array_push($createdAnswers, $createdAnswer);
+										}
 									}
 
-//									// Push the created answers to parent question
-//									$createdQuestion['answers'] = AnswerResource::collection($createdAnswers);
+									// Push the created answers to parent question
+									$createdQuestion['answers'] = AnswerResource::collection($createdAnswers);
 								}
 
-//								// Push the created question to return array
-//								array_push($createdQuestions, $createdQuestion);
+								// Push the created question to return array
+								array_push($createdQuestions, $createdQuestion);
 							}
 						}
 
-//						// Push the created questions to parent section
-//						$createdSection['questions'] = QuestionResource::collection($createdQuestions);
+						// Push the created questions to parent section
+						$createdSection['questions'] = QuestionResource::collection($createdQuestions);
 					}
 
 					// Push the created section to return array
@@ -257,7 +307,7 @@ class SectionController extends Controller
 			return $this->returnError('form', 404, 'show section');
 		}
 
-		$section = $form->sections()->where('id', $id)->first();
+		$section = $form->sections()->find($id);
 		if ($section) {
 			return $this->returnSuccessMessage('section', new SectionResource($section));
 		}
@@ -291,7 +341,7 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'update section');
 			}
 
-			$section = $form->sections()->where('id', $id)->first();
+			$section = $form->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {
@@ -430,23 +480,23 @@ class SectionController extends Controller
 											]);
 										}
 
-//										if ($updatedAnswer) {
-//											// Push the updated answer to return array
-//											array_push($updatedAnswers, $updatedAnswer);
-//										}
+										if ($updatedAnswer) {
+											// Push the updated answer to return array
+											array_push($updatedAnswers, $updatedAnswer);
+										}
 									}
 
-//									// Push the updated answers to parent question
-//									$updatedQuestion['answers'] = AnswerResource::collection($updatedAnswers);
+									// Push the updated answers to parent question
+									$updatedQuestion['answers'] = AnswerResource::collection($updatedAnswers);
 								}
 
-//								// Push the updated question to return array
-//								array_push($updatedQuestions, $updatedQuestion);
+								// Push the updated question to return array
+								array_push($updatedQuestions, $updatedQuestion);
 							}
 						}
 
-//						// Push the updated questions to parent section
-//						$updatedSection['questions'] = QuestionResource::collection($updatedQuestions);
+						// Push the updated questions to parent section
+						$updatedSection['questions'] = QuestionResource::collection($updatedQuestions);
 					}
 
 					// Push the updated section to return array
@@ -481,7 +531,7 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'delete section');
 			}
 
-			$section = $form->sections()->where('id', $id)->first();
+			$section = $form->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {

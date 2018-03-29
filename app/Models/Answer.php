@@ -17,6 +17,20 @@ class Answer extends Model
 	protected $dates = ['deleted_at'];
 
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($answer) {
+			$answer->responses->each(function ($response) {
+				$response->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
@@ -31,6 +45,14 @@ class Answer extends Model
 	public function question()
 	{
 		return $this->belongsTo('App\Models\Question');
+	}
+
+	/**
+	 * Get the responses for the Answer.
+	 */
+	public function responses()
+	{
+		return $this->hasMany('App\Models\Response');
 	}
 
 	/**

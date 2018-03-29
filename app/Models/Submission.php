@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Submission extends Model
 {
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($submission) {
+			$submission->responses->each(function ($response) {
+				$response->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array

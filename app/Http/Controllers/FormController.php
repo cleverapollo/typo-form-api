@@ -92,7 +92,7 @@ class FormController extends Controller
 			return $this->returnError('application', 404, 'show form');
 		}
 
-		$form = $application->forms()->where('id', $id)->first();
+		$form = $application->forms()->find($id);
 		if ($form) {
 			return $this->returnSuccessMessage('form', new FormResource($form));
 		}
@@ -124,7 +124,7 @@ class FormController extends Controller
 				return $this->returnError('application', 404, 'update form');
 			}
 
-			$form = $application->forms()->where('id', $id)->first();
+			$form = $application->forms()->find($id);
 
 			// Send error if form does not exist
 			if (!$form) {
@@ -162,7 +162,14 @@ class FormController extends Controller
 				return $this->returnError('application', 404, 'delete form');
 			}
 
-			if ($application->forms()->where('id', $id)->delete()) {
+			$form = $application->forms()->find($id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'delete');
+			}
+
+			if ($form->delete()) {
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 

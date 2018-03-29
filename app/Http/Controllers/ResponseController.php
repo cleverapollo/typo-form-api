@@ -88,7 +88,7 @@ class ResponseController extends Controller
 			return $this->returnError('submission', 404, 'show response');
 		}
 
-		$response = $submission->responses()->where('id', $id)->first();
+		$response = $submission->responses()->find($id);
 		if ($response) {
 			return $this->returnSuccessMessage('response', new ResponseResource($response));
 		}
@@ -121,7 +121,7 @@ class ResponseController extends Controller
 				return $this->returnError('submission', 404, 'show response');
 			}
 
-			$response = $submission->responses()->where('id', $id)->first();
+			$response = $submission->responses()->find($id);
 
 			// Send error if response does not exist
 			if (!$response) {
@@ -167,7 +167,7 @@ class ResponseController extends Controller
 				return $this->returnError('submission', 404, 'show response');
 			}
 
-			$response = $submission->responses()->where('id', $id)->first();
+			$response = $submission->responses()->find($id);
 
 			// Send error if response does not exist
 			if (!$response) {

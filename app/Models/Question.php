@@ -17,6 +17,20 @@ class Question extends Model
 	protected $dates = ['deleted_at'];
 
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($question) {
+			$question->answers->each(function ($answer) {
+				$answer->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array

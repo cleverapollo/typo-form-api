@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Application extends Model
 {
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($application) {
+			$application->forms->each(function ($form) {
+				$form->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array

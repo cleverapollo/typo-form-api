@@ -17,6 +17,24 @@ class Section extends Model
 	protected $dates = ['deleted_at'];
 
 	/**
+	 * Delete children
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($section) {
+			$section->children->each(function ($section) {
+				$section->delete();
+			});
+
+			$section->questions->each(function ($question) {
+				$question->delete();
+			});
+		});
+	}
+
+	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
