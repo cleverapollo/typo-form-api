@@ -91,6 +91,58 @@ class QuestionController extends Controller
 	}
 
 	/**
+	 * Duplicate a resource in storage.
+	 *
+	 * @param  int $section_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function duplicate($section_id, $id)
+	{
+		try {
+			$section = Section::find($section_id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'create question');
+			}
+
+			$question = $section->questions()->find($id);
+
+			// Send error if question does not exist
+			if (!$question) {
+				return $this->returnError('question', 404, 'duplicate');
+			}
+
+			// Duplicate question
+			$newQuestion = $section->questions()->create([
+				'question' => $question->question,
+				'description' => $question->description,
+				'mandatory' => $question->mandatory,
+				'question_type_id' => $question->question_type_id,
+				'order' => ($question->order + 1)
+			]);
+
+			if ($newQuestion) {
+				// Update other questions order
+				$section->questions()->where('order', '>=', $newQuestion->order)->get()->each(function ($other) {
+					$other->order += 1;
+					$other->save();
+				});
+
+				return $this->returnSuccessMessage('question', new QuestionResource($newQuestion));
+			}
+
+			// Send error if question is not created
+			return $this->returnError('question', 503, 'duplicate');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
 	 * Display the specified resource.
 	 *
 	 * @param  int $section_id
