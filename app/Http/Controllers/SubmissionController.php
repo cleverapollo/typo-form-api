@@ -47,6 +47,7 @@ class SubmissionController extends Controller
 	{
 		$this->validate($request, [
 			'team_id' => 'nullable|integer|min:1',
+			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date'
 		]);
@@ -63,6 +64,7 @@ class SubmissionController extends Controller
 			$submission = $form->submissions()->create([
 				'user_id' => Auth::user()->id,
 				'team_id' => $request->input('team_id', null),
+				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', null),
 				'period_end' => $request->input('period_end', null)
 			]);
@@ -122,6 +124,7 @@ class SubmissionController extends Controller
 	public function update($form_id, Request $request, $id)
 	{
 		$this->validate($request, [
+			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date'
 		]);
@@ -145,7 +148,7 @@ class SubmissionController extends Controller
 			}
 
 			// Update submission
-			if ($submission->fill($request->only('period_start', 'period_end'))->save()) {
+			if ($submission->fill($request->only('progress', 'period_start', 'period_end'))->save()) {
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 

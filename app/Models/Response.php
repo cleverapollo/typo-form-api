@@ -22,16 +22,15 @@ class Response extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'response', 'answer_id', 'submission_id'
+		'response', 'question_id', 'answer_id', 'submission_id'
 	];
 
 	/**
-	use Illuminate\Database\Eloquent\SoftDeletes;
-	 * Get the submission that owns the Response.
+	 * Get the question that owns the Response.
 	 */
-	public function submission()
+	public function question()
 	{
-		return $this->belongsTo('App\Models\Submission');
+		return $this->belongsTo('App\Models\Question');
 	}
 
 	/**
@@ -40,6 +39,14 @@ class Response extends Model
 	public function answer()
 	{
 		return $this->belongsTo('App\Models\Answer');
+	}
+
+	/**
+	 * Get the submission that owns the Response.
+	 */
+	public function submission()
+	{
+		return $this->belongsTo('App\Models\Submission');
 	}
 
 	/**

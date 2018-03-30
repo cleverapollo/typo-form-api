@@ -46,6 +46,7 @@ class AnswerController extends Controller
 	{
 		$this->validate($request, [
 			'answer' => 'required',
+			'parameter' => 'nullable|boolean',
 			'order' => 'filled|integer|min:0'
 		]);
 
@@ -69,6 +70,7 @@ class AnswerController extends Controller
 			// Create answer
 			$answer = $question->answers()->create([
 				'answer' => $request->input('answer'),
+				'parameter' => $request->input('parameter', null),
 				'order' => $order
 			]);
 
@@ -123,6 +125,7 @@ class AnswerController extends Controller
 	{
 		$this->validate($request, [
 			'answer' => 'filled',
+			'parameter' => 'nullable|boolean',
 			'order' => 'filled|integer|min:0'
 		]);
 
@@ -142,7 +145,7 @@ class AnswerController extends Controller
 			}
 
 			// Update answer
-			if ($answer->fill($request->only('answer', 'order'))->save()) {
+			if ($answer->fill($request->only('answer', 'parameter', 'order'))->save()) {
 				return $this->returnSuccessMessage('answer', new AnswerResource($answer));
 			}
 

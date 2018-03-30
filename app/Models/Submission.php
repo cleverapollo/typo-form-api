@@ -26,7 +26,7 @@ class Submission extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'user_id', 'team_id', 'period_start', 'period_end'
+		'form_id', 'user_id', 'team_id', 'progress', 'period_start', 'period_end'
 	];
 
 	/**

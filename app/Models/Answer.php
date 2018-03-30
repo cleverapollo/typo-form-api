@@ -36,7 +36,7 @@ class Answer extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'answer', 'question_id', 'order'
+		'answer', 'parameter', 'question_id', 'order'
 	];
 
 	/**

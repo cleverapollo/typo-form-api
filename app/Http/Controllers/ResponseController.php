@@ -45,7 +45,8 @@ class ResponseController extends Controller
 	{
 		$this->validate($request, [
 			'response' => 'required',
-			'answer_id' => 'required|integer|min:1'
+			'question_id' => 'required|integer|min:1',
+			'answer_id' => 'nullable|integer|min:1'
 		]);
 
 		try {
@@ -57,7 +58,7 @@ class ResponseController extends Controller
 			}
 
 			// Create response
-			$response = $submission->responses()->create($request->only('response', 'answer_id'));
+			$response = $submission->responses()->create($request->only('response', 'question_id', 'answer_id'));
 
 			if ($response) {
 				return $this->returnSuccessMessage('response', new ResponseResource($response));
@@ -110,7 +111,8 @@ class ResponseController extends Controller
 	{
 		$this->validate($request, [
 			'response' => 'filled',
-			'answer_id' => 'filled|integer|min:1'
+			'question_id' => 'filled|integer|min:1',
+			'answer_id' => 'nullable|integer|min:1'
 		]);
 
 		try {
@@ -128,11 +130,12 @@ class ResponseController extends Controller
 				return $this->returnError('response', 404, 'update');
 			}
 
-			$newResponse = $response->fill($request->only('response', 'answer_id'));
+			$newResponse = $response->fill($request->only('response', 'question_id', 'answer_id'));
 
 			if ($submission->responses()->where('id', $id)->delete()) {
 				$new = $submission->responses()->create([
 					'response' => $newResponse->response,
+					'question_id' => $newResponse->question_id,
 					'answer_id' => $newResponse->answer_id
 				]);
 

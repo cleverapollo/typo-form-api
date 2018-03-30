@@ -17,6 +17,7 @@ class ResponseResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'response' => $this->response,
+			'question_id' => $this->question_id,
 			'answer_id' => $this->answer_id
 		];
 	}

@@ -27,6 +27,10 @@ class Question extends Model
 			$question->answers->each(function ($answer) {
 				$answer->delete();
 			});
+
+			$question->responses->each(function ($response) {
+				$response->delete();
+			});
 		});
 	}
 
@@ -53,6 +57,14 @@ class Question extends Model
 	public function answers()
 	{
 		return $this->hasMany('App\Models\Answer');
+	}
+
+	/**
+	 * Get the responses for the Question.
+	 */
+	public function responses()
+	{
+		return $this->hasMany('App\Models\Response');
 	}
 
 	/**

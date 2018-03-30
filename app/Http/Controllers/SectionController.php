@@ -180,6 +180,7 @@ class SectionController extends Controller
 							foreach ($answers as $answer) {
 								$this->validate($answer, [
 									'answer' => 'required',
+									'parameter' => 'nullable|boolean',
 									'order' => 'filled|integer|min:0'
 								]);
 							}
@@ -254,6 +255,7 @@ class SectionController extends Controller
 
 										$createdAnswer = $createdQuestion->answers()->create([
 											'answer' => $answer['answer'],
+											'parameter' => $answer['parameter'],
 											'order' => $order
 										]);
 
@@ -405,6 +407,7 @@ class SectionController extends Controller
 								$this->validate($answer, [
 									'id' => 'filled|integer|min:1',
 									'answer' => 'filled',
+									'parameter' => 'nullable|boolean',
 									'order' => 'filled|integer|min:0'
 								]);
 							}
@@ -471,11 +474,13 @@ class SectionController extends Controller
 										if ($answer['id'] && ($updatedAnswer = $updatedQuestion->answers()->where('id', $answer['id'])->first())) {
 											$updatedAnswer->fill([
 												'answer' => $answer['answer'],
+												'parameter' => $answer['parameter'],
 												'order' => $answer['order']
 											])->save();
 										} else {
 											$updatedAnswer = $updatedQuestion->answers()->create([
 												'answer' => $answer['answer'],
+												'parameter' => $answer['parameter'],
 												'order' => $answer['order']
 											]);
 										}
