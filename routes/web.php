@@ -112,6 +112,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->get('{id}', 'AnswerController@show');
 		$router->put('{id}', 'AnswerController@update');
 		$router->delete('{id}', 'AnswerController@destroy');
+		$router->delete('/', 'AnswerController@destroyAll');
+		$router->delete('/delete', 'AnswerController@destroyFalse');
 	});
 
 	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
