@@ -59,7 +59,7 @@ class TeamController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'team_role' => 'required'
+				'team_role' => 'required|integer|min:2'
 			]);
 		}
 
@@ -281,7 +281,7 @@ class TeamController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'team_role' => 'required'
+				'team_role' => 'required|integer|min:2'
 			]);
 		}
 
@@ -344,12 +344,12 @@ class TeamController extends Controller
 	public function updateUser($application_id, $team_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'team_role' => 'required'
+			'team_role' => 'required|integer|min:2'
 		]);
 
 		try {
 			// Check whether the role exists or not
-			$role = Role::where('name', $request->input('team_role'))->first();
+			$role = Role::find($request->input('team_role'));
 			if (!$role) {
 				return $this->returnError('role', 404, 'update user');
 			}

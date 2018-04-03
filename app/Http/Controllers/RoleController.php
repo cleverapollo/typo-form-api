@@ -108,6 +108,10 @@ class RoleController extends Controller
 				return $this->returnError('role', 404, 'update');
 			}
 
+			if ($role->name == 'Super Admin' || $role->name == 'Admin') {
+				return $this->returnError('role', 403, 'update');
+			}
+
 			// Update role
 			if ($role->fill($request->only('name'))->save()) {
 				return $this->returnSuccessMessage('role', new RoleResource($role));

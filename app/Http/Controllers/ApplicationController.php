@@ -56,7 +56,7 @@ class ApplicationController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'application_role' => 'required'
+				'application_role' => 'required|integer|min:2'
 			]);
 		}
 
@@ -268,7 +268,7 @@ class ApplicationController extends Controller
 		foreach ($invitations as $invitation) {
 			$this->validate($invitation, [
 				'email' => 'required|email',
-				'application_role' => 'required'
+				'application_role' => 'required|integer|min:2'
 			]);
 		}
 
@@ -327,12 +327,12 @@ class ApplicationController extends Controller
 	public function updateUser($application_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'application_role' => 'required'
+			'application_role' => 'required|integer|min:2'
 		]);
 
 		try {
 			// Check whether the role exists or not
-			$role = Role::where('name', $request->input('application_role'))->first();
+			$role = Role::find($request->input('application_role'));
 			if (!$role) {
 				return $this->returnError('role', 404, 'update user');
 			}

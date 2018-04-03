@@ -18,7 +18,10 @@ class SectionResource extends JsonResource
 			'id' => $this->id,
 			'name' => $this->name,
 			'order' => $this->order,
-			'section_id' => $this->section_id,
+			'parent_section_id' => $this->parent_section_id,
+			'repeatable' => $this->repeatable,
+			'max_rows' => $this->max_rows,
+			'min_rows' => $this->min_rows,
 			'questions' => QuestionResource::collection($this->questions)
 		];
 	}

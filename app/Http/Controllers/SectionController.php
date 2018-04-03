@@ -49,8 +49,7 @@ class SectionController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
-			'order' => 'filled|integer|min:0',
-			'section_id' => 'nullable|integer|min:1'
+			'parent_section_id' => 'nullable|integer|min:1'
 		]);
 
 		try {
@@ -61,19 +60,35 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'create section');
 			}
 
-			$order = $request->input('order');
-			if (!$order) {
-				if (Section::where('form_id', $form_id)->exists()) {
-					$order = Section::where('form_id', $form_id)->max('order') + 1;
+			$parent_section_id = $request->input('parent_section_id', null);
+			if (!$parent_section_id) {
+				if (count($form->sections) > 0) {
+					$order = $form->sections()->where('parent_section_id', null)->max('order') + 1;
 				} else {
-					$order = 0;
+					$order = 1;
+				}
+			} else {
+				$parent_section = $form->sections()->find($parent_section_id);
+
+				// Send error if parent section does not exist
+				if (!$parent_section) {
+					return $this->returnError('parent section', 404, 'create section');
+				}
+
+				$order = 1;
+				if (count($parent_section->children) > 0) {
+					$order = max($order, $parent_section->children()->max('order') + 1);
+				}
+
+				if (count($parent_section->questions) > 0) {
+					$order = max($order, $parent_section->questions()->max('order') + 1);
 				}
 			}
 
 			// Create section
 			$section = $form->sections()->create([
 				'name' => $request->input('name'),
-				'section_id' => $request->input('section_id'),
+				'parent_section_id' => $parent_section_id,
 				'order' => $order
 			]);
 
@@ -117,16 +132,29 @@ class SectionController extends Controller
 			// Duplicate section
 			$newSection = $form->sections()->create([
 				'name' => $section->name,
-				'section_id' => $section->section_id,
+				'parent_section_id' => $section->parent_section_id,
 				'order' => ($section->order + 1)
 			]);
 
 			if ($newSection) {
 				// Update other sections order
-				$form->sections()->where('order', '>=', $newSection->order)->get()->each(function ($other) {
+				$form->sections()->where([
+					['parent_section_id', '=', $newSection->parent_section_id],
+					['order', '>=', $newSection->order]
+				])->get()->each(function ($other) {
 					$other->order += 1;
 					$other->save();
 				});
+
+				// Update other questions order
+				if ($newSection->parent) {
+					$newSection->parent->questions()->where([
+						['order', '>=', $newSection->order]
+					])->get()->each(function ($other) {
+						$other->order += 1;
+						$other->save();
+					});
+				}
 
 				return $this->returnSuccessMessage('section', new SectionResource($newSection));
 			}
@@ -330,9 +358,7 @@ class SectionController extends Controller
 	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'filled|max:191',
-			'order' => 'filled|integer|min:0',
-			'section_id' => 'nullable|integer|min:1'
+			'name' => 'filled|max:191'
 		]);
 
 		try {
@@ -351,7 +377,7 @@ class SectionController extends Controller
 			}
 
 			// Update section
-			if ($section->fill($request->only('name', 'section_id', 'order'))->save()) {
+			if ($section->fill($request->only('name'))->save()) {
 				return $this->returnSuccessMessage('section', new SectionResource($section));
 			}
 
