@@ -22,7 +22,7 @@ class Response extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'question_id', 'response', 'answer_id', 'submission_id', 'index'
+		'question_id', 'response', 'answer_id', 'submission_id', 'order'
 	];
 
 	/**

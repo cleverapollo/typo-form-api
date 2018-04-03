@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Question;
-use App\Models\Answer;
 use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
@@ -45,8 +44,7 @@ class AnswerController extends Controller
 	public function store($question_id, Request $request)
 	{
 		$this->validate($request, [
-			'parameter' => 'boolean',
-			'order' => 'required|integer|min:1'
+			'parameter' => 'required|boolean'
 		]);
 
 		try {
@@ -57,11 +55,17 @@ class AnswerController extends Controller
 				return $this->returnError('question', 404, 'create answer');
 			}
 
+			// Count order
+			$order = 1;
+			if (count($question->answers) > 0) {
+				$order = $question->answers()->max('order') + 1;
+			}
+
 			// Create answer
 			$answer = $question->answers()->create([
 				'answer' => $request->input('answer', null),
 				'parameter' => $request->input('parameter', 1),
-				'order' => $request->input('order'),
+				'order' => $order
 			]);
 
 			if ($answer) {
@@ -114,8 +118,7 @@ class AnswerController extends Controller
 	public function update($question_id, Request $request, $id)
 	{
 		$this->validate($request, [
-			'parameter' => 'boolean',
-			'order' => 'filled|integer|min:1'
+			'parameter' => 'filled|boolean'
 		]);
 
 		try {
@@ -134,7 +137,7 @@ class AnswerController extends Controller
 			}
 
 			// Update answer
-			if ($answer->fill($request->only('answer', 'parameter', 'order'))->save()) {
+			if ($answer->fill($request->only('answer', 'parameter'))->save()) {
 				return $this->returnSuccessMessage('answer', new AnswerResource($answer));
 			}
 

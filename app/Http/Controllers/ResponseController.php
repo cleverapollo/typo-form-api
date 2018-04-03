@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Submission;
+use App\Models\Question;
+use App\Models\Answer;
 use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
@@ -44,7 +46,6 @@ class ResponseController extends Controller
 	public function store($submission_id, Request $request)
 	{
 		$this->validate($request, [
-			'response' => 'required',
 			'question_id' => 'required|integer|min:1',
 			'answer_id' => 'nullable|integer|min:1'
 		]);
@@ -57,8 +58,34 @@ class ResponseController extends Controller
 				return $this->returnError('submission', 404, 'create response');
 			}
 
+			$question_id = $request->input('question_id');
+
+			// Send error if question does not exist
+			if (!Question::find($question_id)) {
+				return $this->returnError('question', 404, 'create response');
+			}
+
+			$answer_id = $request->input('answer_id', null);
+			if ($answer_id) {
+				// Send error if answer does not exist
+				if (!Answer::find($answer_id)) {
+					return $this->returnError('answer', 404, 'create response');
+				}
+			}
+
+			// Count order
+			$order = 1;
+			if (count($submission->responses) > 0) {
+				$order = $submission->responses()->max('order') + 1;
+			}
+
 			// Create response
-			$response = $submission->responses()->create($request->only('response', 'question_id', 'answer_id'));
+			$response = $submission->responses()->create([
+				'question_id' => $question_id,
+				'response' => $request->input('response', null),
+				'answer_id' => $answer_id,
+				'order' => $order
+			]);
 
 			if ($response) {
 				return $this->returnSuccessMessage('response', new ResponseResource($response));
@@ -110,7 +137,6 @@ class ResponseController extends Controller
 	public function update($submission_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'response' => 'filled',
 			'question_id' => 'filled|integer|min:1',
 			'answer_id' => 'nullable|integer|min:1'
 		]);
@@ -120,7 +146,7 @@ class ResponseController extends Controller
 
 			// Send error if submission does not exist
 			if (!$submission) {
-				return $this->returnError('submission', 404, 'show response');
+				return $this->returnError('submission', 404, 'update response');
 			}
 
 			$response = $submission->responses()->find($id);
@@ -130,13 +156,28 @@ class ResponseController extends Controller
 				return $this->returnError('response', 404, 'update');
 			}
 
-			$newResponse = $response->fill($request->only('response', 'question_id', 'answer_id'));
+			if ($question_id = $request->input('question_id')) {
+				// Send error if question does not exist
+				if (!Question::find($question_id)) {
+					return $this->returnError('question', 404, 'update response');
+				}
+			}
+
+			if ($answer_id = $request->input('answer_id')) {
+				// Send error if answer does not exist
+				if (!Answer::find($answer_id)) {
+					return $this->returnError('answer', 404, 'update response');
+				}
+			}
+
+			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id'));
 
 			if ($submission->responses()->where('id', $id)->delete()) {
 				$new = $submission->responses()->create([
-					'response' => $newResponse->response,
 					'question_id' => $newResponse->question_id,
-					'answer_id' => $newResponse->answer_id
+					'response' => $newResponse->response,
+					'answer_id' => $newResponse->answer_id,
+					'order' => $newResponse->order
 				]);
 
 				if ($new) {

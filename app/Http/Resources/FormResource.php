@@ -20,7 +20,7 @@ class FormResource extends JsonResource
 			'application_id' => $this->application_id,
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
-			'period' => $this->period->period,
+			'period_id' => $this->period_id,
 			'show_progress' => $this->show_progress
 		];
 	}

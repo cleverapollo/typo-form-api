@@ -59,8 +59,8 @@ class QuestionController extends Controller
 			}
 
 			// Check whether the question type exists or not
-			$question_type = QuestionType::find($request->input('question_type_id'));
-			if (!$question_type) {
+			$question_type_id = $request->input('question_type_id');
+			if (!QuestionType::find($question_type_id)) {
 				return $this->returnError('question type', 404, 'create question');
 			}
 
@@ -77,8 +77,8 @@ class QuestionController extends Controller
 			$question = $section->questions()->create([
 				'question' => $request->input('question'),
 				'description' => $request->input('description', null),
-				'mandatory' => $request->input('mandatory'),
-				'question_type_id' => $request->input('question_type_id'),
+				'mandatory' => $request->input('mandatory', 0),
+				'question_type_id' => $question_type_id,
 				'order' => $order
 			]);
 

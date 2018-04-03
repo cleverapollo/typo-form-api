@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use App\Models\Period;
 use App\Http\Resources\FormResource;
 use Illuminate\Http\Request;
 
@@ -62,6 +63,13 @@ class FormController extends Controller
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnError('application', 404, 'create form');
+			}
+
+			if ($period_id = $request->input('period_id')) {
+				// Send error if period does not exist
+				if (!Period::find($period_id)) {
+					return $this->returnError('period', 404, 'create form');
+				}
 			}
 
 			// Create form
@@ -137,6 +145,13 @@ class FormController extends Controller
 			// Send error if form does not exist
 			if (!$form) {
 				return $this->returnError('form', 404, 'update');
+			}
+
+			if ($period_id = $request->input('period_id')) {
+				// Send error if period does not exist
+				if (!Period::find($period_id)) {
+					return $this->returnError('period', 404, 'create form');
+				}
 			}
 
 			// Update form

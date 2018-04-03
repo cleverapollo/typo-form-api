@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use App\Models\Team;
 use App\Models\Form;
 use App\Models\Submission;
 use App\Http\Resources\SubmissionResource;
@@ -60,17 +61,25 @@ class SubmissionController extends Controller
 				return $this->returnError('form', 404, 'create submission');
 			}
 
+			$team_id = $request->input('team_id', null);
+			if ($team_id) {
+				// Send error if team does not exist
+				if (!Team::find($team_id)) {
+					return $this->returnError('team', 404, 'create submission');
+				}
+			}
+
 			// Create submission
 			$submission = $form->submissions()->create([
 				'user_id' => Auth::user()->id,
-				'team_id' => $request->input('team_id', null),
+				'team_id' => $team_id,
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', null),
 				'period_end' => $request->input('period_end', null)
 			]);
 
 			if ($submission) {
-				return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
+				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
 			// Send error if submission is not created
@@ -116,12 +125,12 @@ class SubmissionController extends Controller
 	 * Update the specified resource in storage.
 	 *
 	 * @param  int $form_id
-	 * @param  \Illuminate\Http\Request $request
 	 * @param  int $id
+	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function update($form_id, Request $request, $id)
+	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'progress' => 'filled|integer|min:0',
