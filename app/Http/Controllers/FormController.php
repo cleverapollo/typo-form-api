@@ -49,7 +49,11 @@ class FormController extends Controller
 	public function store($application_id, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191'
+			'name' => 'required|max:191',
+			'period_start' => 'nullable|date',
+			'period_end' => 'nullable|date',
+			'period_id' => 'nullable|integer|min:1',
+			'show_progress' => 'required|boolean'
 		]);
 
 		try {
@@ -61,7 +65,7 @@ class FormController extends Controller
 			}
 
 			// Create form
-			$form = $application->forms()->create($request->only('name'));
+			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'));
 
 			if ($form) {
 				return $this->returnSuccessMessage('form', new FormResource($form));
@@ -113,7 +117,11 @@ class FormController extends Controller
 	public function update($application_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'filled|max:191'
+			'name' => 'filled|max:191',
+			'period_start' => 'nullable|date',
+			'period_end' => 'nullable|date',
+			'period_id' => 'nullable|integer|min:1',
+			'show_progress' => 'filled|boolean'
 		]);
 
 		try {
@@ -132,7 +140,7 @@ class FormController extends Controller
 			}
 
 			// Update form
-			if ($form->fill($request->only('name'))->save()) {
+			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'))->save()) {
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
 

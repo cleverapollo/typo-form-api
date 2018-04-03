@@ -63,7 +63,7 @@ class ApplicationController extends Controller
 		try {
 			// Check whether user is SuperAdmin or not
 			$user = Auth::user();
-			if ($user->role_id != 1) {
+			if ($user->role->name != 'Super Admin') {
 				return $this->returnError('application', 403, 'create');
 			}
 

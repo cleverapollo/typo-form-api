@@ -129,4 +129,20 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->put('{id}', 'QuestionTypeController@update');
 		$router->delete('{id}', 'QuestionTypeController@destroy');
 	});
+
+	$router->group(['prefix' => 'role'], function () use ($router) {
+		$router->get('/', 'RoleController@index');
+		$router->post('/', 'RoleController@store');
+		$router->get('{id}', 'RoleController@show');
+		$router->put('{id}', 'RoleController@update');
+		$router->delete('{id}', 'RoleController@destroy');
+	});
+
+	$router->group(['prefix' => 'period'], function () use ($router) {
+		$router->get('/', 'PeriodController@index');
+		$router->post('/', 'PeriodController@store');
+		$router->get('{id}', 'PeriodController@show');
+		$router->put('{id}', 'PeriodController@update');
+		$router->delete('{id}', 'PeriodController@destroy');
+	});
 });

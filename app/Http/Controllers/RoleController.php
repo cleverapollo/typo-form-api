@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\QuestionType;
-use App\Http\Resources\QuestionTypeResource;
+use App\Models\Role;
+use App\Http\Resources\RoleResource;
 use Illuminate\Http\Request;
 
-class QuestionTypeController extends Controller
+class RoleController extends Controller
 {
 	/**
 	 * Create a new controller instance.
@@ -27,8 +27,8 @@ class QuestionTypeController extends Controller
 	 */
 	public function index()
 	{
-		$question_types = QuestionType::all();
-		return $this->returnSuccessMessage('question_types', QuestionTypeResource::collection($question_types));
+		$roles = Role::all();
+		return $this->returnSuccessMessage('roles', RoleResource::collection($roles));
 	}
 
 	/**
@@ -41,23 +41,23 @@ class QuestionTypeController extends Controller
 	public function store(Request $request)
 	{
 		$this->validate($request, [
-			'type' => 'required|max:191'
+			'name' => 'required|max:191'
 		]);
 
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'create');
+				return $this->returnError('role', 403, 'create');
 			}
 
-			// Create question type
-			$question_type = QuestionType::create($request->only('type'));
+			// Create role
+			$role = Role::create($request->only('name'));
 
-			if ($question_type) {
-				return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+			if ($role) {
+				return $this->returnSuccessMessage('role', new RoleResource($role));
 			}
 
-			// Send error if question type is not created
-			return $this->returnError('question type', 503, 'create');
+			// Send error if role is not created
+			return $this->returnError('role', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
@@ -73,13 +73,13 @@ class QuestionTypeController extends Controller
 	 */
 	public function show($id)
 	{
-		$question_type = QuestionType::find($id);
-		if ($question_type) {
-			return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+		$role = Role::find($id);
+		if ($role) {
+			return $this->returnSuccessMessage('role', new RoleResource($role));
 		}
 
-		// Send error if question type does not exist
-		return $this->returnError('question type', 404, 'show');
+		// Send error if role does not exist
+		return $this->returnError('role', 404, 'show');
 	}
 
 	/**
@@ -93,28 +93,28 @@ class QuestionTypeController extends Controller
 	public function update($id, Request $request)
 	{
 		$this->validate($request, [
-			'type' => 'filled|max:191'
+			'name' => 'filled|max:191'
 		]);
 
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'update');
+				return $this->returnError('role', 403, 'update');
 			}
 
-			$question_type = QuestionType::find($id);
+			$role = Role::find($id);
 
-			// Send error if question type does not exist
-			if (!$question_type) {
-				return $this->returnError('question type', 404, 'update');
+			// Send error if role does not exist
+			if (!$role) {
+				return $this->returnError('role', 404, 'update');
 			}
 
-			// Update question type
-			if ($question_type->fill($request->only('type'))->save()) {
-				return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+			// Update role
+			if ($role->fill($request->only('name'))->save()) {
+				return $this->returnSuccessMessage('role', new RoleResource($role));
 			}
 
 			// Send error if there is an error on update
-			return $this->returnError('question type', 503, 'update');
+			return $this->returnError('role', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
@@ -132,23 +132,27 @@ class QuestionTypeController extends Controller
 	{
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'delete');
+				return $this->returnError('role', 403, 'delete');
 			}
 
-			$question_type = QuestionType::find($id);
+			$role = Role::find($id);
 
-			// Send error if question type does not exist
-			if (!$question_type) {
-				return $this->returnError('question type', 404, 'delete');
+			// Send error if role does not exist
+			if (!$role) {
+				return $this->returnError('role', 404, 'delete');
 			}
 
-			// Delete question type
-			if ($question_type->delete()) {
-				return $this->returnSuccessMessage('message', 'Question Type has been deleted successfully.');
+			if ($role->name == 'Super Admin' || $role->name == 'Admin') {
+				return $this->returnError('role', 403, 'delete');
+			}
+
+			// Delete role
+			if ($role->delete()) {
+				return $this->returnSuccessMessage('message', 'Role has been deleted successfully.');
 			}
 
 			// Send error if there is an error on update
-			return $this->returnError('question type', 503, 'delete');
+			return $this->returnError('role', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());

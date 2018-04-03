@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\QuestionType;
-use App\Http\Resources\QuestionTypeResource;
+use App\Models\Period;
+use App\Http\Resources\PeriodResource;
 use Illuminate\Http\Request;
 
-class QuestionTypeController extends Controller
+class PeriodController extends Controller
 {
 	/**
 	 * Create a new controller instance.
@@ -27,8 +27,8 @@ class QuestionTypeController extends Controller
 	 */
 	public function index()
 	{
-		$question_types = QuestionType::all();
-		return $this->returnSuccessMessage('question_types', QuestionTypeResource::collection($question_types));
+		$periods = Period::all();
+		return $this->returnSuccessMessage('periods', PeriodResource::collection($periods));
 	}
 
 	/**
@@ -41,23 +41,23 @@ class QuestionTypeController extends Controller
 	public function store(Request $request)
 	{
 		$this->validate($request, [
-			'type' => 'required|max:191'
+			'period' => 'required|max:191'
 		]);
 
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'create');
+				return $this->returnError('period', 403, 'create');
 			}
 
-			// Create question type
-			$question_type = QuestionType::create($request->only('type'));
+			// Create period
+			$period = Period::create($request->only('period'));
 
-			if ($question_type) {
-				return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+			if ($period) {
+				return $this->returnSuccessMessage('period', new PeriodResource($period));
 			}
 
-			// Send error if question type is not created
-			return $this->returnError('question type', 503, 'create');
+			// Send error if period is not created
+			return $this->returnError('period', 503, 'create');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
@@ -73,13 +73,13 @@ class QuestionTypeController extends Controller
 	 */
 	public function show($id)
 	{
-		$question_type = QuestionType::find($id);
-		if ($question_type) {
-			return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+		$period = Period::find($id);
+		if ($period) {
+			return $this->returnSuccessMessage('period', new PeriodResource($period));
 		}
 
-		// Send error if question type does not exist
-		return $this->returnError('question type', 404, 'show');
+		// Send error if period does not exist
+		return $this->returnError('period', 404, 'show');
 	}
 
 	/**
@@ -93,28 +93,28 @@ class QuestionTypeController extends Controller
 	public function update($id, Request $request)
 	{
 		$this->validate($request, [
-			'type' => 'filled|max:191'
+			'period' => 'filled|max:191'
 		]);
 
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'update');
+				return $this->returnError('period', 403, 'update');
 			}
 
-			$question_type = QuestionType::find($id);
+			$period = Period::find($id);
 
-			// Send error if question type does not exist
-			if (!$question_type) {
-				return $this->returnError('question type', 404, 'update');
+			// Send error if period does not exist
+			if (!$period) {
+				return $this->returnError('period', 404, 'update');
 			}
 
-			// Update question type
-			if ($question_type->fill($request->only('type'))->save()) {
-				return $this->returnSuccessMessage('question type', new QuestionTypeResource($question_type));
+			// Update period
+			if ($period->fill($request->only('period'))->save()) {
+				return $this->returnSuccessMessage('period', new PeriodResource($period));
 			}
 
 			// Send error if there is an error on update
-			return $this->returnError('question type', 503, 'update');
+			return $this->returnError('period', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
@@ -132,23 +132,23 @@ class QuestionTypeController extends Controller
 	{
 		try {
 			if (!$this->hasPermission()) {
-				return $this->returnError('question type', 403, 'delete');
+				return $this->returnError('period', 403, 'delete');
 			}
 
-			$question_type = QuestionType::find($id);
+			$period = Period::find($id);
 
-			// Send error if question type does not exist
-			if (!$question_type) {
-				return $this->returnError('question type', 404, 'delete');
+			// Send error if period does not exist
+			if (!$period) {
+				return $this->returnError('period', 404, 'delete');
 			}
 
-			// Delete question type
-			if ($question_type->delete()) {
-				return $this->returnSuccessMessage('message', 'Question Type has been deleted successfully.');
+			// Delete period
+			if ($period->delete()) {
+				return $this->returnSuccessMessage('message', 'Period has been deleted successfully.');
 			}
 
 			// Send error if there is an error on update
-			return $this->returnError('question type', 503, 'delete');
+			return $this->returnError('period', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());

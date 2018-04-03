@@ -52,6 +52,14 @@ class Form extends Model
 	}
 
 	/**
+	 * Get the period of the Form.
+	 */
+	public function period()
+	{
+		return $this->belongsTo('App\Models\Period');
+	}
+
+	/**
 	 * Get the sections for the Form.
 	 */
 	public function sections()
