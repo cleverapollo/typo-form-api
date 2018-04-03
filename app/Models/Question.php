@@ -70,7 +70,7 @@ class Question extends Model
 	/**
 	 * Get the question type of the Question.
 	 */
-	public function type()
+	public function questionType()
 	{
 		return $this->belongsTo('App\Models\QuestionType');
 	}

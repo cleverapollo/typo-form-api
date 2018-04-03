@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Section;
-use App\Models\Question;
+use App\Models\QuestionType;
 use App\Http\Resources\QuestionResource;
 use Illuminate\Http\Request;
 
@@ -46,10 +46,8 @@ class QuestionController extends Controller
 	{
 		$this->validate($request, [
 			'question' => 'required',
-			'description' => 'required',
 			'mandatory' => 'required|boolean',
-			'question_type_id' => 'required|integer|min:1',
-			'order' => 'filled|integer|min:0'
+			'question_type_id' => 'required|integer|min:1'
 		]);
 
 		try {
@@ -60,19 +58,25 @@ class QuestionController extends Controller
 				return $this->returnError('section', 404, 'create question');
 			}
 
-			$order = $request->input('order');
-			if (!$order) {
-				if (Question::where('section_id', $section_id)->exists()) {
-					$order = Question::where('section_id', $section_id)->max('order') + 1;
-				} else {
-					$order = 0;
-				}
+			// Check whether the question type exists or not
+			$question_type = QuestionType::find($request->input('question_type_id'));
+			if (!$question_type) {
+				return $this->returnError('question type', 404, 'create question');
+			}
+
+			// Count order
+			$order = 1;
+			if (count($section->questions) > 0) {
+				$order = max($order, $section->questions()->max('order') + 1);
+			}
+			if (count($section->children) > 0) {
+				$order = max($order, $section->children()->max('order') + 1);
 			}
 
 			// Create question
 			$question = $section->questions()->create([
 				'question' => $request->input('question'),
-				'description' => $request->input('description'),
+				'description' => $request->input('description', null),
 				'mandatory' => $request->input('mandatory'),
 				'question_type_id' => $request->input('question_type_id'),
 				'order' => $order
@@ -126,7 +130,16 @@ class QuestionController extends Controller
 
 			if ($newQuestion) {
 				// Update other questions order
-				$section->questions()->where('order', '>=', $newQuestion->order)->get()->each(function ($other) {
+				$section->questions()->where([
+					['id', '<>', $newQuestion->id],
+					['order', '>=', $newQuestion->order]
+				])->get()->each(function ($other) {
+					$other->order += 1;
+					$other->save();
+				});
+
+				// Update other sections order
+				$section->children()->where('order', '>=', $newQuestion->order)->get()->each(function ($other) {
 					$other->order += 1;
 					$other->save();
 				});
@@ -181,10 +194,8 @@ class QuestionController extends Controller
 	{
 		$this->validate($request, [
 			'question' => 'filled',
-			'description' => 'filled',
 			'mandatory' => 'filled|boolean',
-			'question_type_id' => 'filled|integer|min:1',
-			'order' => 'filled|integer|min:0'
+			'question_type_id' => 'filled|integer|min:1'
 		]);
 
 		try {
@@ -202,8 +213,14 @@ class QuestionController extends Controller
 				return $this->returnError('question', 404, 'update');
 			}
 
+			// Check whether the question type exists or not
+			$question_type = QuestionType::find($request->input('question_type_id'));
+			if (!$question_type) {
+				return $this->returnError('question type', 404, 'update question');
+			}
+
 			// Update question
-			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'order'))->save()) {
+			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id'))->save()) {
 				return $this->returnSuccessMessage('question', new QuestionResource($question));
 			}
 

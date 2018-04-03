@@ -60,12 +60,12 @@ class SectionController extends Controller
 				return $this->returnError('form', 404, 'create section');
 			}
 
+			// Count order
+			$order = 1;
 			$parent_section_id = $request->input('parent_section_id', null);
 			if (!$parent_section_id) {
 				if (count($form->sections) > 0) {
 					$order = $form->sections()->where('parent_section_id', null)->max('order') + 1;
-				} else {
-					$order = 1;
 				}
 			} else {
 				$parent_section = $form->sections()->find($parent_section_id);
@@ -75,9 +75,8 @@ class SectionController extends Controller
 					return $this->returnError('parent section', 404, 'create section');
 				}
 
-				$order = 1;
 				if (count($parent_section->children) > 0) {
-					$order = max($order, $parent_section->children()->max('order') + 1);
+					$order = $parent_section->children()->max('order') + 1;
 				}
 
 				if (count($parent_section->questions) > 0) {
@@ -139,6 +138,7 @@ class SectionController extends Controller
 			if ($newSection) {
 				// Update other sections order
 				$form->sections()->where([
+					['id', '<>', $newSection->id],
 					['parent_section_id', '=', $newSection->parent_section_id],
 					['order', '>=', $newSection->order]
 				])->get()->each(function ($other) {
@@ -148,9 +148,7 @@ class SectionController extends Controller
 
 				// Update other questions order
 				if ($newSection->parent) {
-					$newSection->parent->questions()->where([
-						['order', '>=', $newSection->order]
-					])->get()->each(function ($other) {
+					$newSection->parent->questions()->where('order', '>=', $newSection->order)->get()->each(function ($other) {
 						$other->order += 1;
 						$other->save();
 					});

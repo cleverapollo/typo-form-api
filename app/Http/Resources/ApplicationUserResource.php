@@ -17,7 +17,7 @@ class ApplicationUserResource extends JsonResource
 		return [
 			'user_id' => $this->user_id,
 			'application_id' => $this->application_id,
-			'application_role' => $this->role->name
+			'application_role_id' => $this->role_id
 		];
 	}
 }
