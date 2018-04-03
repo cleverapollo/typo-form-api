@@ -130,8 +130,6 @@ trait ResetsPasswords
 			'status' => 'success',
 			'message' => trans($response)
 		], 200);
-//        return redirect($this->redirectPath())
-//                            ->with('status', trans($response));
 	}
 
 	/**
@@ -148,9 +146,6 @@ trait ResetsPasswords
 			'status' => 'fail',
 			'message' => trans($response)
 		], 503);
-//        return redirect()->back()
-//                    ->withInput($request->only('email'))
-//                    ->withErrors(['email' => trans($response)]);
 	}
 
 	/**

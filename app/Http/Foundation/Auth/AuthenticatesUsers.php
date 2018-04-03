@@ -79,9 +79,6 @@ trait AuthenticatesUsers
 	 */
 	protected function attemptLogin(Request $request)
 	{
-//        return $this->guard()->attempt(
-//            $this->credentials($request), $request->filled('remember')
-//        );
 		$user = User::where('email', $request->input('email'))->first();
 		if ($user && Hash::check($request->input('password'), $user->password)) {
 			$api_token = base64_encode(str_random(40));
@@ -118,14 +115,9 @@ trait AuthenticatesUsers
 	 */
 	protected function sendLoginResponse(Request $request, $user)
 	{
-//        $request->session()->regenerate();
-
 		$this->clearLoginAttempts($request);
 
 		return response()->json(['status' => 'success', 'user' => $user], 200);
-
-//        return $this->authenticated($request, $this->guard()->user())
-//                ?: redirect()->intended($this->redirectPath());
 	}
 
 	/**
@@ -154,9 +146,6 @@ trait AuthenticatesUsers
 			'status' => 'fail',
 			'message' => 'Invalid email or password.'
 		], 401);
-//        throw ValidationException::withMessages([
-//            $this->username() => [trans('auth.failed')],
-//        ]);
 	}
 
 	/**
@@ -187,10 +176,6 @@ trait AuthenticatesUsers
 		$user->save();
 
 		return response()->json(['status' => 'success'], 200);
-
-//        $this->guard()->logout();
-//        $request->session()->invalidate();
-//        return redirect('/');
 	}
 
 	/**

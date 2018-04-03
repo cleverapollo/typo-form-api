@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddRoleToUserTeamsTable extends Migration
+class CreateApplicationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class AddRoleToUserTeamsTable extends Migration
      */
     public function up()
     {
-        Schema::table('user_teams', function (Blueprint $table) {
-            $table->string('role')->default('User')->after('team_id');
+        Schema::create('applications', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('share_token')->unique();
+            $table->timestamps();
         });
     }
 
@@ -25,8 +28,6 @@ class AddRoleToUserTeamsTable extends Migration
      */
     public function down()
     {
-        Schema::table('user_teams', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        Schema::dropIfExists('applications');
     }
 }

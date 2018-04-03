@@ -76,6 +76,8 @@ class ApplicationController extends Controller
 			$application = $user->applications()->create([
 				'name' => $request->input('name'),
 				'share_token' => $share_token
+			], [
+				'role_id' => 2
 			]);
 
 			if ($application) {
@@ -431,12 +433,12 @@ class ApplicationController extends Controller
 	 */
 	protected function hasPermission($user, $application)
 	{
-		$role_id = ApplicationUser::where([
+		$role = ApplicationUser::where([
 			'user_id' => $user->id,
 			'application_id' => $application->id
-		])->value('role_id');
+		])->first()->role;
 
-		if ($user->role->name != 'Super Admin' && Role::find($role_id)->name != 'Admin') {
+		if ($user->role->name != 'Super Admin' && $role->name != 'Admin') {
 			return false;
 		}
 

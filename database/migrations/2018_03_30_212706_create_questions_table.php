@@ -15,17 +15,16 @@ class CreateQuestionsTable extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('question');
-            $table->string('description');
-            $table->boolean('mandatory')->default(false);
-            $table->integer('section_id')->unsigned();
+            $table->text('question');
+            $table->text('description')->nullable();
+            $table->boolean('mandatory')->default(0);
+            $table->unsignedInteger('section_id');
             $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-            $table->integer('group_id')->unsigned();
-            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-            $table->integer('question_type_id')->unsigned();
-            $table->foreign('question_type_id')->references('id')->on('question_types')->onDelete('cascade');
-            $table->integer('order');
+            $table->unsignedInteger('question_type_id')->nullable();
+            $table->foreign('question_type_id')->references('id')->on('question_types')->onDelete('set null');
+            $table->unsignedInteger('order');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

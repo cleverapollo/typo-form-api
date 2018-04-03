@@ -40,7 +40,7 @@ class Section extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'form_id', 'section_id', 'order'
+		'name', 'form_id', 'parent_section_id', 'order', 'repeatable', 'max_rows', 'min_rows'
 	];
 
 	/**
@@ -64,7 +64,7 @@ class Section extends Model
 	 */
 	public function parent()
 	{
-		return $this->belongsTo('App\Models\Section', 'section_id');
+		return $this->belongsTo('App\Models\Section', 'parent_section_id');
 	}
 
 	/**
@@ -72,7 +72,7 @@ class Section extends Model
 	 */
 	public function children()
 	{
-		return $this->hasMany('App\Models\Section', 'section_id');
+		return $this->hasMany('App\Models\Section', 'parent_section_id');
 	}
 
 	/**

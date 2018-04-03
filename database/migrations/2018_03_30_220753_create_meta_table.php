@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddProgressToSubmissionTable extends Migration
+class CreateMetaTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,12 @@ class AddProgressToSubmissionTable extends Migration
      */
     public function up()
     {
-        Schema::table('submissions', function (Blueprint $table) {
-	        $table->integer('progress')->default(0)->after('team_id');
+        Schema::create('meta', function (Blueprint $table) {
+            $table->increments('id');
+            $table->text('metadata');
+            $table->unsignedInteger('metable_id');
+            $table->string('metable_type');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +29,6 @@ class AddProgressToSubmissionTable extends Migration
      */
     public function down()
     {
-        Schema::table('submissions', function (Blueprint $table) {
-            $table->dropColumn('progress');
-        });
+        Schema::dropIfExists('meta');
     }
 }

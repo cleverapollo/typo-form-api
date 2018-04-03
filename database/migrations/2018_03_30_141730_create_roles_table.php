@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddParameterToAnswerTable extends Migration
+class CreateRolesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,10 @@ class AddParameterToAnswerTable extends Migration
      */
     public function up()
     {
-        Schema::table('answers', function (Blueprint $table) {
-        	$table->boolean('parameter')->nullable()->after('answer');
+        Schema::create('roles', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +27,6 @@ class AddParameterToAnswerTable extends Migration
      */
     public function down()
     {
-	    Schema::table('answers', function (Blueprint $table) {
-		    $table->dropColumn('parameter');
-	    });
+        Schema::dropIfExists('roles');
     }
 }

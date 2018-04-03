@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateApplicationInvitationsTable extends Migration
+class CreateApplicationUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateApplicationInvitationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('application_invitations', function (Blueprint $table) {
+        Schema::create('application_users', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer ('inviter_id')->unsigned();
-            $table->foreign('inviter_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string ('invitee');
-            $table->integer ('application_id')->unsigned();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedInteger('application_id');
             $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
-            $table->boolean('status')->default(0);
+            $table->unsignedInteger('role_id')->nullable();
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ class CreateApplicationInvitationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('application_invitations');
+        Schema::dropIfExists('application_users');
     }
 }

@@ -40,7 +40,7 @@ class Form extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'application_id'
+		'name', 'application_id', 'period_start', 'period_end', 'period_id', 'show_progress'
 	];
 
 	/**

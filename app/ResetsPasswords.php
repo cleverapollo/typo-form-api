@@ -12,7 +12,7 @@ trait ResetsPasswords
 	 * Send a reset link to the given user.
 	 *
 	 * @param  \Illuminate\Http\Request $request
-	 * @return \Illuminate\Http\Response
+	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	public function sendResetLinkEmail(Request $request)
 	{
@@ -72,7 +72,7 @@ trait ResetsPasswords
 	 * Reset the given user's password.
 	 *
 	 * @param  \Illuminate\Http\Request $request
-	 * @return \Illuminate\Http\Response
+	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	public function reset(Request $request)
 	{
@@ -116,7 +116,7 @@ trait ResetsPasswords
 	 *
 	 * @param  \Illuminate\Contracts\Auth\CanResetPassword $user
 	 * @param  string $password
-	 * @return void
+	 * @return \Illuminate\Http\JsonResponse
 	 */
 	protected function resetPassword($user, $password)
 	{

@@ -75,6 +75,8 @@ class TeamController extends Controller
 				'description' => $request->input('description', null),
 				'application_id' => $application_id,
 				'share_token' => $share_token
+			], [
+				'role_id' => 2
 			]);
 
 			if ($team) {
@@ -451,12 +453,12 @@ class TeamController extends Controller
 	 */
 	protected function hasPermission($user, $team)
 	{
-		$role_id = TeamUser::where([
+		$role = TeamUser::where([
 			'user_id' => $user->id,
 			'team_id' => $team->id
-		])->value('role_id');
+		])->first()->role;
 
-		if ($user->role->name != 'Super Admin' && Role::find($role_id)->name != 'Admin') {
+		if ($user->role->name != 'Super Admin' && $role->name != 'Admin') {
 			return false;
 		}
 

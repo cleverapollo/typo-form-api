@@ -45,9 +45,8 @@ class AnswerController extends Controller
 	public function store($question_id, Request $request)
 	{
 		$this->validate($request, [
-			'answer' => 'required',
-			'parameter' => 'nullable|boolean',
-			'order' => 'filled|integer|min:0'
+			'parameter' => 'boolean',
+			'order' => 'required|integer|min:1'
 		]);
 
 		try {
@@ -58,20 +57,11 @@ class AnswerController extends Controller
 				return $this->returnError('question', 404, 'create answer');
 			}
 
-			$order = $request->input('order');
-			if (!$order) {
-				if (Answer::where('question_id', $question_id)->exists()) {
-					$order = Answer::where('question_id', $question_id)->max('order') + 1;
-				} else {
-					$order = 0;
-				}
-			}
-
 			// Create answer
 			$answer = $question->answers()->create([
-				'answer' => $request->input('answer'),
-				'parameter' => $request->input('parameter', null),
-				'order' => $order
+				'answer' => $request->input('answer', null),
+				'parameter' => $request->input('parameter', 1),
+				'order' => $request->input('order'),
 			]);
 
 			if ($answer) {
@@ -124,9 +114,8 @@ class AnswerController extends Controller
 	public function update($question_id, Request $request, $id)
 	{
 		$this->validate($request, [
-			'answer' => 'filled',
-			'parameter' => 'nullable|boolean',
-			'order' => 'filled|integer|min:0'
+			'parameter' => 'boolean',
+			'order' => 'filled|integer|min:1'
 		]);
 
 		try {

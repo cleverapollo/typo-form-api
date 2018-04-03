@@ -30,4 +30,12 @@ class TeamInvitation extends Model
 	{
 		return $this->belongsTo('App\Models\Team');
 	}
+
+	/**
+	 * Get the role that owns the Invitation
+	 */
+	public function role()
+	{
+		return $this->belongsTo('App\Models\Role');
+	}
 }

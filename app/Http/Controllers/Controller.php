@@ -182,7 +182,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $dataId,
-			'role_id' => Role::where('name', 'User')->id,
+			'role_id' => Role::where('name', 'User')->first()->id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {
@@ -232,7 +232,7 @@ class Controller extends BaseController
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
 			$type . '_id' => $data->id,
-			'role_id' => Role::where('name', 'User')->id,
+			'role_id' => Role::where('name', 'User')->first()->id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		])) {

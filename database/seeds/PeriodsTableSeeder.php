@@ -4,7 +4,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class RolesTableSeeder extends Seeder
+class PeriodsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,23 +13,29 @@ class RolesTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('roles')->delete();
+        // Delete all record
+        DB::table('periods')->delete();
 
-	    DB::table('roles')->insert([
-		    'name' => 'Super Admin',
+	    DB::table('periods')->insert([
+		    'period' => '1 month',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
-	    DB::table('roles')->insert([
-		    'name' => 'Admin',
+	    DB::table('periods')->insert([
+		    'period' => '3 months',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
-	    DB::table('roles')->insert([
-		    'name' => 'User',
+	    DB::table('periods')->insert([
+		    'period' => '1 year',
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('periods')->insert([
+		    'period' => '3 years',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

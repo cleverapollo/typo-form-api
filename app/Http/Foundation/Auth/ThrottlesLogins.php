@@ -45,7 +45,6 @@ trait ThrottlesLogins
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
-	//     * @throws \Illuminate\Validation\ValidationException
 	 */
 	protected function sendLockoutResponse(Request $request)
 	{
@@ -57,9 +56,6 @@ trait ThrottlesLogins
 			'status' => 'fail',
 			'message' => 'Too much failed login attempt. Login is blocked. Please try again 3 minutes later.'
 		], 423);
-//        throw ValidationException::withMessages([
-//            $this->username() => [Lang::get('auth.throttle', ['seconds' => $seconds])],
-//        ])->status(423);
 	}
 
 	/**

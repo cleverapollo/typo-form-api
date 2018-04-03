@@ -16,7 +16,7 @@ class ApplicationUser extends Model
 	];
 
 	/**
-	 * Get the role
+	 * Get the role of the User in Application
 	 */
 	public function role()
 	{

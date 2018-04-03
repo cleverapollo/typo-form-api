@@ -29,7 +29,6 @@ trait RegistersUsers
 	 */
 	public function register(Request $request)
 	{
-//        $this->validator($request->all())->validate();
 		$this->validate($request, [
 			'first_name' => 'required|string|max:191',
 			'last_name' => 'required|string|max:191',
@@ -40,6 +39,9 @@ trait RegistersUsers
 		event(new Registered($user = $this->create($request->only('first_name', 'last_name', 'email', 'password'))));
 
 		if ($user) {
+			$user->role_id = 3;
+			$user->save();
+
 			return response()->json([
 				'status' => 'success',
 				'message' => 'Congratulations! Your account has been created successfully.'

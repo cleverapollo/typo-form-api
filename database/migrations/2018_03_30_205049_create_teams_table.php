@@ -16,6 +16,10 @@ class CreateTeamsTable extends Migration
         Schema::create('teams', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->text('description')->nullable();
+            $table->unsignedInteger('application_id');
+            $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
+            $table->string('share_token')->unique();
             $table->timestamps();
         });
     }

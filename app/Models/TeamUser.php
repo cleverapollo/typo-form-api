@@ -14,4 +14,12 @@ class TeamUser extends Model
 	protected $fillable = [
 		'user_id', 'team_id', 'role_id'
 	];
+
+	/**
+	 * Get the role of the User in Team
+	 */
+	public function role()
+	{
+		return $this->belongsTo('App\Models\Role');
+	}
 }
