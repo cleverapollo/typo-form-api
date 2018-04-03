@@ -52,16 +52,10 @@ class TeamController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
-			'invitations' => 'array'
+			'invitations' => 'array',
+			'invitations.*.email' => 'required|email',
+			'invitations.*.team_role' => 'required|integer|min:2'
 		]);
-
-		$invitations = $request->input('invitations', []);
-		foreach ($invitations as $invitation) {
-			$this->validate($invitation, [
-				'email' => 'required|email',
-				'team_role' => 'required|integer|min:2'
-			]);
-		}
 
 		try {
 			$share_token = base64_encode(str_random(40));
@@ -80,6 +74,8 @@ class TeamController extends Controller
 			]);
 
 			if ($team) {
+				$invitations = $request->input('invitations', []);
+
 				// Send invitation
 				$this->sendInvitation('team', $team, $invitations);
 
@@ -277,13 +273,11 @@ class TeamController extends Controller
 	 */
 	public function inviteUsers($application_id, $id, Request $request)
 	{
-		$invitations = $request->input('invitations', []);
-		foreach ($invitations as $invitation) {
-			$this->validate($invitation, [
-				'email' => 'required|email',
-				'team_role' => 'required|integer|min:2'
-			]);
-		}
+		$this->validate($request, [
+			'invitations' => 'array',
+			'invitations.*.email' => 'required|email',
+			'invitations.*.application_role' => 'required|integer|min:2'
+		]);
 
 		$user = Auth::user();
 		$team = $user->teams()->where([
@@ -300,6 +294,8 @@ class TeamController extends Controller
 		if (!$this->hasPermission($user, $team)) {
 			return $this->returnError('team', 403, 'send invitation');
 		}
+
+		$invitations = $request->input('invitations', []);
 
 		// Send invitation
 		$this->sendInvitation('team', $team, $invitations);

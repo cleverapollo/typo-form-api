@@ -67,7 +67,7 @@ class QuestionController extends Controller
 			// Count order
 			$order = 1;
 			if (count($section->questions) > 0) {
-				$order = max($order, $section->questions()->max('order') + 1);
+				$order = $section->questions()->max('order') + 1;
 			}
 			if (count($section->children) > 0) {
 				$order = max($order, $section->children()->max('order') + 1);

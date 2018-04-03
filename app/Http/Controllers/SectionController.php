@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Form;
-use App\Models\Section;
+use App\Models\QuestionType;
 use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
@@ -176,45 +176,18 @@ class SectionController extends Controller
 	public function storeSections($form_id, Request $request)
 	{
 		$this->validate($request, [
-			'sections' => 'array'
+			'sections' => 'array',
+			'sections.*.name' => 'required|max:191',
+			'sections.*.parent_section_id' => 'nullable|integer|min:1',
+			'sections.*.questions' => 'array',
+			'sections.*.questions.*.question' => 'required',
+			'sections.*.questions.*.mandatory' => 'required|boolean',
+			'sections.*.questions.*.question_type_id' => 'required|integer|min:1',
+			'sections.*.questions.*.answers' => 'array',
+			'sections.*.questions.*.answers.*.parameter' => 'required|boolean'
 		]);
 
 		$sections = $request->input('sections', []);
-		if ($sections && count($sections) > 0) {
-			foreach ($sections as $section) {
-				$this->validate($section, [
-					'name' => 'required|max:191',
-					'order' => 'filled|integer|min:0',
-					'section_id' => 'nullable|integer|min:1',
-					'questions' => 'array'
-				]);
-
-				$questions = $section['questions'];
-				if ($questions && count($questions) > 0) {
-					foreach ($questions as $question) {
-						$this->validate($question, [
-							'question' => 'required',
-							'description' => 'required',
-							'mandatory' => 'required|boolean',
-							'question_type_id' => 'required|integer|min:1',
-							'order' => 'filled|integer|min:0',
-							'answers' => 'array'
-						]);
-
-						$answers = $question['answers'];
-						if ($answers && count($answers) > 0) {
-							foreach ($answers as $answer) {
-								$this->validate($answer, [
-									'answer' => 'required',
-									'parameter' => 'nullable|boolean',
-									'order' => 'filled|integer|min:0'
-								]);
-							}
-						}
-					}
-				}
-			}
-		}
 
 		try {
 			$form = Form::find($form_id);
@@ -227,19 +200,34 @@ class SectionController extends Controller
 			// Create sections
 			$createdSections = [];
 			foreach ($sections as $section) {
-				$order = $section['order'];
-				if (!$order) {
-					if (Section::where('form_id', $form_id)->exists()) {
-						$order = Section::where('form_id', $form_id)->max('order') + 1;
-					} else {
-						$order = 0;
+				// Count order
+				$sOrder = 1;
+				if (!$section['parent_section_id']) {
+					if (count($form->sections) > 0) {
+						$sOrder = $form->sections()->where('parent_section_id', null)->max('order') + 1;
+					}
+				} else {
+					$parent_section = $form->sections()->find($section['parent_section_id']);
+
+					// Send error if parent section does not exist
+					if (!$parent_section) {
+						continue;
+						// return $this->returnError('parent section', 404, 'create section');
+					}
+
+					if (count($parent_section->children) > 0) {
+						$sOrder = $parent_section->children()->max('order') + 1;
+					}
+
+					if (count($parent_section->questions) > 0) {
+						$sOrder = max($sOrder, $parent_section->questions()->max('order') + 1);
 					}
 				}
 
 				$createdSection = $form->sections()->create([
 					'name' => $section['name'],
-					'order' => $order,
-					'section_id' => $section['section_id']
+					'parent_section_id' => $section['parent_section_id'],
+					'order' => $sOrder
 				]);
 
 				if ($createdSection) {
@@ -248,13 +236,19 @@ class SectionController extends Controller
 						// Create questions
 						$createdQuestions = [];
 						foreach ($questions as $question) {
-							$order = $question['order'];
-							if (!$order) {
-								if (count($createdSection->questions) > 0) {
-									$order = $createdSection->questions()->max('order') + 1;
-								} else {
-									$order = 0;
-								}
+							// Check whether the question type exists or not
+							if (!QuestionType::find($question['question_type_id'])) {
+								continue;
+								// return $this->returnError('question type', 404, 'create question');
+							}
+
+							// Count order
+							$qOrder = 1;
+							if (count($createdSection->questions) > 0) {
+								$qOrder = $createdSection->questions()->max('order') + 1;
+							}
+							if (count($createdSection->children) > 0) {
+								$qOrder = max($qOrder, $createdSection->children()->max('order') + 1);
 							}
 
 							$createdQuestion = $createdSection->questions()->create([
@@ -262,7 +256,7 @@ class SectionController extends Controller
 								'description' => $question['description'],
 								'mandatory' => $question['mandatory'],
 								'question_type_id' => $question['question_type_id'],
-								'order' => $order
+								'order' => $qOrder
 							]);
 
 							if ($createdQuestion) {
@@ -270,19 +264,16 @@ class SectionController extends Controller
 								if ($answers && count($answers) > 0) {
 									$createdAnswers = [];
 									foreach ($answers as $answer) {
-										$order = $answer['order'];
-										if (!$order) {
-											if (count($createdQuestion->answers) > 0) {
-												$order = $createdQuestion->answers()->max('order') + 1;
-											} else {
-												$order = 0;
-											}
+										// Count order
+										$aOrder = 1;
+										if (count($createdQuestion->answers) > 0) {
+											$aOrder = $createdQuestion->answers()->max('order') + 1;
 										}
 
 										$createdAnswer = $createdQuestion->answers()->create([
 											'answer' => $answer['answer'],
 											'parameter' => $answer['parameter'],
-											'order' => $order
+											'order' => $aOrder
 										]);
 
 										if ($createdAnswer) {
@@ -384,161 +375,6 @@ class SectionController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
-		}
-	}
-
-	/**
-	 * Update resources in storage.
-	 *
-	 * @param  int $form_id
-	 * @param  \Illuminate\Http\Request $request
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function updateSections($form_id, Request $request)
-	{
-		$this->validate($request, [
-			'sections' => 'array'
-		]);
-
-		$sections = $request->input('sections', []);
-		if ($sections && count($sections) > 0) {
-			foreach ($sections as $section) {
-				$this->validate($section, [
-					'id' => 'filled|integer|min:1',
-					'name' => 'filled|max:191',
-					'order' => 'filled|integer|min:0',
-					'section_id' => 'nullable|integer|min:1',
-					'questions' => 'array'
-				]);
-
-				$questions = $section['questions'];
-				if ($questions && count($questions) > 0) {
-					foreach ($questions as $question) {
-						$this->validate($question, [
-							'id' => 'filled|integer|min:1',
-							'question' => 'filled',
-							'description' => 'filled',
-							'mandatory' => 'filled|boolean',
-							'question_type_id' => 'filled|integer|min:1',
-							'order' => 'filled|integer|min:0',
-							'answers' => 'array'
-						]);
-
-						$answers = $question['answers'];
-						if ($answers && count($answers) > 0) {
-							foreach ($answers as $answer) {
-								$this->validate($answer, [
-									'id' => 'filled|integer|min:1',
-									'answer' => 'filled',
-									'parameter' => 'nullable|boolean',
-									'order' => 'filled|integer|min:0'
-								]);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		try {
-			$form = Form::find($form_id);
-
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'update section');
-			}
-
-			// Update sections
-			$updatedSections = [];
-			foreach ($sections as $section) {
-				if ($section['id'] && ($updatedSection = $form->sections()->where('id', $section['id'])->first())) {
-					$updatedSection->fill([
-						'name' => $section['name'],
-						'order' => $section['order'],
-						'section_id' => $section['section_id']
-					])->save();
-				} else {
-					$updatedSection = $form->sections()->create([
-						'name' => $section['name'],
-						'order' => $section['order'],
-						'section_id' => $section['section_id']
-					]);
-				}
-
-				if ($updatedSection) {
-					$questions = $section['questions'];
-					if ($questions && count($questions) > 0) {
-						// Create questions
-						$updatedQuestions = [];
-						foreach ($questions as $question) {
-							if ($question['id'] && ($updatedQuestion = $updatedSection->questions()->where('id', $question['id'])->first())) {
-								$updatedQuestion->fill([
-									'question' => $question['question'],
-									'description' => $question['description'],
-									'mandatory' => $question['mandatory'],
-									'question_type_id' => $question['question_type_id'],
-									'order' => $question['order']
-								])->save();
-							} else {
-								$updatedQuestion = $updatedSection->questions()->create([
-									'question' => $question['question'],
-									'description' => $question['description'],
-									'mandatory' => $question['mandatory'],
-									'question_type_id' => $question['question_type_id'],
-									'order' => $question['order']
-								]);
-							}
-
-							if ($updatedQuestion) {
-								$answers = $question['answers'];
-								if ($answers && count($answers) > 0) {
-									$updatedAnswers = [];
-									foreach ($answers as $answer) {
-										if ($answer['id'] && ($updatedAnswer = $updatedQuestion->answers()->where('id', $answer['id'])->first())) {
-											$updatedAnswer->fill([
-												'answer' => $answer['answer'],
-												'parameter' => $answer['parameter'],
-												'order' => $answer['order']
-											])->save();
-										} else {
-											$updatedAnswer = $updatedQuestion->answers()->create([
-												'answer' => $answer['answer'],
-												'parameter' => $answer['parameter'],
-												'order' => $answer['order']
-											]);
-										}
-
-										if ($updatedAnswer) {
-											// Push the updated answer to return array
-											array_push($updatedAnswers, $updatedAnswer);
-										}
-									}
-
-									// Push the updated answers to parent question
-									$updatedQuestion['answers'] = AnswerResource::collection($updatedAnswers);
-								}
-
-								// Push the updated question to return array
-								array_push($updatedQuestions, $updatedQuestion);
-							}
-						}
-
-						// Push the updated questions to parent section
-						$updatedSection['questions'] = QuestionResource::collection($updatedQuestions);
-					}
-
-					// Push the updated section to return array
-					array_push($updatedSections, $updatedSection);
-				}
-			}
-
-			return $this->returnSuccessMessage('sections', SectionResource::collection($updatedSections));
-		} catch (Exception $e) {
-			// Send error if section is not created
-			return $this->returnError('sections', 503, 'update');
-			// Send error
-			// return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
