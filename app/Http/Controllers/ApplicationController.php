@@ -49,16 +49,12 @@ class ApplicationController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
-			'invitations' => 'array'
+			'invitations' => 'array',
+			'invitations.*.email' => 'required|email',
+			'invitations.*.application_role' => 'required|integer|min:2'
 		]);
 
 		$invitations = $request->input('invitations', []);
-		foreach ($invitations as $invitation) {
-			$this->validate($invitation, [
-				'email' => 'required|email',
-				'application_role' => 'required|integer|min:2'
-			]);
-		}
 
 		try {
 			// Check whether user is SuperAdmin or not
@@ -264,13 +260,11 @@ class ApplicationController extends Controller
 	 */
 	public function inviteUsers($id, Request $request)
 	{
-		$invitations = $request->input('invitations', []);
-		foreach ($invitations as $invitation) {
-			$this->validate($invitation, [
-				'email' => 'required|email',
-				'application_role' => 'required|integer|min:2'
-			]);
-		}
+		$this->validate($request, [
+			'invitations' => 'array',
+			'invitations.*.email' => 'required|email',
+			'invitations.*.application_role' => 'required|integer|min:2'
+		]);
 
 		$user = Auth::user();
 		$application = $user->applications()->where('application_id', $id)->first();
@@ -284,6 +278,8 @@ class ApplicationController extends Controller
 		if (!$this->hasPermission($user, $application)) {
 			return $this->returnError('application', 403, 'send invitation');
 		}
+
+		$invitations = $request->input('invitations', []);
 
 		// Send invitation
 		$this->sendInvitation('application', $application, $invitations);
@@ -338,9 +334,7 @@ class ApplicationController extends Controller
 			}
 
 			$user = Auth::user();
-			$application = $user->applications()->where([
-				'application_id' => $application_id
-			])->first();
+			$application = $user->applications()->where('application_id', $application_id)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
