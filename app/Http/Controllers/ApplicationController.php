@@ -77,7 +77,7 @@ class ApplicationController extends Controller
 				'name' => $request->input('name'),
 				'share_token' => $share_token
 			], [
-				'role_id' => Role::where('name', 'Admin')->id
+				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
 
 			if ($application) {

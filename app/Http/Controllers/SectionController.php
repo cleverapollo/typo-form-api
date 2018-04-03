@@ -6,9 +6,9 @@ use Auth;
 use Exception;
 use App\Models\Form;
 use App\Models\Section;
-use App\Models\Question;
-use App\Models\Answer;
 use App\Http\Resources\SectionResource;
+use App\Http\Resources\QuestionResource;
+use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -250,8 +250,8 @@ class SectionController extends Controller
 						foreach ($questions as $question) {
 							$order = $question['order'];
 							if (!$order) {
-								if (Question::where('section_id', $createdSection->id)->exists()) {
-									$order = Question::where('section_id', $createdSection->id)->max('order') + 1;
+								if (count($createdSection->questions) > 0) {
+									$order = $createdSection->questions()->max('order') + 1;
 								} else {
 									$order = 0;
 								}
@@ -272,8 +272,8 @@ class SectionController extends Controller
 									foreach ($answers as $answer) {
 										$order = $answer['order'];
 										if (!$order) {
-											if (Answer::where('question_id', $createdQuestion->id)->exists()) {
-												$order = Answer::where('question_id', $createdQuestion->id)->max('order') + 1;
+											if (count($createdQuestion->answers) > 0) {
+												$order = $createdQuestion->answers()->max('order') + 1;
 											} else {
 												$order = 0;
 											}

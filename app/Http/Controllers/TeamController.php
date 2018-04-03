@@ -76,7 +76,7 @@ class TeamController extends Controller
 				'application_id' => $application_id,
 				'share_token' => $share_token
 			], [
-				'role_id' => Role::where('name', 'Admin')->id
+				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
 
 			if ($team) {
