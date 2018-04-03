@@ -82,7 +82,7 @@ class Controller extends BaseController
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
 				// Check whether the role exists or not
-				$role = Role::find($invitation[$type . '_role']);
+				$role = Role::find($invitation[$type . '_role_id']);
 				if (!$role) {
 					continue;
 				}

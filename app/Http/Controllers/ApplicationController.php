@@ -51,7 +51,7 @@ class ApplicationController extends Controller
 			'name' => 'required|max:191',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role' => 'required|integer|min:2'
+			'invitations.*.application_role_id' => 'required|integer|min:2'
 		]);
 
 		$invitations = $request->input('invitations', []);
@@ -263,7 +263,7 @@ class ApplicationController extends Controller
 		$this->validate($request, [
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role' => 'required|integer|min:2'
+			'invitations.*.application_role_id' => 'required|integer|min:2'
 		]);
 
 		$user = Auth::user();
@@ -323,12 +323,12 @@ class ApplicationController extends Controller
 	public function updateUser($application_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'application_role' => 'required|integer|min:2'
+			'application_role_id' => 'required|integer|min:2'
 		]);
 
 		try {
 			// Check whether the role exists or not
-			$role = Role::find($request->input('application_role'));
+			$role = Role::find($request->input('application_role_id'));
 			if (!$role) {
 				return $this->returnError('role', 404, 'update user');
 			}
