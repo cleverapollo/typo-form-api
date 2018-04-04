@@ -414,4 +414,78 @@ class SectionController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
+
+	/**
+	 * Move the specified resource from storage.
+	 *
+	 * @param $form_id
+	 * @param $id
+	 * @param Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function move($form_id, $id, Request $request)
+	{
+		$this->validate($request, [
+			'parent_section_id' => 'required|integer|min:1',
+			'order' => 'required|integer|min:1'
+		]);
+
+		try {
+			$form = Form::find($form_id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'move section');
+			}
+
+			$section = $form->sections()->find($id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'move');
+			}
+
+			$parent_section_id = $request->input('parent_section_id');
+			$order = $request->input('order') + 1;
+			if ($parent_section_id) {
+				$parent_section = $form->sections()->find($parent_section_id);
+
+				// Send error if parent section does not exist
+				if (!$parent_section) {
+					return $this->returnError('parent section', 404, 'create section');
+				}
+			}
+
+			// Move section
+			$section->parent_section_id = $parent_section_id;
+			$section->order = $order;
+			$section->save();
+
+			// Update other sections order
+			$form->sections()->where([
+				['id', '<>', $section->id],
+				['parent_section_id', '=', $parent_section_id],
+				['order', '>=', $order]
+			])->get()->each(function ($other) {
+				$other->order += 1;
+				$other->save();
+			});
+
+			// Update other questions order
+			if ($parent_section_id) {
+				$section->parent->questions()->where('order', '>=', $order)->get()->each(function ($other) {
+					$other->order += 1;
+					$other->save();
+				});
+
+				return $this->returnSuccessMessage('data', new SectionResource($section->parent));
+			}
+
+			return $this->returnSuccessMessage('data', null);
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
 }
