@@ -212,7 +212,7 @@ class AnswerController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 			// Send error if there is an error on update
-//			return $this->returnError('answer', 503, 'delete');
+			// return $this->returnError('answer', 503, 'delete');
 		}
 	}
 
@@ -242,7 +242,7 @@ class AnswerController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 			// Send error if there is an error on update
-//			return $this->returnError('answer', 503, 'delete');
+			// return $this->returnError('answer', 503, 'delete');
 		}
 	}
 }
