@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\QuestionResource;
 use Exception;
 use App\Models\Question;
 use App\Http\Resources\AnswerResource;
+use App\Http\Resources\QuestionResource;
 use Illuminate\Http\Request;
 
 class AnswerController extends Controller
@@ -265,8 +265,6 @@ class AnswerController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
-			// Send error if there is an error on update
-			// return $this->returnError('answer', 503, 'delete');
 		}
 	}
 }
