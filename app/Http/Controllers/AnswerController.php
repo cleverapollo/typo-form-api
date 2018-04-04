@@ -229,7 +229,6 @@ class AnswerController extends Controller
 	public function move($question_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'parent_question_id' => 'required|integer|min:1',
 			'order' => 'required|integer|min:1'
 		]);
 
@@ -248,12 +247,11 @@ class AnswerController extends Controller
 				return $this->returnError('answer', 404, 'move');
 			}
 
-			$answer->question_id = $request->input('parent_question_id');
 			$answer->order = $request->input('order') + 1;
 			$answer->save();
 
 			// Update other answers order
-			$answer->question()->answers()->where([
+			$question->answers()->where([
 				['id', '<>', $answer->id],
 				['order', '>=', $answer->order]
 			])->get()->each(function ($other) {
