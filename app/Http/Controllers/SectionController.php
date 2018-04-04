@@ -427,7 +427,7 @@ class SectionController extends Controller
 	public function move($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'parent_section_id' => 'required|integer|min:1',
+			'parent_section_id' => 'nullable|integer|min:1',
 			'order' => 'required|integer|min:1'
 		]);
 
@@ -446,16 +446,17 @@ class SectionController extends Controller
 				return $this->returnError('section', 404, 'move');
 			}
 
-			$parent_section_id = $request->input('parent_section_id');
-			$order = $request->input('order') + 1;
+			$parent_section_id = $request->input('parent_section_id', null);
 			if ($parent_section_id) {
 				$parent_section = $form->sections()->find($parent_section_id);
 
 				// Send error if parent section does not exist
 				if (!$parent_section) {
-					return $this->returnError('parent section', 404, 'create section');
+					return $this->returnError('parent section', 404, 'move section');
 				}
 			}
+
+			$order = $request->input('order') + 1;
 
 			// Move section
 			$section->parent_section_id = $parent_section_id;

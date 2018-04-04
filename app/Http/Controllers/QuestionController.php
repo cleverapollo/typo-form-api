@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Section;
 use App\Models\QuestionType;
 use App\Http\Resources\QuestionResource;
+use App\Http\Resources\SectionResource;
 use Illuminate\Http\Request;
 
 class QuestionController extends Controller
@@ -266,6 +267,76 @@ class QuestionController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Move a resource in storage.
+	 *
+	 * @param  int $section_id
+	 * @param  int $id
+	 * @param  Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function move($section_id, $id, Request $request)
+	{
+		$this->validate($request, [
+			'parent_section_id' => 'required|integer|min:1',
+			'order' => 'required|integer|min:1'
+		]);
+
+		try {
+			$section = Section::find($section_id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'move question');
+			}
+
+			$question = $section->questions()->find($id);
+
+			// Send error if question does not exist
+			if (!$question) {
+				return $this->returnError('question', 404, 'duplicate');
+			}
+
+			$parent_section_id = $request->input('parent_section_id');
+			$parent_section = Section::find($parent_section_id);
+
+			// Send error if parent section does not exist
+			if (!$parent_section) {
+				return $this->returnError('parent section', 404, 'move question');
+			}
+
+			$order = $request->input('order') + 1;
+
+			// Move question
+			$question->section_id = $parent_section_id;
+			$question->order = $order;
+			$question->save();
+
+			// Update other sections order
+			$question->section()->children()->where('order', '>=', $order)->get()->each(function ($other) {
+				$other->order += 1;
+				$other->save();
+			});
+
+			// Update other questions order
+			$question->section()->questions()->where([
+				['id', '<>', $question->id],
+				['order', '>=', $order]
+			])->get()->each(function ($other) {
+				$other->order += 1;
+				$other->save();
+			});
+
+			return $this->returnSuccessMessage('data', new SectionResource($question->section));
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+			// Send error if question is not moved
+			// return $this->returnError('question', 503, 'move');
 		}
 	}
 }
