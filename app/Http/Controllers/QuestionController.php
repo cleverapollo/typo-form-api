@@ -309,15 +309,13 @@ class QuestionController extends Controller
 				return $this->returnError('parent section', 404, 'move question');
 			}
 
-			$order = $request->input('order') + 1;
-
 			// Move question
 			$question->section_id = $parent_section_id;
-			$question->order = $order;
+			$question->order = $request->input('order') + 1;
 			$question->save();
 
 			// Update other sections order
-			$question->section()->children()->where('order', '>=', $order)->get()->each(function ($other) {
+			$question->section()->children()->where('order', '>=', $question->order)->get()->each(function ($other) {
 				$other->order += 1;
 				$other->save();
 			});
@@ -325,7 +323,7 @@ class QuestionController extends Controller
 			// Update other questions order
 			$question->section()->questions()->where([
 				['id', '<>', $question->id],
-				['order', '>=', $order]
+				['order', '>=', $question->order]
 			])->get()->each(function ($other) {
 				$other->order += 1;
 				$other->save();

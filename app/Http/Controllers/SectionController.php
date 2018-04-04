@@ -456,18 +456,16 @@ class SectionController extends Controller
 				}
 			}
 
-			$order = $request->input('order') + 1;
-
 			// Move section
 			$section->parent_section_id = $parent_section_id;
-			$section->order = $order;
+			$section->order = $request->input('order') + 1;
 			$section->save();
 
 			// Update other sections order
 			$form->sections()->where([
 				['id', '<>', $section->id],
 				['parent_section_id', '=', $parent_section_id],
-				['order', '>=', $order]
+				['order', '>=', $section->order]
 			])->get()->each(function ($other) {
 				$other->order += 1;
 				$other->save();
@@ -475,7 +473,7 @@ class SectionController extends Controller
 
 			// Update other questions order
 			if ($parent_section_id) {
-				$section->parent->questions()->where('order', '>=', $order)->get()->each(function ($other) {
+				$section->parent->questions()->where('order', '>=', $section->order)->get()->each(function ($other) {
 					$other->order += 1;
 					$other->save();
 				});

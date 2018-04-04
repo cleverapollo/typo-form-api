@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\QuestionResource;
 use Exception;
 use App\Models\Question;
 use App\Http\Resources\AnswerResource;
@@ -217,27 +218,50 @@ class AnswerController extends Controller
 	}
 
 	/**
-	 * Remove the specified resources from storage.
+	 * Move the specified resources from storage.
 	 *
 	 * @param  int $question_id
+	 * @param  int $id
+	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroyFalse($question_id)
+	public function move($question_id, $id, Request $request)
 	{
+		$this->validate($request, [
+			'parent_question_id' => 'required|integer|min:1',
+			'order' => 'required|integer|min:1'
+		]);
+
 		try {
 			$question = Question::find($question_id);
 
 			// Send error if question does not exist
 			if (!$question) {
-				return $this->returnError('question', 404, 'delete answers');
+				return $this->returnError('question', 404, 'move answer');
 			}
 
-			$question->answers()->where('parameter', false)->each(function ($answer) {
-				$answer->delete();
+			$answer = $question->answers()->find($id);
+
+			// Send error if answer does not exist
+			if (!$answer) {
+				return $this->returnError('answer', 404, 'move');
+			}
+
+			$answer->question_id = $request->input('parent_question_id');
+			$answer->order = $request->input('order') + 1;
+			$answer->save();
+
+			// Update other answers order
+			$answer->question()->answers()->where([
+				['id', '<>', $answer->id],
+				['order', '>=', $answer->order]
+			])->get()->each(function ($other) {
+				$other->order += 1;
+				$other->save();
 			});
 
-			return $this->returnSuccessMessage('message', 'Answers has been deleted successfully.');
+			return $this->returnSuccessMessage('data', new QuestionResource($answer->question));
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
