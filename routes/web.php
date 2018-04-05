@@ -88,7 +88,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->post('/store', 'SectionController@storeSections');
 			$router->put('/update', 'SectionController@updateSections');
 			$router->get('{id}', 'SectionController@show');
-			$router->post('{id}', 'SectionController@duplicate');
+			// $router->post('{id}', 'SectionController@duplicate');
 			$router->put('{id}', 'SectionController@update');
 			$router->delete('{id}', 'SectionController@destroy');
 			$router->post('{id}/move', 'SectionController@move');

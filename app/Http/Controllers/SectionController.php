@@ -458,7 +458,7 @@ class SectionController extends Controller
 
 			// Move section
 			$section->parent_section_id = $parent_section_id;
-			$section->order = $request->input('order') + 1;
+			$section->order = $request->input('order');
 			$section->save();
 
 			// Update other sections order

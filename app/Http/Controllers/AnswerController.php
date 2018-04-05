@@ -247,7 +247,7 @@ class AnswerController extends Controller
 				return $this->returnError('answer', 404, 'move');
 			}
 
-			$answer->order = $request->input('order') + 1;
+			$answer->order = $request->input('order');
 			$answer->save();
 
 			// Update other answers order

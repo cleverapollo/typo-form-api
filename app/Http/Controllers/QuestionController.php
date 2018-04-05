@@ -145,6 +145,15 @@ class QuestionController extends Controller
 					$other->save();
 				});
 
+				// Duplicate children answers
+				$question->answers()->get()->each(function ($answer) use ($newQuestion) {
+					$newQuestion->answers()->create([
+						'answer' => $answer->answer,
+						'parameter' => $answer->parameter,
+						'order' => $answer->order
+					]);
+				});
+
 				return $this->returnSuccessMessage('question', new QuestionResource($newQuestion));
 			}
 
@@ -311,7 +320,7 @@ class QuestionController extends Controller
 
 			// Move question
 			$question->section_id = $parent_section_id;
-			$question->order = $request->input('order') + 1;
+			$question->order = $request->input('order');
 			$question->save();
 
 			// Update other sections order
