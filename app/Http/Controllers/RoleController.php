@@ -108,7 +108,7 @@ class RoleController extends Controller
 				return $this->returnError('role', 404, 'update');
 			}
 
-			if ($role->name == 'Super Admin' || $role->name == 'Admin') {
+			if ($role->name == 'Super Admin' || $role->name == 'Admin' || $role->name == 'User') {
 				return $this->returnError('role', 403, 'update');
 			}
 
@@ -146,7 +146,7 @@ class RoleController extends Controller
 				return $this->returnError('role', 404, 'delete');
 			}
 
-			if ($role->name == 'Super Admin' || $role->name == 'Admin') {
+			if ($role->name == 'Super Admin' || $role->name == 'Admin' || $role->name == 'User') {
 				return $this->returnError('role', 403, 'delete');
 			}
 
