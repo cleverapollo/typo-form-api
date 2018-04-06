@@ -324,13 +324,13 @@ class QuestionController extends Controller
 			$question->save();
 
 			// Update other sections order
-			$question->section()->children()->where('order', '>=', $question->order)->get()->each(function ($other) {
+			$question->section->children()->where('order', '>=', $question->order)->get()->each(function ($other) {
 				$other->order += 1;
 				$other->save();
 			});
 
 			// Update other questions order
-			$question->section()->questions()->where([
+			$question->section->questions()->where([
 				['id', '<>', $question->id],
 				['order', '>=', $question->order]
 			])->get()->each(function ($other) {
