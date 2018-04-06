@@ -218,6 +218,36 @@ class AnswerController extends Controller
 	}
 
 	/**
+	 * Remove the specified resources from storage.
+	 *
+	 * @param  int $question_id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function destroyFalse($question_id)
+	{
+		try {
+			$question = Question::find($question_id);
+
+			// Send error if question does not exist
+			if (!$question) {
+				return $this->returnError('question', 404, 'delete answers');
+			}
+
+			$question->answers()->where('parameter', false)->get()->each(function ($answer) {
+				$answer->delete();
+			});
+
+			return $this->returnSuccessMessage('message', 'Answers has been deleted successfully.');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+			// Send error if there is an error on update
+			// return $this->returnError('answer', 503, 'delete');
+		}
+	}
+
+	/**
 	 * Move the specified resources from storage.
 	 *
 	 * @param  int $question_id
