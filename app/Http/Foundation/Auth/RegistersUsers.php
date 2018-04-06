@@ -2,6 +2,7 @@
 
 namespace App\Http\Foundation\Auth;
 
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
@@ -39,7 +40,7 @@ trait RegistersUsers
 		event(new Registered($user = $this->create($request->only('first_name', 'last_name', 'email', 'password'))));
 
 		if ($user) {
-			$user->role_id = 3;
+			$user->role_id = Role::where('name', 'User')->id;
 			$user->save();
 
 			return response()->json([
