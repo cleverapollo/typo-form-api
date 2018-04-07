@@ -20,8 +20,7 @@ class AuthResource extends JsonResource
 			'last_name' => $this->last_name,
 			'email' => $this->email,
 			'role_id' => $this->role_id,
-			'api_token' => $this->api_token,
-			'expire_date' => $this->expire_date
+			'api_token' => $this->api_token
 		];
 	}
 }
