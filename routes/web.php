@@ -129,6 +129,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'question-type'], function () use ($router) {
 		$router->get('/', 'QuestionTypeController@index');
 		$router->post('/', 'QuestionTypeController@store');
+		$router->delete('/', 'QuestionTypeController@destroyAll');
 		$router->get('{id}', 'QuestionTypeController@show');
 		$router->put('{id}', 'QuestionTypeController@update');
 		$router->delete('{id}', 'QuestionTypeController@destroy');

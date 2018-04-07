@@ -208,12 +208,12 @@ class AnswerController extends Controller
 				$answer->delete();
 			});
 
-			return $this->returnSuccessMessage('message', 'Answers has been deleted successfully.');
+			return $this->returnSuccessMessage('message', 'Answers have been deleted successfully.');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 			// Send error if there is an error on update
-			// return $this->returnError('answer', 503, 'delete');
+			// return $this->returnError('answers', 503, 'delete');
 		}
 	}
 

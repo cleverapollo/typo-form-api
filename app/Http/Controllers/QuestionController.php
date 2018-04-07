@@ -280,6 +280,36 @@ class QuestionController extends Controller
 	}
 
 	/**
+	 * Remove the specified resources from storage.
+	 *
+	 * @param  int $section_id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function destroyAll($section_id)
+	{
+		try {
+			$section = Section::find($section_id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'delete questions');
+			}
+
+			$section->questions->each(function ($question) {
+				$question->delete();
+			});
+
+			return $this->returnSuccessMessage('message', 'Questions have been deleted successfully.');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+			// Send error if there is an error on update
+			// return $this->returnError('questions', 503, 'delete');
+		}
+	}
+
+	/**
 	 * Move a resource in storage.
 	 *
 	 * @param  int $section_id
