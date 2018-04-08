@@ -5,10 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Form;
-use App\Models\QuestionType;
 use App\Http\Resources\SectionResource;
-use App\Http\Resources\QuestionResource;
-use App\Http\Resources\AnswerResource;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -88,7 +85,10 @@ class SectionController extends Controller
 			$section = $form->sections()->create([
 				'name' => $request->input('name'),
 				'parent_section_id' => $parent_section_id,
-				'order' => $order
+				'order' => $order,
+				'repeatable' => $request->input('repeatable', 0),
+				'max_rows' => $request->input('max_rows', null),
+				'min_rows' => $request->input('min_rows', null)
 			]);
 
 			if ($section) {
@@ -132,7 +132,10 @@ class SectionController extends Controller
 			$newSection = $form->sections()->create([
 				'name' => $section->name,
 				'parent_section_id' => $section->parent_section_id,
-				'order' => ($section->order + 1)
+				'order' => ($section->order + 1),
+				'repeatable' => $section->repeatable,
+				'max_rows' => $section->max_rows,
+				'min_rows' => $section->min_rows
 			]);
 
 			if ($newSection) {
@@ -222,7 +225,7 @@ class SectionController extends Controller
 			}
 
 			// Update section
-			if ($section->fill($request->only('name'))->save()) {
+			if ($section->fill($request->only('name', 'repeatable', 'max_rows', 'min_rows'))->save()) {
 				return $this->returnSuccessMessage('section', new SectionResource($section));
 			}
 
