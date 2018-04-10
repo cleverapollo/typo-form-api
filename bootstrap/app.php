@@ -90,8 +90,12 @@ $app->register(\Illuminate\Mail\MailServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
+$app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
+$app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 /*
 |--------------------------------------------------------------------------

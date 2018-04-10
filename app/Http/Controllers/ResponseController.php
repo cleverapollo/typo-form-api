@@ -229,4 +229,21 @@ class ResponseController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
+
+	/**
+	 * File Upload
+	 *
+	 * @param Request $request
+	 */
+	public function fileUpload(Request $request)
+	{
+		if ($request->hasFile('file')) {
+			if ($request->file('file')->isValid()) {
+				$file_name = uniqid() . $request->getClientOriginalExtension();
+				$request->file('file')->move(public_path() . '/uploads', $file_name);
+
+				// ToDo: handle with file name
+			}
+		}
+	}
 }

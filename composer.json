@@ -9,7 +9,9 @@
         "doctrine/dbal": "^2.6",
         "illuminate/mail": "^5.6",
         "illuminate/notifications": "^5.6",
+        "irazasyed/larasupport": "~1.0",
         "laravel/lumen-framework": "5.6.*",
+        "maatwebsite/excel": "^3.0",
         "vlucas/phpdotenv": "~2.2"
     },
     "require-dev": {
@@ -20,7 +22,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/"
-        }
+        },
+        "files": [
+            "app/Http/helpers.php"
+        ]
     },
     "autoload-dev": {
         "classmap": [

@@ -122,6 +122,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
 		$router->get('/', 'ResponseController@index');
 		$router->post('/', 'ResponseController@store');
+		$router->post('/file', 'ResponseController@fileUpload');
 		$router->get('{id}', 'ResponseController@show');
 		$router->put('{id}', 'ResponseController@update');
 		$router->delete('{id}', 'ResponseController@destroy');
