@@ -93,6 +93,14 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('{id}', 'SectionController@destroy');
 			$router->post('{id}/move', 'SectionController@move');
 		});
+
+		$router->group(['prefix' => '{form_id}/validation'], function () use ($router) {
+			$router->get('/', 'ValidationController@index');
+			$router->post('/', 'ValidationController@store');
+			$router->get('{id}', 'ValidationController@show');
+			$router->put('{id}', 'ValidationController@update');
+			$router->delete('{id}', 'ValidationController@destroy');
+		});
 	});
 
 	$router->group(['prefix' => 'section'], function () use ($router) {
