@@ -31,6 +31,10 @@ class Form extends Model
 			$form->submissions->each(function ($submission) {
 				$submission->delete();
 			});
+
+			$form->validations->each(function ($validation) {
+				$validation->delete();
+			});
 		});
 	}
 
@@ -73,6 +77,14 @@ class Form extends Model
 	public function submissions()
 	{
 		return $this->hasMany('App\Models\Submission');
+	}
+
+	/**
+	 * Get the validations for the Form.
+	 */
+	public function validations()
+	{
+		return $this->hasMany('App\Models\Validation');
 	}
 
 	/**
