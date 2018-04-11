@@ -47,7 +47,8 @@ class ResponseController extends Controller
 	{
 		$this->validate($request, [
 			'question_id' => 'required|integer|min:1',
-			'answer_id' => 'nullable|integer|min:1'
+			'answer_id' => 'nullable|integer|min:1',
+			'order' => 'nullable|integer|min:1'
 		]);
 
 		try {
@@ -73,18 +74,12 @@ class ResponseController extends Controller
 				}
 			}
 
-			// Count order
-			$order = 1;
-			if (count($submission->responses) > 0) {
-				$order = $submission->responses()->max('order') + 1;
-			}
-
 			// Create response
 			$response = $submission->responses()->create([
 				'question_id' => $question_id,
 				'response' => $request->input('response', null),
 				'answer_id' => $answer_id,
-				'order' => $order
+				'order' => $request->input('order', null)
 			]);
 
 			if ($response) {
@@ -138,7 +133,8 @@ class ResponseController extends Controller
 	{
 		$this->validate($request, [
 			'question_id' => 'filled|integer|min:1',
-			'answer_id' => 'nullable|integer|min:1'
+			'answer_id' => 'nullable|integer|min:1',
+			'order' => 'nullable|integer|min:1'
 		]);
 
 		try {
@@ -170,7 +166,7 @@ class ResponseController extends Controller
 				}
 			}
 
-			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id'));
+			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id', 'order'));
 
 			if ($submission->responses()->where('id', $id)->delete()) {
 				$new = $submission->responses()->create([
