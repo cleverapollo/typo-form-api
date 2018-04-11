@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class QuestionType extends Model
+class ValidationType extends Model
 {
 	/**
 	 * The attributes that are mass assignable.
@@ -16,10 +16,10 @@ class QuestionType extends Model
 	];
 
 	/**
-	 * Get the questions for the Question Type.
+	 * Get the validations for the Validation Type.
 	 */
-	public function questions()
+	public function validations()
 	{
-		return $this->hasMany('App\Models\Question');
+		return $this->hasMany('App\Models\Validation');
 	}
 }

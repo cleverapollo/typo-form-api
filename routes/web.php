@@ -151,4 +151,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->put('{id}', 'PeriodController@update');
 		$router->delete('{id}', 'PeriodController@destroy');
 	});
+
+	$router->group(['prefix' => 'validation-type'], function () use ($router) {
+		$router->get('/', 'ValidationTypeController@index');
+		$router->post('/', 'ValidationTypeController@store');
+		$router->get('{id}', 'ValidationTypeController@show');
+		$router->put('{id}', 'ValidationTypeController@update');
+		$router->delete('{id}', 'ValidationTypeController@destroy');
+	});
 });
