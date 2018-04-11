@@ -22,6 +22,6 @@ class FileController extends Controller
 
 	public function export()
 	{
-		return $this->excel->export(new Export);
+//		return $this->excel->export(new Export, 'download.csv');
 	}
 }
