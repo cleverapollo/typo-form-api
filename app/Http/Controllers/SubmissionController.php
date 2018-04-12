@@ -73,8 +73,8 @@ class SubmissionController extends Controller
 				'user_id' => Auth::user()->id,
 				'team_id' => $team_id,
 				'progress' => $request->input('progress', 0),
-				'period_start' => $request->input('period_start', null),
-				'period_end' => $request->input('period_end', null)
+				'period_start' => $request->input('period_start', $form->period_start),
+				'period_end' => $request->input('period_end', $form->period_end)
 			]);
 
 			if ($submission) {
