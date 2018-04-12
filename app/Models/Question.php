@@ -31,6 +31,10 @@ class Question extends Model
 			$question->responses->each(function ($response) {
 				$response->delete();
 			});
+
+			$question->validations->each(function ($validation) {
+				$validation->delete();
+			});
 		});
 	}
 
@@ -65,6 +69,14 @@ class Question extends Model
 	public function responses()
 	{
 		return $this->hasMany('App\Models\Response');
+	}
+
+	/**
+	 * Get the validations for the Question.
+	 */
+	public function validations()
+	{
+		return $this->hasMany('App\Models\Validation');
 	}
 
 	/**
