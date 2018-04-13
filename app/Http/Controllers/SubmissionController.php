@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CSVExport;
 use Auth;
 use Exception;
 use App\Models\Team;
 use App\Models\Form;
 use App\Http\Resources\SubmissionResource;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Excel;
 
 class SubmissionController extends Controller
 {
@@ -206,5 +208,25 @@ class SubmissionController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Download csv file
+	 *
+	 * @return CSVExport
+	 */
+	public function export()
+	{
+		return new CSVExport();
+	}
+
+	/**
+	 * Store submissions as csv file
+	 *
+	 * @return bool|\Illuminate\Foundation\Bus\PendingDispatch
+	 */
+	public function storeCSV()
+	{
+		return (new CSVExport)->store('submissions.csv');
 	}
 }
