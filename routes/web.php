@@ -140,31 +140,39 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->get('/', 'QuestionTypeController@index');
 		$router->post('/', 'QuestionTypeController@store');
 		$router->get('{id}', 'QuestionTypeController@show');
-		$router->put('{id}', 'QuestionTypeController@update');
-		$router->delete('{id}', 'QuestionTypeController@destroy');
+		// $router->put('{id}', 'QuestionTypeController@update');
+		// $router->delete('{id}', 'QuestionTypeController@destroy');
 	});
 
 	$router->group(['prefix' => 'role'], function () use ($router) {
 		$router->get('/', 'RoleController@index');
 		$router->post('/', 'RoleController@store');
 		$router->get('{id}', 'RoleController@show');
-		$router->put('{id}', 'RoleController@update');
-		$router->delete('{id}', 'RoleController@destroy');
+		// $router->put('{id}', 'RoleController@update');
+		// $router->delete('{id}', 'RoleController@destroy');
 	});
 
 	$router->group(['prefix' => 'period'], function () use ($router) {
 		$router->get('/', 'PeriodController@index');
 		$router->post('/', 'PeriodController@store');
 		$router->get('{id}', 'PeriodController@show');
-		$router->put('{id}', 'PeriodController@update');
-		$router->delete('{id}', 'PeriodController@destroy');
+		// $router->put('{id}', 'PeriodController@update');
+		// $router->delete('{id}', 'PeriodController@destroy');
 	});
 
 	$router->group(['prefix' => 'validation-type'], function () use ($router) {
 		$router->get('/', 'ValidationTypeController@index');
 		$router->post('/', 'ValidationTypeController@store');
 		$router->get('{id}', 'ValidationTypeController@show');
-		$router->put('{id}', 'ValidationTypeController@update');
-		$router->delete('{id}', 'ValidationTypeController@destroy');
+		// $router->put('{id}', 'ValidationTypeController@update');
+		// $router->delete('{id}', 'ValidationTypeController@destroy');
+	});
+
+	$router->group(['prefix' => 'status'], function () use ($router) {
+		$router->get('/', 'StatusController@index');
+		$router->post('/', 'StatusController@store');
+		$router->get('{id}', 'StatusController@show');
+		// $router->put('{id}', 'StatusController@update');
+		// $router->delete('{id}', 'StatusController@destroy');
 	});
 });

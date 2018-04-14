@@ -28,6 +28,7 @@ class SubmissionResource extends JsonResource
 			'progress' => $this->progress,
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
+			'status_id' => $this->status_id,
 			'responses' => ResponseResource::collection($this->responses)
 		];
 	}

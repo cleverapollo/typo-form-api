@@ -36,7 +36,7 @@ class Submission extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'user_id', 'team_id', 'progress', 'period_start', 'period_end'
+		'form_id', 'user_id', 'team_id', 'progress', 'period_start', 'period_end', 'status_id'
 	];
 
 	/**
@@ -61,6 +61,14 @@ class Submission extends Model
 	public function team()
 	{
 		return $this->belongsTo('App\Models\Team');
+	}
+
+	/**
+	 * Get the status that owns the Submission.
+	 */
+	public function status()
+	{
+		return $this->belongsTo('App\Models\Status');
 	}
 
 	/**

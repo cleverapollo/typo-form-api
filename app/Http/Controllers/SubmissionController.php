@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\CSVExport;
 use Auth;
 use Exception;
 use App\Models\Team;
 use App\Models\Form;
+use App\Models\Status;
 use App\Http\Resources\SubmissionResource;
+use App\Exports\CSVExport;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Excel;
 
 class SubmissionController extends Controller
 {
@@ -76,7 +76,8 @@ class SubmissionController extends Controller
 				'team_id' => $team_id,
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', $form->period_start),
-				'period_end' => $request->input('period_end', $form->period_end)
+				'period_end' => $request->input('period_end', $form->period_end),
+				'status' => Status::where('status', 'opened')->first()->id
 			]);
 
 			if ($submission) {
