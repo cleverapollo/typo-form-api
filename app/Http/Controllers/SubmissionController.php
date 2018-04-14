@@ -137,7 +137,8 @@ class SubmissionController extends Controller
 		$this->validate($request, [
 			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
-			'period_end' => 'nullable|date'
+			'period_end' => 'nullable|date',
+			'status_id' => 'filled|integer|min:1'
 		]);
 
 		try {
@@ -158,8 +159,14 @@ class SubmissionController extends Controller
 				return $this->returnError('submission', 404, 'update');
 			}
 
+			// Check whether the question type exists or not
+			$status_id = $request->input('status_id', null);
+			if ($status_id && !Status::find($status_id)) {
+				return $this->returnError('status', 404, 'update submission');
+			}
+
 			// Update submission
-			if ($submission->fill($request->only('progress', 'period_start', 'period_end'))->save()) {
+			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
