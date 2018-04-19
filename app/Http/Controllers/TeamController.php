@@ -35,7 +35,16 @@ class TeamController extends Controller
 	 */
 	public function index($application_name)
 	{
-		$teams = Auth::user()->teams()->where('application_name', $application_name)->get();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('name', $application_name)->first();
+
+		// Send error if application does not exist
+		if (!$application) {
+			return $this->returnApplicationNameError();
+		}
+
+		$teams = $user->teams()->where('application_id', $application->id)->get();
 
 		return $this->returnSuccessMessage('teams', TeamResource::collection($teams));
 	}
@@ -58,7 +67,9 @@ class TeamController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('name', $application_name)->first();
+			$user = Auth::user();
+
+			$application = $user->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -71,7 +82,7 @@ class TeamController extends Controller
 			}
 
 			// Create team
-			$team = Auth::user()->teams()->create([
+			$team = $user->teams()->create([
 				'name' => $request->input('name'),
 				'description' => $request->input('description', null),
 				'application_id' => $application->id,
@@ -106,14 +117,16 @@ class TeamController extends Controller
 	 */
 	public function show($application_name, $id)
 	{
-		$application = Auth::user()->applications()->where('name', $application_name)->first();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('name', $application_name)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
 		}
 
-		$team = Auth::user()->teams()->where([
+		$team = $user->teams()->where([
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
@@ -292,14 +305,16 @@ class TeamController extends Controller
 	 */
 	public function getUsers($application_name, $id)
 	{
-		$application = Auth::user()->applications()->where('name', $application_name)->first();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('name', $application_name)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
 		}
 
-		$team = Auth::user()->teams()->where([
+		$team = $user->teams()->where([
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
