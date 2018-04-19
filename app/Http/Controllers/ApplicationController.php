@@ -48,13 +48,11 @@ class ApplicationController extends Controller
 	public function store(Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
+			'name' => 'required|unique:applications|max:191',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
 			'invitations.*.application_role_id' => 'required|integer|min:2'
 		]);
-
-		$invitations = $request->input('invitations', []);
 
 		try {
 			// Check whether user is SuperAdmin or not
@@ -68,9 +66,16 @@ class ApplicationController extends Controller
 				$share_token = base64_encode(str_random(40));
 			}
 
+			$name = str_replace(' ', '_', $request->input('name'));
+			if ($user->applications()->where('name', $name)->count() > 0) {
+				return response()->json([
+					'name' => ['The name has already been taken.']
+				], 422);
+			}
+
 			// Create application
 			$application = $user->applications()->create([
-				'name' => $request->input('name'),
+				'name' => $name,
 				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
@@ -78,6 +83,7 @@ class ApplicationController extends Controller
 
 			if ($application) {
 				// Send invitation
+				$invitations = $request->input('invitations', []);
 				$this->sendInvitation('application', $application, $invitations);
 
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
@@ -100,57 +106,13 @@ class ApplicationController extends Controller
 	 */
 	public function show($id)
 	{
-		$application = Auth::user()->applications()->where('application_id', $id)->first();
+		$application = Auth::user()->applications()->find($id);
 		if ($application) {
 			return $this->returnSuccessMessage('application', new ApplicationResource($application));
 		}
 
 		// Send error if application does not exist
 		return $this->returnError('application', 404, 'show');
-	}
-
-	/**
-	 * Get users for the Application.
-	 *
-	 * @param  int $id
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function getUsers($id)
-	{
-		$user = Auth::user();
-		$application = $user->applications()->where('application_id', $id)->first();
-
-		if ($application) {
-			// Check whether user has permission to get
-			$user = Auth::user();
-			if (!$this->hasPermission($user, $application)) {
-				return $this->returnError('application', 403, 'see the users of');
-			}
-
-			$currentUsers = $application->users()->get();
-
-			$invitedUsers = ApplicationInvitation::where([
-				'application_id' => $application->id,
-				'status' => 0
-			])->get();
-
-			$unacceptedUsers = [];
-			foreach ($invitedUsers as $invitedUser) {
-				$unacceptedUser = User::where('email', $invitedUser->invitee)->first();
-				if ($unacceptedUser) {
-					array_push($unacceptedUsers, new UserResource($unacceptedUser));
-				}
-			}
-
-			return $this->returnSuccessMessage('users', [
-				'current' => UserResource::collection($currentUsers),
-				'unaccepted' => $unacceptedUsers
-			]);
-		}
-
-		// Send error if application does not exist
-		return $this->returnError('application', 404, 'show users');
 	}
 
 	/**
@@ -169,7 +131,7 @@ class ApplicationController extends Controller
 
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->where('application_id', $id)->first();
+			$application = $user->applications()->find($id);
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -205,7 +167,7 @@ class ApplicationController extends Controller
 	{
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->where('application_id', $id)->first();
+			$application = $user->applications()->find($id);
 
 			// Check whether user has permission to delete
 			if (!$this->hasPermission($user, $application)) {
@@ -228,14 +190,14 @@ class ApplicationController extends Controller
 	/**
 	 * Get Application invitation token.
 	 *
-	 * @param $id
+	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function getInvitationToken($id)
 	{
 		$user = Auth::user();
-		$application = $user->applications()->where('application_id', $id)->first();
+		$application = $user->applications()->find($id);
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -251,14 +213,82 @@ class ApplicationController extends Controller
 	}
 
 	/**
+	 * Accept invitation request.
+	 *
+	 * @param  string $token
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function invitation($token)
+	{
+		return $this->acceptInvitation('application', $token);
+	}
+
+	/**
+	 * Join to the Application.
+	 *
+	 * @param  string $token
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function join($token)
+	{
+		return $this->acceptJoin('application', $token);
+	}
+
+	/**
+	 * Get users for the Application.
+	 *
+	 * @param  string $application_name
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function getUsers($application_name)
+	{
+		$user = Auth::user();
+		$application = $user->applications()->where('name', $application_name)->first();
+
+		// Send error if application does not exist
+		if (!$application) {
+			return $this->returnApplicationNameError();
+		}
+
+		// Check whether user has permission to get
+		$user = Auth::user();
+		if (!$this->hasPermission($user, $application)) {
+			return $this->returnError('application', 403, 'see the users of');
+		}
+
+		$currentUsers = $application->users()->get();
+
+		$invitedUsers = ApplicationInvitation::where([
+			'application_id' => $application->id,
+			'status' => 0
+		])->get();
+
+		$unacceptedUsers = [];
+		foreach ($invitedUsers as $invitedUser) {
+			$unacceptedUser = User::where('email', $invitedUser->invitee)->first();
+			if ($unacceptedUser) {
+				array_push($unacceptedUsers, new UserResource($unacceptedUser));
+			}
+		}
+
+		return $this->returnSuccessMessage('users', [
+			'current' => UserResource::collection($currentUsers),
+			'unaccepted' => $unacceptedUsers
+		]);
+	}
+
+	/**
 	 * Invite users to the Application.
 	 *
-	 * @param $id
+	 * @param  string $application_name
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function inviteUsers($id, Request $request)
+	public function inviteUsers($application_name, Request $request)
 	{
 		$this->validate($request, [
 			'invitations' => 'array',
@@ -267,11 +297,11 @@ class ApplicationController extends Controller
 		]);
 
 		$user = Auth::user();
-		$application = $user->applications()->where('application_id', $id)->first();
+		$application = $user->applications()->where('name', $application_name)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
-			return $this->returnError('application', 404, 'send invitation');
+			return $this->returnApplicationNameError();
 		}
 
 		// Check whether user has permission to send invitation
@@ -288,39 +318,15 @@ class ApplicationController extends Controller
 	}
 
 	/**
-	 * Accept invitation request.
-	 *
-	 * @param $token
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function invitation($token)
-	{
-		return $this->acceptInvitation('application', $token);
-	}
-
-	/**
-	 * Join to the Application.
-	 *
-	 * @param $token
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function join($token)
-	{
-		return $this->acceptJoin('application', $token);
-	}
-
-	/**
 	 * Update user role in the Application.
 	 *
-	 * @param $application_id
-	 * @param $id
-	 * @param Request $request
+	 * @param  string $application_name
+	 * @param  int $id
+	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function updateUser($application_id, $id, Request $request)
+	public function updateUser($application_name, $id, Request $request)
 	{
 		$this->validate($request, [
 			'application_role_id' => 'required|integer|min:2'
@@ -334,11 +340,11 @@ class ApplicationController extends Controller
 			}
 
 			$user = Auth::user();
-			$application = $user->applications()->where('application_id', $application_id)->first();
+			$application = $user->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'update user');
+				return $this->returnApplicationNameError();
 			}
 
 			$applicationUser = ApplicationUser::where([
@@ -372,22 +378,20 @@ class ApplicationController extends Controller
 	/**
 	 * Delete user from the Application.
 	 *
-	 * @param $application_id
-	 * @param $id
+	 * @param  string $application_name
+	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function deleteUser($application_id, $id)
+	public function deleteUser($application_name, $id)
 	{
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->where([
-				'application_id' => $application_id
-			])->first();
+			$application = $user->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'delete user');
+				return $this->returnApplicationNameError();
 			}
 
 			$applicationUser = ApplicationUser::where([
@@ -420,8 +424,8 @@ class ApplicationController extends Controller
 	/**
 	 * Check whether user has permission or not
 	 *
-	 * @param $user
-	 * @param $application
+	 * @param  $user
+	 * @param  $application
 	 *
 	 * @return bool
 	 */

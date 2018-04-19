@@ -26,17 +26,17 @@ class FormController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  int $application_id
+	 * @param  string $application_name
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($application_id)
+	public function index($application_name)
 	{
-		$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+		$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
-			return $this->returnError('application', 404, 'get forms');
+			return $this->returnApplicationNameError();
 		}
 
 		return $this->returnSuccessMessage('forms', FormResource::collection($application->forms()->get()));
@@ -45,12 +45,12 @@ class FormController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  int $application_id
+	 * @param  string $application_name
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function store($application_id, Request $request)
+	public function store($application_name, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
@@ -61,11 +61,11 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+			$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'create form');
+				return $this->returnApplicationNameError();
 			}
 
 			if ($period_id = $request->input('period_id')) {
@@ -93,18 +93,18 @@ class FormController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $application_id
+	 * @param  string $application_name
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($application_id, $id)
+	public function show($application_name, $id)
 	{
-		$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+		$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
-			return $this->returnError('application', 404, 'show form');
+			return $this->returnApplicationNameError();
 		}
 
 		$form = $application->forms()->find($id);
@@ -119,13 +119,13 @@ class FormController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $application_id
+	 * @param  string $application_name
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function update($application_id, $id, Request $request)
+	public function update($application_name, $id, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
@@ -136,11 +136,11 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+			$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'update form');
+				return $this->returnApplicationNameError();
 			}
 
 			$form = $application->forms()->find($id);
@@ -173,19 +173,19 @@ class FormController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $application_id
+	 * @param  string $application_name
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($application_id, $id)
+	public function destroy($application_name, $id)
 	{
 		try {
-			$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+			$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'delete form');
+				return $this->returnApplicationNameError();
 			}
 
 			$form = $application->forms()->find($id);
@@ -210,12 +210,12 @@ class FormController extends Controller
 	/**
 	 * Create form from CSV
 	 *
-	 * @param  $application_id
+	 * @param  string $application_name
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function createFromCSV($application_id, Request $request)
+	public function createFromCSV($application_name, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
@@ -235,11 +235,11 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('application_id', $application_id)->first();
+			$application = Auth::user()->applications()->where('name', $application_name)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
-				return $this->returnError('application', 404, 'create form');
+				return $this->returnApplicationNameError();
 			}
 
 			if ($period_id = $request->input('period_id')) {

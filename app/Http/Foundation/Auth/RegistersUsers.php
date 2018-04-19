@@ -40,7 +40,7 @@ trait RegistersUsers
 		event(new Registered($user = $this->create($request->only('first_name', 'last_name', 'email', 'password'))));
 
 		if ($user) {
-			$user->role_id = Role::where('name', 'User')->id;
+			$user->role_id = Role::where('name', 'User')->first()->id;
 			$user->save();
 
 			return response()->json([

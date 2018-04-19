@@ -41,15 +41,14 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->get('{id}', 'ApplicationController@show');
 		$router->put('{id}', 'ApplicationController@update');
 		$router->delete('{id}', 'ApplicationController@destroy');
-
-		$router->get('{id}/user', 'ApplicationController@getUsers');
 		$router->get('{id}/get-token', 'ApplicationController@getInvitationToken');
-		$router->post('{id}/invite', 'ApplicationController@inviteUsers');
 
-		$router->put('{application_id}/user/{id}', 'ApplicationController@updateUser');
-		$router->delete('{application_id}/user/{id}', 'ApplicationController@deleteUser');
+		$router->get('{application_name}/user', 'ApplicationController@getUsers');
+		$router->post('{application_name}/invite', 'ApplicationController@inviteUsers');
+		$router->put('{application_name}/user/{id}', 'ApplicationController@updateUser');
+		$router->delete('{application_name}/user/{id}', 'ApplicationController@deleteUser');
 
-		$router->group(['prefix' => '{application_id}/team'], function () use ($router) {
+		$router->group(['prefix' => '{application_name}/team'], function () use ($router) {
 			$router->get('/', 'TeamController@index');
 			$router->post('/', 'TeamController@store');
 			$router->get('{id}', 'TeamController@show');
@@ -64,7 +63,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');
 		});
 
-		$router->group(['prefix' => '{application_id}/form'], function () use ($router) {
+		$router->group(['prefix' => '{application_name}/form'], function () use ($router) {
 			$router->get('/', 'FormController@index');
 			$router->post('/', 'FormController@store');
 			$router->get('{id}', 'FormController@show');

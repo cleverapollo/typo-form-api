@@ -41,6 +41,17 @@ class Controller extends BaseController
 	/**
 	 * Return error response
 	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	protected function returnApplicationNameError()
+	{
+		return $this->returnErrorMessage(404, 'There is no application with this name');
+	}
+
+
+	/**
+	 * Return error response
+	 *
 	 * @param $status
 	 * @param $errorMsg
 	 *
