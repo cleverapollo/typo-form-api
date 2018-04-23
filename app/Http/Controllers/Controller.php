@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
 use Auth;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Role;
+use App\Models\ApplicationUser;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
@@ -94,9 +96,7 @@ class Controller extends BaseController
 			foreach ($invitations as $invitation) {
 				// Check whether the role exists or not
 				$role = Role::find($invitation[$type . '_role_id']);
-				if (!$role) {
-					continue;
-				}
+				if (!$role) continue;
 
 				$token = base64_encode(str_random(40));
 				while (DB::table($type . '_invitations')->where('token', $token)->first()) {
@@ -111,9 +111,21 @@ class Controller extends BaseController
 						$type . '_id' => $data->id
 					])->first();
 
-					if ($isIncluded) {
-						continue;
-					}
+					if ($isIncluded) continue;
+				}
+
+				// Check if user is included in the application for team invitation
+				if ($type == 'team') {
+					// Ignore unregistered emails for team registration
+					if (!$invitee) continue;
+
+					$application_user = ApplicationUser::where([
+						'user_id' => $invitee->id,
+						'application_id' => $data->application_id
+					])->first();
+
+					// Ignore if invitee is not the application member for team registration
+					if (!$application_user) continue;
 				}
 
 				// Check if the user is already invited
