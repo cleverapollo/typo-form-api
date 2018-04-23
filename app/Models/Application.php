@@ -26,7 +26,7 @@ class Application extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'share_token'
+		'name', 'share_token', 'css'
 	];
 
 	/**

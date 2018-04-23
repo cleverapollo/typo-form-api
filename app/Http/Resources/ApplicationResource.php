@@ -18,6 +18,7 @@ class ApplicationResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'name' => $this->name,
+			'css' => $this->css,
 			'application_role_id' => $this->whenPivotLoaded('application_users', function () {
 				return $this->pivot->role_id;
 			}),

@@ -76,7 +76,8 @@ class ApplicationController extends Controller
 			// Create application
 			$application = $user->applications()->create([
 				'name' => $name,
-				'share_token' => $share_token
+				'share_token' => $share_token,
+				'css' => $request->input('css', null)
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
@@ -144,7 +145,7 @@ class ApplicationController extends Controller
 			}
 
 			// Update application
-			if ($application->fill($request->only('name'))->save()) {
+			if ($application->fill($request->only('name', 'css'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
