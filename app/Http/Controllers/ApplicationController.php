@@ -23,7 +23,7 @@ class ApplicationController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api');
+		$this->middleware('auth:api', ['except' => 'show']);
 	}
 
 	/**
@@ -105,9 +105,13 @@ class ApplicationController extends Controller
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($id)
+	public function show($application_name)
 	{
-		$application = Auth::user()->applications()->find($id);
+		$user = Auth::user();
+		$application = Application::where('name', $application_name)->first();
+		if ($user) {
+			$application = $user->applications()->where('name', $application_name)->first();
+		}
 		if ($application) {
 			return $this->returnSuccessMessage('application', new ApplicationResource($application));
 		}

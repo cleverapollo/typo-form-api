@@ -38,7 +38,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'application'], function () use ($router) {
 		$router->get('/', 'ApplicationController@index');
 		$router->post('/', 'ApplicationController@store');
-		$router->get('{id}', 'ApplicationController@show');
+		$router->get('{application_name}', 'ApplicationController@show');
 		$router->put('{id}', 'ApplicationController@update');
 		$router->delete('{id}', 'ApplicationController@destroy');
 		$router->get('{id}/get-token', 'ApplicationController@getInvitationToken');
