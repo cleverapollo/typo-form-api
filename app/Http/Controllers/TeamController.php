@@ -29,15 +29,15 @@ class TeamController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($application_name)
+	public function index($application_slug)
 	{
 		$user = Auth::user();
 
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $application_slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -52,12 +52,12 @@ class TeamController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function store($application_name, Request $request)
+	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
@@ -69,7 +69,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $application_slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -110,16 +110,16 @@ class TeamController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($application_name, $id)
+	public function show($application_slug, $id)
 	{
 		$user = Auth::user();
 
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $application_slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -142,13 +142,13 @@ class TeamController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function update($application_name, $id, Request $request)
+	public function update($application_slug, $id, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191'
@@ -157,7 +157,7 @@ class TeamController extends Controller
 		try {
 			$user = Auth::user();
 
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $application_slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -195,17 +195,17 @@ class TeamController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($application_name, $id)
+	public function destroy($application_slug, $id)
 	{
 		try {
 			$user = Auth::user();
 
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $application_slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -237,16 +237,16 @@ class TeamController extends Controller
 	/**
 	 * Get Team invitation token.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function getInvitationToken($application_name, $id)
+	public function getInvitationToken($application_slug, $id)
 	{
 		$user = Auth::user();
 
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $application_slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -298,16 +298,16 @@ class TeamController extends Controller
 	/**
 	 * Get users for the Team.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function getUsers($application_name, $id)
+	public function getUsers($application_slug, $id)
 	{
 		$user = Auth::user();
 
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $application_slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -348,13 +348,13 @@ class TeamController extends Controller
 	/**
 	 * Invite users to the Team.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function inviteUsers($application_name, $id, Request $request)
+	public function inviteUsers($application_slug, $id, Request $request)
 	{
 		$this->validate($request, [
 			'invitations' => 'array',
@@ -364,7 +364,7 @@ class TeamController extends Controller
 
 		$user = Auth::user();
 
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $application_slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -397,14 +397,14 @@ class TeamController extends Controller
 	/**
 	 * Update user role in the Team.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $team_id
 	 * @param  int $id
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function updateUser($application_name, $team_id, $id, Request $request)
+	public function updateUser($application_slug, $team_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'team_role_id' => 'required|integer|min:2'
@@ -419,7 +419,7 @@ class TeamController extends Controller
 
 			$user = Auth::user();
 
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $application_slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -467,18 +467,18 @@ class TeamController extends Controller
 	/**
 	 * Delete user from the Team.
 	 *
-	 * @param  string $application_name
+	 * @param  string $application_slug
 	 * @param  int $team_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function deleteUser($application_name, $team_id, $id)
+	public function deleteUser($application_slug, $team_id, $id)
 	{
 		try {
 			$user = Auth::user();
 
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $application_slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {

@@ -38,17 +38,16 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'application'], function () use ($router) {
 		$router->get('/', 'ApplicationController@index');
 		$router->post('/', 'ApplicationController@store');
-		$router->get('{application_name}', 'ApplicationController@show');
-		$router->put('{id}', 'ApplicationController@update');
-		$router->delete('{id}', 'ApplicationController@destroy');
-		$router->get('{id}/get-token', 'ApplicationController@getInvitationToken');
+		$router->get('{slug}', 'ApplicationController@show');
+		$router->put('{slug}', 'ApplicationController@update');
+		$router->delete('{slug}', 'ApplicationController@destroy');
 
-		$router->get('{application_name}/user', 'ApplicationController@getUsers');
-		$router->post('{application_name}/invite', 'ApplicationController@inviteUsers');
-		$router->put('{application_name}/user/{id}', 'ApplicationController@updateUser');
-		$router->delete('{application_name}/user/{id}', 'ApplicationController@deleteUser');
+		$router->get('{slug}/user', 'ApplicationController@getUsers');
+		$router->post('{slug}/invite', 'ApplicationController@inviteUsers');
+		$router->put('{slug}/user/{id}', 'ApplicationController@updateUser');
+		$router->delete('{slug}/user/{id}', 'ApplicationController@deleteUser');
 
-		$router->group(['prefix' => '{application_name}/team'], function () use ($router) {
+		$router->group(['prefix' => '{slug}/team'], function () use ($router) {
 			$router->get('/', 'TeamController@index');
 			$router->post('/', 'TeamController@store');
 			$router->get('{id}', 'TeamController@show');
@@ -63,7 +62,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');
 		});
 
-		$router->group(['prefix' => '{application_name}/form'], function () use ($router) {
+		$router->group(['prefix' => '{slug}/form'], function () use ($router) {
 			$router->get('/', 'FormController@index');
 			$router->post('/', 'FormController@store');
 			$router->get('{id}', 'FormController@show');

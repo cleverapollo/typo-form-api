@@ -49,6 +49,7 @@ class ApplicationController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|unique:applications|max:191',
+			'icon' => 'image',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
 			'invitations.*.application_role_id' => 'required|integer|min:2'
@@ -66,18 +67,20 @@ class ApplicationController extends Controller
 				$share_token = base64_encode(str_random(40));
 			}
 
-			$name = str_replace(' ', '_', $request->input('name'));
-			if ($user->applications()->where('name', $name)->count() > 0) {
+			$name = $request->input('name');
+			$slug = strtolower(str_replace(' ', '', $name));
+			if ($user->applications()->where('slug', $slug)->count() > 0) {
 				return response()->json([
-					'name' => ['The name has already been taken.']
+					'slug' => ['The slug has already been taken.']
 				], 422);
 			}
 
 			// Create application
 			$application = $user->applications()->create([
 				'name' => $name,
-				'share_token' => $share_token,
-				'css' => $request->input('css', null)
+				'slug' => $slug,
+				'css' => $request->input('css', null),
+				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
@@ -101,17 +104,19 @@ class ApplicationController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $id
+	 * @param  string $slug
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($application_name)
+	public function show($slug)
 	{
 		$user = Auth::user();
-		$application = Application::where('name', $application_name)->first();
+		$application = Application::where('slug', $slug)->first();
+
 		if ($user) {
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $slug)->first();
 		}
+
 		if ($application) {
 			return $this->returnSuccessMessage('application', new ApplicationResource($application));
 		}
@@ -123,20 +128,20 @@ class ApplicationController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $id
+	 * @param  string $slug
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function update($id, Request $request)
+	public function update($slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'filled|max:191'
+			'name' => 'filled|unique:applications|max:191'
 		]);
 
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->find($id);
+			$application = $user->applications()->where('slug', $slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -149,6 +154,17 @@ class ApplicationController extends Controller
 			}
 
 			// Update application
+			$name = $request->input('name');
+			if ($name) {
+				$slug = strtolower(str_replace(' ', '', $name));
+				if ($user->applications()->where('slug', $slug)->count() > 0) {
+					return response()->json([
+						'slug' => ['The slug has already been taken.']
+					], 422);
+				}
+				$application->slug = $slug;
+			}
+
 			if ($application->fill($request->only('name', 'css'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
@@ -164,15 +180,15 @@ class ApplicationController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $id
+	 * @param  string $slug
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($id)
+	public function destroy($slug)
 	{
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->find($id);
+			$application = $user->applications()->where('slug', $slug)->first();
 
 			// Check whether user has permission to delete
 			if (!$this->hasPermission($user, $application)) {
@@ -190,31 +206,6 @@ class ApplicationController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
-	}
-
-	/**
-	 * Get Application invitation token.
-	 *
-	 * @param  int $id
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function getInvitationToken($id)
-	{
-		$user = Auth::user();
-		$application = $user->applications()->find($id);
-
-		// Send error if application does not exist
-		if (!$application) {
-			return $this->returnError('application', 404, 'get invitation token');
-		}
-
-		// Check whether user has permission to get invitation token
-		if (!$this->hasPermission($user, $application)) {
-			return $this->returnError('application', 403, 'get invitation token');
-		}
-
-		return $this->returnSuccessMessage('shareToken', $application->share_token);
 	}
 
 	/**
@@ -244,14 +235,14 @@ class ApplicationController extends Controller
 	/**
 	 * Get users for the Application.
 	 *
-	 * @param  string $application_name
+	 * @param  string $slug
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function getUsers($application_name)
+	public function getUsers($slug)
 	{
 		$user = Auth::user();
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -288,12 +279,12 @@ class ApplicationController extends Controller
 	/**
 	 * Invite users to the Application.
 	 *
-	 * @param  string $application_name
+	 * @param  string $slug
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function inviteUsers($application_name, Request $request)
+	public function inviteUsers($slug, Request $request)
 	{
 		$this->validate($request, [
 			'invitations' => 'array',
@@ -302,7 +293,7 @@ class ApplicationController extends Controller
 		]);
 
 		$user = Auth::user();
-		$application = $user->applications()->where('name', $application_name)->first();
+		$application = $user->applications()->where('slug', $slug)->first();
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -325,13 +316,13 @@ class ApplicationController extends Controller
 	/**
 	 * Update user role in the Application.
 	 *
-	 * @param  string $application_name
+	 * @param  string $slug
 	 * @param  int $id
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function updateUser($application_name, $id, Request $request)
+	public function updateUser($slug, $id, Request $request)
 	{
 		$this->validate($request, [
 			'application_role_id' => 'required|integer|min:2'
@@ -345,7 +336,7 @@ class ApplicationController extends Controller
 			}
 
 			$user = Auth::user();
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -383,16 +374,16 @@ class ApplicationController extends Controller
 	/**
 	 * Delete user from the Application.
 	 *
-	 * @param  string $application_name
+	 * @param  string $slug
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function deleteUser($application_name, $id)
+	public function deleteUser($slug, $id)
 	{
 		try {
 			$user = Auth::user();
-			$application = $user->applications()->where('name', $application_name)->first();
+			$application = $user->applications()->where('slug', $slug)->first();
 
 			// Send error if application does not exist
 			if (!$application) {
