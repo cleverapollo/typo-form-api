@@ -50,7 +50,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->put('{slug}/user/{id}', 'ApplicationController@updateUser');
 		$router->delete('{slug}/user/{id}', 'ApplicationController@deleteUser');
 
-		$router->group(['prefix' => '{slug}/team'], function () use ($router) {
+		$router->group(['prefix' => '{application_slug}/team'], function () use ($router) {
 			$router->get('/', 'TeamController@index');
 			$router->post('/', 'TeamController@store');
 			$router->get('{id}', 'TeamController@show');
@@ -65,7 +65,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');
 		});
 
-		$router->group(['prefix' => '{slug}/form'], function () use ($router) {
+		$router->group(['prefix' => '{application_slug}/form'], function () use ($router) {
 			$router->get('/', 'FormController@index');
 			$router->post('/', 'FormController@store');
 			$router->get('{id}', 'FormController@show');
