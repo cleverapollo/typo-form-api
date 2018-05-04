@@ -57,14 +57,15 @@ class LoginController extends Controller
 	/**
 	 * Obtain the user information from provider.
 	 *
-	 * @param  $provider
+	 * @param $provider
+	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function handleProviderCallback($provider)
 	{
 		$providerUser = Socialite::driver($provider)->stateless()->user();
 
 		$authUser = $this->findOrCreateUser($providerUser, $provider);
-		Auth::login($authUser, true);
+		return response()->json(['status' => 'success', 'user' => $authUser], 200);
 	}
 
 	/**
@@ -83,11 +84,13 @@ class LoginController extends Controller
 		}
 
 		return User::create([
-			'first_name' => $providerUser->getName(),
-			'last_name' => null,
+			'first_name' => $providerUser->getName() || '',
+			'last_name' => '',
 			'email' => $providerUser->getEmail(),
-			'password' => null,
-			'role_id' => Role::where('name', 'User')->first()->id
+			'password' => '',
+			'role_id' => Role::where('name', 'User')->first()->id,
+			'api_token' => $providerUser->token,
+			'expire_date' => $providerUser->expiresIn
 		]);
 	}
 }
