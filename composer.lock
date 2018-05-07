@@ -1532,16 +1532,16 @@
         },
         {
             "name": "illuminate/notifications",
-            "version": "v5.6.7",
+            "version": "v5.6.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/notifications.git",
-                "reference": "84db16a6d94b27e61063b0055943f2a59b915bb3"
+                "reference": "3b824fdefabfdb4f4f533d208c51392a261e3db5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/notifications/zipball/84db16a6d94b27e61063b0055943f2a59b915bb3",
-                "reference": "84db16a6d94b27e61063b0055943f2a59b915bb3",
+                "url": "https://api.github.com/repos/illuminate/notifications/zipball/3b824fdefabfdb4f4f533d208c51392a261e3db5",
+                "reference": "3b824fdefabfdb4f4f533d208c51392a261e3db5",
                 "shasum": ""
             },
             "require": {
@@ -1584,7 +1584,7 @@
             ],
             "description": "The Illuminate Notifications package.",
             "homepage": "https://laravel.com",
-            "time": "2018-02-23T13:54:46+00:00"
+            "time": "2018-04-30T17:42:28+00:00"
         },
         {
             "name": "illuminate/pagination",

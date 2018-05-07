@@ -16,6 +16,8 @@ return [
     |
     */
 
+	'fronturl' => env('FRONTEND_URL', 'http://localhost:8080'),
+
     'driver' => env('MAIL_DRIVER', 'smtp'),
 
     /*

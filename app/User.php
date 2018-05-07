@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordRequest as ResetPasswordNotification;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
@@ -65,5 +66,16 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	public function role()
 	{
 		return $this->belongsTo('App\Models\Role');
+	}
+
+	/**
+	 * Send the password reset notification.
+	 *
+	 * @param  string  $token
+	 * @return void
+	 */
+	public function sendPasswordResetNotification($token)
+	{
+		$this->notify(new ResetPasswordNotification($token));
 	}
 }

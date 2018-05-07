@@ -44,11 +44,9 @@ trait ResetsPasswords
 		// Here we will attempt to reset the user's password. If it is successful we
 		// will update the password on an actual user model and persist it to the
 		// database. Otherwise we will parse the error and return the response.
-		$response = $this->broker()->reset(
-			$this->credentials($request), function ($user, $password) {
+		$response = $this->broker()->reset($this->credentials($request), function ($user, $password) {
 			$this->resetPassword($user, $password);
-		}
-		);
+		});
 
 		// If the password was successfully reset, we will redirect the user back to
 		// the application's home authenticated view. If there is an error we can
@@ -92,7 +90,7 @@ trait ResetsPasswords
 	protected function credentials(Request $request)
 	{
 		return $request->only(
-			'email', 'password', 'token'
+			'email', 'password', 'password_confirmation', 'token'
 		);
 	}
 
@@ -114,7 +112,7 @@ trait ResetsPasswords
 
 		event(new PasswordReset($user));
 
-		$this->guard()->login($user);
+//		$this->guard()->login($user);
 	}
 
 	/**
@@ -128,7 +126,7 @@ trait ResetsPasswords
 	{
 		return response()->json([
 			'status' => 'success',
-			'message' => trans($response)
+			'message' => 'Password has been reset successfully.'
 		], 200);
 	}
 
@@ -142,9 +140,10 @@ trait ResetsPasswords
 	 */
 	protected function sendResetFailedResponse(Request $request, $response)
 	{
+		// trans($response)
 		return response()->json([
 			'status' => 'fail',
-			'message' => trans($response)
+			'message' => 'Failed to reset password. Please try again later.'
 		], 503);
 	}
 
