@@ -34,7 +34,7 @@ class Application extends Model
 	 */
 	public function users()
 	{
-		return $this->belongsToMany('App\User', 'application_users')->withPivot('role_id');
+		return $this->belongsToMany('App\User', 'application_users')->withPivot('role_id')->withTimestamps();
 	}
 
 	/**
