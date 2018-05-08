@@ -27,7 +27,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		'uses' => 'Auth\LoginController@redirectToProvider'
 	]);
 
-	$router->get('/socialite/{provider}/callback', [
+	$router->post('/socialite/{provider}/callback', [
 		'as' => 'socialite.handleCallback',
 		'uses' => 'Auth\LoginController@handleProviderCallback'
 	]);
