@@ -41,7 +41,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function teams()
 	{
-		return $this->belongsToMany('App\Models\Team', 'team_users')->withPivot('role_id');
+		return $this->belongsToMany('App\Models\Team', 'team_users')->withPivot('role_id')->withTimestamps();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function applications()
 	{
-		return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role_id');
+		return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role_id')->withTimestamps();
 	}
 
 	/**
