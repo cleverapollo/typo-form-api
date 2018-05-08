@@ -66,7 +66,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->get('{id}/user', 'TeamController@getUsers');
 			$router->get('{id}/get-token', 'TeamController@getInvitationToken');
-			$router->get('{id}/invite', 'TeamController@inviteUsers');
+			$router->post('{id}/invite', 'TeamController@inviteUsers');
 
 			$router->put('{team_id}/user/{id}', 'TeamController@updateUser');
 			$router->delete('{team_id}/user/{id}', 'TeamController@deleteUser');

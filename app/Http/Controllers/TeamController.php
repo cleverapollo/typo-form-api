@@ -359,7 +359,7 @@ class TeamController extends Controller
 		$this->validate($request, [
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role_id' => 'required|integer|min:2'
+			'invitations.*.team_role_id' => 'required|integer|min:2'
 		]);
 
 		$user = Auth::user();
