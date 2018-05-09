@@ -279,9 +279,9 @@ class Controller extends BaseController
 			if ($request->hasFile('file')) {
 				$file = $request->file('file');
 				if ($file->isValid()) {
-					$file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+					$file_name = time() . '_' . $file->getClientOriginalName();
 					$file->move(public_path() . '/uploads', $file_name);
-					return $this->returnSuccessMessage('path', '/uploads/' . $file_name);
+					return $this->returnSuccessMessage('path', $file_name);
 				}
 
 				return $this->returnErrorMessage(403, 'Invalid file.');
