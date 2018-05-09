@@ -37,6 +37,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('join/team/{token}', 'TeamController@join');
 	$router->post('join/application/{token}', 'ApplicationController@join');
 
+	$router->post('/file', 'Controller@fileUpload');
+
 	$router->group(['prefix' => 'user'], function () use ($router) {
 		$router->get('/', 'UserController@show');
 		$router->put('/', 'UserController@update');
@@ -138,7 +140,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
 		$router->get('/', 'ResponseController@index');
 		$router->post('/', 'ResponseController@store');
-		$router->post('/file', 'ResponseController@fileUpload');
 		$router->get('{id}', 'ResponseController@show');
 		$router->put('{id}', 'ResponseController@update');
 		$router->delete('{id}', 'ResponseController@destroy');

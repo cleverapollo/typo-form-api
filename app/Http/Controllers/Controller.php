@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Application;
 use Auth;
 use Carbon\Carbon;
 use App\User;
@@ -12,6 +11,8 @@ use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
+use Exception;
 
 class Controller extends BaseController
 {
@@ -264,5 +265,32 @@ class Controller extends BaseController
 
 		// Send error
 		return $this->returnErrorMessage(503, 'You cannot join the ' . $type . ' right now. Please try again later.');
+	}
+
+	/**
+	 * File Upload
+	 *
+	 * @param  Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function fileUpload(Request $request)
+	{
+		try {
+			if ($request->hasFile('file')) {
+				$file = $request->file('file');
+				if ($file->isValid()) {
+					$file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+					$file->move(public_path() . '/uploads', $file_name);
+					return $this->returnSuccessMessage('path', '/uploads/' . $file_name);
+				}
+
+				return $this->returnErrorMessage(403, 'Invalid file.');
+			}
+
+			return $this->returnErrorMessage(404, 'Sorry, we cannot find the file to upload.');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
 	}
 }
