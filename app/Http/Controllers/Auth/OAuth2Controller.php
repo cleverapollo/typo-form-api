@@ -8,7 +8,38 @@ use App\Http\Controllers\Controller;
 
 class OAuth2Controller extends Controller
 {
-	protected function githubAuth($req)
+	/**
+	 * Create a new controller instance.
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		$this->middleware('auth:api')->except(['handleProviderCallback']);
+	}
+
+	/**
+	 * Handle Social OAuth2 provider callback
+	 *
+	 * @param  $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function handleProviderCallback($request)
+	{
+		switch ($request->params->provider)
+		{
+			case 'github':
+				return $this->githubAuth($request->body);
+		}
+	}
+
+	/**
+	 *
+	 *
+	 * @param  $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	protected function githubAuth($request)
 	{
 		$handle = curl_init();
 		curl_setopt($handle, CURLOPT_URL, 'https://github.com/login/oauth/access_token');
@@ -19,12 +50,12 @@ class OAuth2Controller extends Controller
 			CURLOPT_URL => 'https://github.com/login/oauth/access_token',
 			CURLOPT_POST => 1,
 			CURLOPT_POSTFIELDS => [
-				client_id => config('services.github.client_id'),
-			    client_secret => config('services.github.client_secret'),
-			    code => $req->body->code,
-			    redirect_uri => $req->body->redirectUri,
-			    state => $req->body->state,
-			    grant_type => 'authorization_code'
+				'client_id' => config('services.github.client_id'),
+			    'client_secret' => config('services.github.client_secret'),
+			    'code' => $request->code,
+			    'redirect_uri' => $request->redirectUri,
+			    'state' => $request->state,
+			    'grant_type' => 'authorization_code'
 			]
 		]);
 

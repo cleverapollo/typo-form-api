@@ -15,22 +15,14 @@ $router->get('/', function () use ($router) {
 	return $router->app->version();
 });
 
+$router->post('auth/{provider}', 'Auth\OAuth2Controller@handleProviderCallback');
+
 $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('login', 'Auth\LoginController@login');
 	$router->post('logout', 'Auth\LoginController@logout');
 	$router->post('register', 'Auth\RegisterController@register');
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
-
-	$router->get('socialite/{provider}', [
-		'as' => 'socialite.redirectToProvider',
-		'uses' => 'Auth\LoginController@redirectToProvider'
-	]);
-
-	$router->post('socialite/{provider}/callback', [
-		'as' => 'socialite.handleCallback',
-		'uses' => 'Auth\LoginController@handleProviderCallback'
-	]);
 
 	$router->post('invitation/team/{token}', 'TeamController@invitation');
 	$router->post('invitation/application/{token}', 'ApplicationController@invitation');
