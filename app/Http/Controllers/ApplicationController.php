@@ -49,7 +49,7 @@ class ApplicationController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|unique:applications|max:191',
-			'icon' => 'image',
+			'icon' => 'string',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
 			'invitations.*.application_role_id' => 'required|integer|min:2'
@@ -165,7 +165,7 @@ class ApplicationController extends Controller
 				$application->slug = $slug;
 			}
 
-			if ($application->fill($request->only('name', 'css'))->save()) {
+			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 

@@ -51,5 +51,11 @@ return [
 		'client_id' => env('GOOGLE_CLIENT_ID'),
 		'client_secret' => env('GOOGLE_CLIENT_SECRET'),
 		'redirect' => env('GOOGLE_URL')
+	],
+
+	'live' => [
+		'client_id' => env('LIVE_CLIENT_ID'),
+		'client_secret' => env('LIVE_CLIENT_SECRET'),
+		'redirect' => env('LIVE_URL')
 	]
 ];
