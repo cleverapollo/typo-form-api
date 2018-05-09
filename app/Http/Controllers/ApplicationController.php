@@ -49,7 +49,6 @@ class ApplicationController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|unique:applications|max:191',
-			'icon' => 'string',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
 			'invitations.*.application_role_id' => 'required|integer|min:2'
@@ -80,6 +79,7 @@ class ApplicationController extends Controller
 				'name' => $name,
 				'slug' => $slug,
 				'css' => $request->input('css', null),
+				'icon' => $request->input('icon', null),
 				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id

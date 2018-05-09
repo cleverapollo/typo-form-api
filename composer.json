@@ -11,7 +11,6 @@
         "illuminate/notifications": "^5.6",
         "irazasyed/larasupport": "~1.0",
         "laravel/lumen-framework": "5.6.*",
-        "laravel/socialite": "^3.0",
         "maatwebsite/excel": "^3.0",
         "vlucas/phpdotenv": "~2.2"
     },
