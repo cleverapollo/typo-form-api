@@ -22,12 +22,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
 
-	$router->get('/socialite/{provider}', [
+	$router->get('socialite/{provider}', [
 		'as' => 'socialite.redirectToProvider',
 		'uses' => 'Auth\LoginController@redirectToProvider'
 	]);
 
-	$router->post('/socialite/{provider}/callback', [
+	$router->post('socialite/{provider}/callback', [
 		'as' => 'socialite.handleCallback',
 		'uses' => 'Auth\LoginController@handleProviderCallback'
 	]);

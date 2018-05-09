@@ -1,5 +1,16 @@
+# Composer vendor
 /vendor
-/.idea
+
+# IDE
+.idea/
+.vscode/
+
+
 Homestead.json
 Homestead.yaml
+
+# Environment
 .env
+
+# Upload folder
+public/uploads/*

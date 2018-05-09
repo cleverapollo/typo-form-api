@@ -230,16 +230,26 @@ class ResponseController extends Controller
 	 * File Upload
 	 *
 	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
 	 */
 	public function fileUpload(Request $request)
 	{
-		if ($request->hasFile('file')) {
-			if ($request->file('file')->isValid()) {
-				$file_name = uniqid() . $request->getClientOriginalExtension();
-				$request->file('file')->move(public_path() . '/uploads', $file_name);
+		try {
+			if ($request->hasFile('file')) {
+				$file = $request->file('file');
+				if ($file->isValid()) {
+					$file_name = uniqid() . '.' . $file->getClientOriginalExtension();
+					$file->move(public_path() . '/uploads', $file_name);
+					return $this->returnSuccessMessage('path', '/uploads/' . $file_name);
+				}
 
-				// ToDo: handle with file name
+				return $this->returnErrorMessage(403, 'Invalid file.');
 			}
+
+			return $this->returnErrorMessage(404, 'Sorry, we cannot find the file to upload.');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }
