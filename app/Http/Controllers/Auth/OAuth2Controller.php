@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\User;
 use App\Models\Role;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class OAuth2Controller extends Controller
 {
@@ -15,21 +16,22 @@ class OAuth2Controller extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api')->except(['handleProviderCallback']);
+//		$this->middleware('auth:api')->except(['handleProviderCallback']);
 	}
 
 	/**
 	 * Handle Social OAuth2 provider callback
 	 *
-	 * @param  $request
+	 * @param  $provider
+	 * @param  Request $request
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function handleProviderCallback($request)
+	public function handleProviderCallback($provider, Request $request)
 	{
-		switch ($request->params->provider)
+		switch ($provider)
 		{
 			case 'github':
-				return $this->githubAuth($request->body);
+				return $this->githubAuth($request);
 		}
 	}
 
@@ -52,9 +54,9 @@ class OAuth2Controller extends Controller
 			CURLOPT_POSTFIELDS => [
 				'client_id' => config('services.github.client_id'),
 			    'client_secret' => config('services.github.client_secret'),
-			    'code' => $request->code,
-			    'redirect_uri' => $request->redirectUri,
-			    'state' => $request->state,
+			    'code' => $request->input('code'),
+			    'redirect_uri' => $request->input('redirectUri'),
+//			    'state' => $request->input('state'),
 			    'grant_type' => 'authorization_code'
 			]
 		]);
