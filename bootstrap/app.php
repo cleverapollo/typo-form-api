@@ -24,9 +24,6 @@ $app = new Laravel\Lumen\Application(
 );
 
 $app->withFacades();
-//	true,
-//	[Laravel\Socialite\Facades\Socialite::class => 'Socialite']
-//);
 
 $app->withEloquent();
 
@@ -91,7 +88,6 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(\Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(Laravel\Socialite\SocialiteServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 $app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
