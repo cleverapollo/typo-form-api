@@ -50,6 +50,9 @@ class OAuth2Controller extends Controller
 		curl_setopt_array($handle, [
 			CURLOPT_RETURNTRANSFER => 1,
 			CURLOPT_URL => 'https://github.com/login/oauth/access_token',
+			CURLOPT_HTTPHEADER => [
+				'Accept:application/json'
+			],
 			CURLOPT_POST => 1,
 			CURLOPT_POSTFIELDS => [
 				'client_id' => config('services.github.client_id'),
@@ -64,6 +67,6 @@ class OAuth2Controller extends Controller
 		$data = curl_exec($handle);
 		curl_close($handle);
 
-		return $this->returnSuccessMessage('data', json_encode($data));
+		return $this->returnSuccessMessage('data', json_decode($data));
 	}
 }
