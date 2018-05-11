@@ -38,6 +38,7 @@ class UserController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update(Request $request)
 	{
@@ -87,6 +88,7 @@ class UserController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function updateEmail(Request $request)
 	{
@@ -119,6 +121,7 @@ class UserController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function updatePassword(Request $request)
 	{

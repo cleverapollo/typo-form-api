@@ -16,6 +16,7 @@ $router->get('/', function () use ($router) {
 });
 
 $router->post('auth/{provider}', 'Auth\OAuth2Controller@handleProviderCallback');
+$router->post('auth/signin', 'Auth\OAuth2Controller@signin');
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('login', 'Auth\LoginController@login');

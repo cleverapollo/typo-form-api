@@ -49,6 +49,7 @@ class FormController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($application_slug, Request $request)
 	{
@@ -124,6 +125,7 @@ class FormController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($application_slug, $id, Request $request)
 	{
@@ -214,6 +216,7 @@ class FormController extends Controller
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function createFromCSV($application_slug, Request $request)
 	{

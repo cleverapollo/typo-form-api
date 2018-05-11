@@ -50,6 +50,7 @@ class ValidationController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($form_id, Request $request)
 	{
@@ -133,6 +134,7 @@ class ValidationController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($form_id, $id, Request $request)
 	{

@@ -42,6 +42,7 @@ class ResponseController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($submission_id, Request $request)
 	{
@@ -128,6 +129,7 @@ class ResponseController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($submission_id, $id, Request $request)
 	{

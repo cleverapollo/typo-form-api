@@ -9,15 +9,12 @@ use Illuminate\Http\Request;
 
 class OAuth2Controller extends Controller
 {
-	/**
-	 * Create a new controller instance.
-	 *
-	 * @return void
-	 */
-	public function __construct()
+
+	public function signin(Request $request)
 	{
-//		$this->middleware('auth:api')->except(['handleProviderCallback']);
+
 	}
+
 
 	/**
 	 * Handle Social OAuth2 provider callback
@@ -65,23 +62,10 @@ class OAuth2Controller extends Controller
 			    'client_secret' => config('services.github.client_secret'),
 			    'code' => $request->input('code'),
 			    'redirect_uri' => $request->input('redirectUri'),
-//			    'state' => $request->input('state'),
 			    'grant_type' => 'authorization_code'
 			]
 		]);
 		$data = curl_exec($handle);
-
-//		$handle2 = curl_init();
-//		curl_setopt_array($handle2, [
-//			CURLOPT_RETURNTRANSFER => 1,
-//			CURLOPT_URL => 'https://api.github.com/user',
-//			CURLOPT_HTTPHEADER => [
-//				'Content-Type: application/json',
-//				'Authorization: Bearer ' . $data['access_token']
-//			]
-//		]);
-//		$result = curl_exec($handle2);
-//		curl_close($handle2);
 
 		if (curl_error($handle)) {
 			return response()->json(curl_error($handle), 500);

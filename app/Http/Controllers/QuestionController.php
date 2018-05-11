@@ -42,6 +42,7 @@ class QuestionController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($section_id, Request $request)
 	{
@@ -199,6 +200,7 @@ class QuestionController extends Controller
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($section_id, Request $request, $id)
 	{
@@ -317,6 +319,7 @@ class QuestionController extends Controller
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function move($section_id, $id, Request $request)
 	{

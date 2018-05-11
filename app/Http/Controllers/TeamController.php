@@ -56,6 +56,7 @@ class TeamController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($application_slug, Request $request)
 	{
@@ -147,6 +148,7 @@ class TeamController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($application_slug, $id, Request $request)
 	{
@@ -353,6 +355,7 @@ class TeamController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function inviteUsers($application_slug, $id, Request $request)
 	{
@@ -403,6 +406,7 @@ class TeamController extends Controller
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function updateUser($application_slug, $team_id, $id, Request $request)
 	{

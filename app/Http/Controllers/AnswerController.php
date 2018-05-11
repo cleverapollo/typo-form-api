@@ -37,10 +37,11 @@ class AnswerController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  int $question_id
-	 * @param  \Illuminate\Http\Request $request
+	 * @param $question_id
+	 * @param Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store($question_id, Request $request)
 	{
@@ -115,6 +116,7 @@ class AnswerController extends Controller
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($question_id, Request $request, $id)
 	{
@@ -255,6 +257,7 @@ class AnswerController extends Controller
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function move($question_id, $id, Request $request)
 	{

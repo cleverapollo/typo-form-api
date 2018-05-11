@@ -30,16 +30,6 @@ class RegisterController extends Controller
 	 */
 //    protected $redirectTo = '/home';
 
-//    /**
-//     * Create a new controller instance.
-//     *
-//     * @return void
-//     */
-//    public function __construct()
-//    {
-//        $this->middleware('auth:api');
-//    }
-
 	/**
 	 * Get a validator for an incoming registration request.
 	 *

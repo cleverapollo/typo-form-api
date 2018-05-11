@@ -44,6 +44,7 @@ class ApplicationController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function store(Request $request)
 	{
@@ -132,6 +133,7 @@ class ApplicationController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function update($slug, Request $request)
 	{
@@ -283,6 +285,7 @@ class ApplicationController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function inviteUsers($slug, Request $request)
 	{
@@ -321,6 +324,7 @@ class ApplicationController extends Controller
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function updateUser($slug, $id, Request $request)
 	{
