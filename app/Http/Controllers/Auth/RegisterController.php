@@ -24,13 +24,6 @@ class RegisterController extends Controller
 	use RegistersUsers;
 
 	/**
-	 * Where to redirect users after registration.
-	 *
-	 * @var string
-	 */
-//    protected $redirectTo = '/home';
-
-	/**
 	 * Get a validator for an incoming registration request.
 	 *
 	 * @param  array $data

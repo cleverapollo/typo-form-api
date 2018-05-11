@@ -4,17 +4,74 @@ namespace App\Http\Controllers\Auth;
 
 use App\User;
 use App\Models\Role;
+use Carbon\Carbon;
+use App\Http\Resources\AuthResource;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class OAuth2Controller extends Controller
 {
-
+	/**
+	 * Login with social
+	 *
+	 * @param Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function signin(Request $request)
 	{
+		$social_id = $request->input('id', null);
+		$provider = $request->input('provider', null);
 
+		if (!$social_id || ($provider != 'github' && $provider != 'facebook' && $provider != 'google' && $provider != 'live')) {
+			return $this->returnErrorMessage(503, 'Invalid request');
+		}
+
+		$user = $this->findOrCreateUser($social_id, $provider);
+
+		// Login user
+		$api_token = base64_encode(str_random(40));
+		while (!is_null(User::where('api_token', $api_token)->first())) {
+			$api_token = base64_encode(str_random(40));
+		}
+		$expire_date = Carbon::now();
+		$user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
+
+		return response()->json([
+			'status' => 'success',
+			'user' => new AuthResource($user)
+		], 200);
 	}
 
+	/**
+	 * Find or create user based on social_id and provider
+	 *
+	 * @param  $social_id
+	 * @param  $provider
+	 *
+	 * @return \Illuminate\Contracts\Auth\Authenticatable|mixed $user
+	 */
+	public function findOrCreateUser($social_id, $provider)
+	{
+		$authUser = User::where([
+			['social_id', '=', $social_id],
+			['provider', '=', $provider],
+		])->first();
+
+		if (!empty($authUser)) {
+			return $authUser;
+		}
+
+		return User::create([
+			'first_name' => '',
+			'last_name' => '',
+			'email' => '',
+			'password' => '',
+			'social_id' => $social_id,
+			'provider' => $provider,
+			'role_id' => Role::where('name', 'User')->first()->id
+		]);
+	}
 
 	/**
 	 * Handle Social OAuth2 provider callback
@@ -39,6 +96,8 @@ class OAuth2Controller extends Controller
 			case 'live':
 				return $this->liveAuth($request);
 		}
+
+		return $this->returnErrorMessage(503, 'Invalid request');
 	}
 
 	/**
