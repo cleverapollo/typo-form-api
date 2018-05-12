@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Controller extends BaseController
 {
@@ -154,7 +155,7 @@ class Controller extends BaseController
 					Mail::send('emails.invitation', [
 						'type' => $type,
 						'name' => $data->name,
-						'userName' => $user->first_name . " " . $user->last_name,
+						'userName' => $user->first_name . ' ' . $user->last_name,
 						'role' => $role->name,
 						'token' => $token
 					], function ($message) use ($invitation) {

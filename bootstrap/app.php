@@ -97,6 +97,8 @@ $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
+class_alias('Illuminate\Support\Facades\Response','Response');
+
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
