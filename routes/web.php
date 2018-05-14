@@ -70,8 +70,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 					$router->group(['prefix' => 'user'], function () use ($router) {
 						$router->get('/', 'TeamController@getUsers');
-						$router->put('{id}', 'TeamController@updateUser');
-						$router->delete('{id}', 'TeamController@deleteUser');
+						$router->put('{user_id}', 'TeamController@updateUser');
+						$router->delete('{user_id}', 'TeamController@deleteUser');
 					});
 				});
 			});
@@ -89,8 +89,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'form'], function () use ($router) {
-		$router->group(['prefix' => '{form_id}/submission'], function () use ($router) {
+	$router->group(['prefix' => 'form/{form_id}'], function () use ($router) {
+		$router->group(['prefix' => 'submission'], function () use ($router) {
 			$router->get('/', 'SubmissionController@index');
 			$router->post('/', 'SubmissionController@store');
 
@@ -101,7 +101,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			});
 		});
 
-		$router->group(['prefix' => '{form_id}/section'], function () use ($router) {
+		$router->group(['prefix' => 'section'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
 			$router->post('store', 'SectionController@storeSections');
@@ -116,7 +116,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			});
 		});
 
-		$router->group(['prefix' => '{form_id}/validation'], function () use ($router) {
+		$router->group(['prefix' => 'validation'], function () use ($router) {
 			$router->get('/', 'ValidationController@index');
 			$router->post('/', 'ValidationController@store');
 
@@ -128,19 +128,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'section'], function () use ($router) {
-		$router->group(['prefix' => '{section_id}/question'], function () use ($router) {
-			$router->get('/', 'QuestionController@index');
-			$router->post('/', 'QuestionController@store');
-			$router->delete('/', 'QuestionController@destroyAll');
+	$router->group(['prefix' => 'section/{section_id}/question'], function () use ($router) {
+		$router->get('/', 'QuestionController@index');
+		$router->post('/', 'QuestionController@store');
+		$router->delete('/', 'QuestionController@destroyAll');
 
-			$router->group(['prefix' => '{id}'], function () use ($router) {
-				$router->get('/', 'QuestionController@show');
-				$router->put('/', 'QuestionController@update');
-				$router->delete('/', 'QuestionController@destroy');
-				$router->post('/', 'QuestionController@duplicate');
-				$router->post('move', 'QuestionController@move');
-			});
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'QuestionController@show');
+			$router->put('/', 'QuestionController@update');
+			$router->delete('/', 'QuestionController@destroy');
+			$router->post('/', 'QuestionController@duplicate');
+			$router->post('move', 'QuestionController@move');
 		});
 	});
 
