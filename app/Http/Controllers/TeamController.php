@@ -401,14 +401,14 @@ class TeamController extends Controller
 	 * Update user role in the Team.
 	 *
 	 * @param  string $application_slug
-	 * @param  int $team_id
 	 * @param  int $id
+	 * @param  int $user_id
 	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function updateUser($application_slug, $team_id, $id, Request $request)
+	public function updateUser($application_slug, $id, $user_id, Request $request)
 	{
 		$this->validate($request, [
 			'team_role_id' => 'required|integer|min:2'
@@ -431,7 +431,7 @@ class TeamController extends Controller
 			}
 
 			$team = $user->teams()->where([
-				'team_id' => $team_id,
+				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
@@ -441,7 +441,7 @@ class TeamController extends Controller
 			}
 
 			$teamUser = TeamUser::where([
-				'user_id' => $id,
+				'user_id' => $user_id,
 				'team_id' => $team->id
 			])->first();
 
@@ -472,12 +472,12 @@ class TeamController extends Controller
 	 * Delete user from the Team.
 	 *
 	 * @param  string $application_slug
-	 * @param  int $team_id
 	 * @param  int $id
+	 * @param  int $user_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function deleteUser($application_slug, $team_id, $id)
+	public function deleteUser($application_slug, $id, $user_id)
 	{
 		try {
 			$user = Auth::user();
@@ -490,7 +490,7 @@ class TeamController extends Controller
 			}
 
 			$team = $user->teams()->where([
-				'team_id' => $team_id,
+				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
@@ -500,7 +500,7 @@ class TeamController extends Controller
 			}
 
 			$teamUser = TeamUser::where([
-				'user_id' => $id,
+				'user_id' => $user_id,
 				'team_id' => $team->id
 			])->first();
 
