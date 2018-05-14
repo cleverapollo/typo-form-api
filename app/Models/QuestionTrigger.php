@@ -20,7 +20,7 @@ class QuestionTrigger extends Model
 	 */
 	public function question()
 	{
-		return $this->belongsTo('App\Models\Question');
+		return $this->belongsTo('App\Models\Question', 'question_id');
 	}
 
 	/**
@@ -28,7 +28,7 @@ class QuestionTrigger extends Model
 	 */
 	public function parentQuestion()
 	{
-		return $this->belongsTo('App\Models\Question');
+		return $this->belongsTo('App\Models\Question','parent_question_id');
 	}
 
 	/**

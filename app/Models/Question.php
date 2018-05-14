@@ -64,6 +64,14 @@ class Question extends Model
 	}
 
 	/**
+	 * Get the triggers for the Question.
+	 */
+	public function triggers()
+	{
+		return $this->hasMany('App\Models\QuestionTrigger', 'question_id');
+	}
+
+	/**
 	 * Get the responses for the Question.
 	 */
 	public function responses()

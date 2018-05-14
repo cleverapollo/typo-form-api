@@ -112,13 +112,13 @@ class AnswerController extends Controller
 	 * Update the specified resource in storage.
 	 *
 	 * @param  int $question_id
-	 * @param  \Illuminate\Http\Request $request
 	 * @param  int $id
+	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($question_id, Request $request, $id)
+	public function update($question_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'parameter' => 'filled|boolean'
