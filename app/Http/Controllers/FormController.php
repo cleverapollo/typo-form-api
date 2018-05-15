@@ -7,8 +7,7 @@ use Exception;
 use App\Models\Period;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
-use App\Http\Resources\AnswerResource;
-use App\Http\Resources\QuestionResource;
+use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -83,6 +82,12 @@ class FormController extends Controller
 
 			if ($form) {
 				$this->analyzeCSV($form, $request);
+
+				// Send notification email to application admin
+				$admin_users = $this->applicationAdmins($application);
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('Form has been created successfully.'));
+				}
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
@@ -165,6 +170,12 @@ class FormController extends Controller
 
 			// Update form
 			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'))->save()) {
+				// Send notification email to application admin
+				$admin_users = $this->applicationAdmins($application);
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
+				}
+
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
 
@@ -202,6 +213,12 @@ class FormController extends Controller
 			}
 
 			if ($form->delete()) {
+				// Send notification email to application admin
+				$admin_users = $this->applicationAdmins($application);
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
+				}
+
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 

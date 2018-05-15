@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Exception;
-use Maatwebsite\Excel\Facades\Excel;
 
 class Controller extends BaseController
 {
@@ -293,5 +292,27 @@ class Controller extends BaseController
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Get application admins
+	 *
+	 * @param  $application
+	 *
+	 * @return array
+	 */
+	protected function applicationAdmins($application)
+	{
+		$admins = ApplicationUser::where([
+			'application_id' => $application->id,
+			'role_id' => Role::where('name', 'Admin')->first()->id
+		])->get();
+
+		$admin_users = [];
+		foreach ($admins as $admin) {
+			$admin_users[] = User::find($admin->user_id);
+		}
+
+		return $admin_users;
 	}
 }

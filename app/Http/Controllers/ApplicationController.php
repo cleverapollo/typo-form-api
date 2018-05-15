@@ -12,6 +12,7 @@ use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
+use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
@@ -91,6 +92,11 @@ class ApplicationController extends Controller
 				$invitations = $request->input('invitations', []);
 				$this->sendInvitation('application', $application, $invitations);
 
+				// Send notification email to application admin and super admin
+				$user->notify(new InformedNotification('New application has been created successfully.'));
+				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
+				$super_admin->notify(new InformedNotification('New application has been created successfully.'));
+
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
@@ -168,6 +174,14 @@ class ApplicationController extends Controller
 			}
 
 			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
+				// Send notification email to application admin and super admin
+				$admin_users = $this->applicationAdmins($application);
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('Application has been updated successfully.'));
+				}
+				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
+				$super_admin->notify(new InformedNotification('Application has been updated successfully.'));
+
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
@@ -197,8 +211,16 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'delete');
 			}
 
+			$admin_users = $this->applicationAdmins($application);
 			// Delete Application
 			if ($application->delete()) {
+				// Send notification email to application admin and super admin
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('Application has been deleted successfully.'));
+				}
+				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
+				$super_admin->notify(new InformedNotification('Application has been deleted successfully.'));
+
 				return $this->returnSuccessMessage('message', 'Application has been deleted successfully.');
 			}
 
@@ -252,7 +274,6 @@ class ApplicationController extends Controller
 		}
 
 		// Check whether user has permission to get
-		$user = Auth::user();
 		if (!$this->hasPermission($user, $application)) {
 			return $this->returnError('application', 403, 'see the users of');
 		}
@@ -347,24 +368,27 @@ class ApplicationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$applicationUser = ApplicationUser::where([
+			$application_user = ApplicationUser::where([
 				'user_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
 			// Send error if user does not exist in the team
-			if (!$applicationUser) {
+			if (!$application_user) {
 				return $this->returnError('user', 404, 'update role');
 			}
 
-			// Check whether user has permission to delete
+			// Check whether user has permission to update
 			if (!$this->hasPermission($user, $application)) {
 				return $this->returnError('application', 403, 'update user');
 			}
 
 			// Update user role
-			if ($applicationUser->fill(['role_id' => $role->id])->save()) {
-				return $this->returnSuccessMessage('user', new ApplicationUserResource($applicationUser));
+			if ($application_user->fill(['role_id' => $role->id])->save()) {
+				// Send notification email to application user
+				$application_user->notify(new InformedNotification('Application user role has been updated successfully.'));
+
+				return $this->returnSuccessMessage('user', new ApplicationUserResource($application_user));
 			}
 
 			// Send error if there is an error on update
@@ -394,13 +418,13 @@ class ApplicationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$applicationUser = ApplicationUser::where([
+			$application_user = ApplicationUser::where([
 				'user_id' => $id,
 				'application_id' => $application->id
 			])->first();
 
 			// Send error if user does not exist in the team
-			if (!$applicationUser) {
+			if (!$application_user) {
 				return $this->returnError('user', 404, 'delete');
 			}
 
@@ -409,7 +433,14 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'delete user');
 			}
 
-			if ($applicationUser->delete()) {
+			if ($application_user->delete()) {
+				$admin_users = $this->applicationAdmins($application);
+				// Send notification email to application admin and super admin
+				foreach ($admin_users as $admin_user) {
+					$admin_user->notify(new InformedNotification('User has been deleted from application successfully.'));
+				}
+				$application_user->notify(new InformedNotification('You have been deleted from application.'));
+
 				return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
 			}
 

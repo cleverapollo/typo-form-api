@@ -7,6 +7,7 @@ use App\Models\Role;
 use Carbon\Carbon;
 use App\Http\Resources\AuthResource;
 use App\Http\Controllers\Controller;
+use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
 class OAuth2Controller extends Controller
@@ -36,6 +37,10 @@ class OAuth2Controller extends Controller
 		}
 		$expire_date = Carbon::now();
 		$user->update(['api_token' => $api_token, 'expire_date' => $expire_date]);
+
+		// Send notification email to user and super admin
+		$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
+		$super_admin->notify(new InformedNotification('New social user has been registered.'));
 
 		return response()->json([
 			'status' => 'success',
