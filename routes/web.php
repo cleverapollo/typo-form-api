@@ -126,6 +126,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->delete('/', 'ValidationController@destroy');
 			});
 		});
+
+		$router->group(['prefix' => 'trigger'], function () use ($router) {
+			$router->get('/', 'QuestionTriggerController@index');
+			$router->post('/', 'QuestionTriggerController@store');
+
+			$router->group(['prefix' => '{id}'], function () use ($router) {
+				$router->get('/', 'QuestionTriggerController@show');
+				$router->put('/', 'QuestionTriggerController@update');
+				$router->delete('/', 'QuestionTriggerController@destroy');
+			});
+		});
 	});
 
 	$router->group(['prefix' => 'section/{section_id}/question'], function () use ($router) {
@@ -142,30 +153,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'question/{question_id}'], function () use ($router) {
-		$router->group(['prefix' => 'answer'], function () use ($router) {
-			$router->get('/', 'AnswerController@index');
-			$router->post('/', 'AnswerController@store');
-			$router->delete('/', 'AnswerController@destroyAll');
-			$router->delete('delete', 'AnswerController@destroyFalse');
+	$router->group(['prefix' => 'question/{question_id}/answer'], function () use ($router) {
+		$router->get('/', 'AnswerController@index');
+		$router->post('/', 'AnswerController@store');
+		$router->delete('/', 'AnswerController@destroyAll');
+		$router->delete('delete', 'AnswerController@destroyFalse');
 
-			$router->group(['prefix' => '{id}'], function () use ($router) {
-				$router->get('/', 'AnswerController@show');
-				$router->put('/', 'AnswerController@update');
-				$router->delete('/', 'AnswerController@destroy');
-				$router->post('move', 'AnswerController@move');
-			});
-		});
-
-		$router->group(['prefix' => 'trigger'], function () use ($router) {
-			$router->get('/', 'QuestionTriggerController@index');
-			$router->post('/', 'QuestionTriggerController@store');
-
-			$router->group(['prefix' => '{id}'], function () use ($router) {
-				$router->get('/', 'QuestionTriggerController@show');
-				$router->put('/', 'QuestionTriggerController@update');
-				$router->delete('/', 'QuestionTriggerController@destroy');
-			});
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'AnswerController@show');
+			$router->put('/', 'AnswerController@update');
+			$router->delete('/', 'AnswerController@destroy');
+			$router->post('move', 'AnswerController@move');
 		});
 	});
 

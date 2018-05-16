@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comparator;
 use Exception;
+use App\Models\Form;
 use App\Models\Question;
+use App\Models\Comparator;
 use App\Http\Resources\QuestionTriggerResource;
 use Illuminate\Http\Request;
 
@@ -23,13 +24,20 @@ class QuestionTriggerController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  int $question_id
+	 * @param  int $form_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($question_id)
+	public function index($form_id)
 	{
-		$triggers = Question::find($question_id)->triggers()->get();
+		$form = Form::find($form_id);
+
+		// Send error if form does not exist
+		if (!$form) {
+			return $this->returnError('form', 404, 'show triggers');
+		}
+
+		$triggers = $form->triggers()->get();
 
 		return $this->returnSuccessMessage('triggers', QuestionTriggerResource::collection($triggers));
 	}
@@ -37,24 +45,32 @@ class QuestionTriggerController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param $question_id
-	 * @param Request $request
+	 * @param  $form_id
+	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function store($question_id, Request $request)
+	public function store($form_id, Request $request)
 	{
 		$this->validate($request, [
+			'question_id' => 'required|integer|min:1',
 			'parent_question_id' => 'required|integer|min:1',
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'required|integer|min:1',
-			// 'order' => 'required|integer|min:1',
+			'order' => 'required|integer|min:1',
 			'operator' => 'required|boolean'
 		]);
 
 		try {
-			$question = Question::find($question_id);
+			$form = Form::find($form_id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'create trigger');
+			}
+
+			$question = Question::find($request->input('question_id'));
 
 			// Send error if question does not exist
 			if (!$question) {
@@ -83,18 +99,19 @@ class QuestionTriggerController extends Controller
 			}
 
 			// Count order
-			$order = 1;
-			if (count($question->triggers) > 0) {
-				$order = $question->triggers()->max('order') + 1;
-			}
+//			$order = 1;
+//			if (count($question->triggers) > 0) {
+//				$order = $form->triggers()->max('order') + 1;
+//			}
 
 			// Create trigger
-			$trigger = $question->triggers()->create([
+			$trigger = $form->triggers()->create([
+				'question_id' => $question->id,
 				'parent_question_id' => $parent_question->id,
 				'parent_answer_id' => $parent_answer->id,
 				'value' => $request->input('value', null),
 				'comparator_id' => $comparator->id,
-				'order' => $order,
+				'order' => $request->input('order'),
 				'operator' => $request->input('operator')
 			]);
 
@@ -113,21 +130,21 @@ class QuestionTriggerController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $question_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($question_id, $id)
+	public function show($form_id, $id)
 	{
-		$question = Question::find($question_id);
+		$form = Form::find($form_id);
 
-		// Send error if question does not exist
-		if (!$question) {
-			return $this->returnError('question', 404, 'show trigger');
+		// Send error if form does not exist
+		if (!$form) {
+			return $this->returnError('form', 404, 'show trigger');
 		}
 
-		$trigger = $question->triggers()->find($id);
+		$trigger = $form->triggers()->find($id);
 		if ($trigger) {
 			return $this->returnSuccessMessage('trigger', new QuestionTriggerResource($trigger));
 		}
@@ -139,16 +156,17 @@ class QuestionTriggerController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $question_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($question_id, $id, Request $request)
+	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
+			'question_id' => 'filled|integer|min:1',
 			'parent_question_id' => 'filled|integer|min:1',
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'filled|integer|min:1',
@@ -157,18 +175,27 @@ class QuestionTriggerController extends Controller
 		]);
 
 		try {
-			$question = Question::find($question_id);
+			$form = Form::find($form_id);
 
-			// Send error if question does not exist
-			if (!$question) {
-				return $this->returnError('question', 404, 'update trigger');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'update trigger');
 			}
 
-			$trigger = $question->triggers()->find($id);
+			$trigger = $form->triggers()->find($id);
 
 			// Send error if trigger does not exist
 			if (!$trigger) {
 				return $this->returnError('trigger', 404, 'update');
+			}
+
+			if ($question_id = $request->input('question_id', null)) {
+				$question = Question::find($question_id);
+
+				// Send error if question does not exist
+				if (!$question) {
+					return $this->returnError('question', 404, 'update trigger');
+				}
 			}
 
 			if ($parent_question_id = $request->input('parent_question_id', null)) {
@@ -199,7 +226,7 @@ class QuestionTriggerController extends Controller
 			}
 
 			// Update trigger
-			if ($trigger->fill($request->only('parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator'))->save()) {
+			if ($trigger->fill($request->only('question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator'))->save()) {
 				return $this->returnSuccessMessage('trigger', new QuestionTriggerResource($trigger));
 			}
 
@@ -214,22 +241,22 @@ class QuestionTriggerController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $question_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($question_id, $id)
+	public function destroy($form_id, $id)
 	{
 		try {
-			$question = Question::find($question_id);
+			$form = Form::find($form_id);
 
-			// Send error if question does not exist
-			if (!$question) {
-				return $this->returnError('question', 404, 'delete trigger');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'delete trigger');
 			}
 
-			$trigger = $question->triggers()->find($id);
+			$trigger = $form->triggers()->find($id);
 
 			// Send error if trigger does not exist
 			if (!$trigger) {

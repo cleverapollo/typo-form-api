@@ -16,6 +16,7 @@ class QuestionTriggerResource extends JsonResource
 	{
 		return [
 			'id' => $this->id,
+			'question_id' => $this->question_id,
 			'parent_question_id' => $this->parent_question_id,
 			'parent_answer_id' => $this->parent_answer_id,
 			'value' => $this->value,

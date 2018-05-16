@@ -88,6 +88,14 @@ class Form extends Model
 	}
 
 	/**
+	 * Get the question triggers for the Form.
+	 */
+	public function triggers()
+	{
+		return $this->hasMany('App\Models\QuestionTrigger');
+	}
+
+	/**
 	 * Get all of the Form's meta data
 	 */
 	public function meta()
