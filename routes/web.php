@@ -234,4 +234,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 //			$router->delete('/', 'StatusController@destroy');
 		});
 	});
+
+	$router->group(['prefix' => 'comparator'], function () use ($router) {
+		$router->get('/', 'ComparatorController@index');
+		$router->post('/', 'ComparatorController@store');
+
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'ComparatorController@show');
+//			$router->put('/', 'ComparatorController@update');
+//			$router->delete('/', 'ComparatorController@destroy');
+		});
+	});
 });
