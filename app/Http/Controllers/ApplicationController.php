@@ -93,9 +93,15 @@ class ApplicationController extends Controller
 				$this->sendInvitation('application', $application, $invitations);
 
 				// Send notification email to application admin and super admin
-				$user->notify(new InformedNotification('New application has been created successfully.'));
-				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
-				$super_admin->notify(new InformedNotification('New application has been created successfully.'));
+				if ($user->email) {
+					$user->notify(new InformedNotification('New application has been created successfully.'));
+				}
+				$super_admins = $this->getSuperAdmins();
+				foreach ($super_admins as $super_admin) {
+					if ($super_admin->email) {
+						$super_admin->notify(new InformedNotification('New application has been created successfully.'));
+					}
+				}
 
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
@@ -177,10 +183,16 @@ class ApplicationController extends Controller
 				// Send notification email to application admin and super admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('Application has been updated successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('Application has been updated successfully.'));
+					}
 				}
-				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
-				$super_admin->notify(new InformedNotification('Application has been updated successfully.'));
+				$super_admins = $this->getSuperAdmins();
+				foreach ($super_admins as $super_admin) {
+					if ($super_admin->email) {
+						$super_admin->notify(new InformedNotification('Application has been updated successfully.'));
+					}
+				}
 
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
@@ -216,10 +228,16 @@ class ApplicationController extends Controller
 			if ($application->delete()) {
 				// Send notification email to application admin and super admin
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('Application has been deleted successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('Application has been deleted successfully.'));
+					}
 				}
-				$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
-				$super_admin->notify(new InformedNotification('Application has been deleted successfully.'));
+				$super_admins = $this->getSuperAdmins();
+				foreach ($super_admins as $super_admin) {
+					if ($super_admin->email) {
+						$super_admin->notify(new InformedNotification('Application has been deleted successfully.'));
+					}
+				}
 
 				return $this->returnSuccessMessage('message', 'Application has been deleted successfully.');
 			}
@@ -386,7 +404,9 @@ class ApplicationController extends Controller
 			// Update user role
 			if ($application_user->fill(['role_id' => $role->id])->save()) {
 				// Send notification email to application user
-				$application_user->notify(new InformedNotification('Application user role has been updated successfully.'));
+				if ($application_user->email) {
+					$application_user->notify(new InformedNotification('Application user role has been updated successfully.'));
+				}
 
 				return $this->returnSuccessMessage('user', new ApplicationUserResource($application_user));
 			}
@@ -434,12 +454,16 @@ class ApplicationController extends Controller
 			}
 
 			if ($application_user->delete()) {
-				$admin_users = $this->applicationAdmins($application);
 				// Send notification email to application admin and super admin
+				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('User has been deleted from application successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('User has been deleted from application successfully.'));
+					}
 				}
-				$application_user->notify(new InformedNotification('You have been deleted from application.'));
+				if ($application_user->email) {
+					$application_user->notify(new InformedNotification('You have been deleted from application.'));
+				}
 
 				return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
 			}
@@ -450,6 +474,16 @@ class ApplicationController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Get Super Admin list
+	 *
+	 * @return mixed
+	 */
+	protected function getSuperAdmins()
+	{
+		return User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->get();
 	}
 
 	/**

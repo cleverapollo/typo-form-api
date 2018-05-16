@@ -47,8 +47,12 @@ trait RegistersUsers
 
 			// Send notification email to user and super admin
 			$user->notify(new InformedNotification('Congratulations! Your account has been created successfully.'));
-			$super_admin = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->first();
-			$super_admin->notify(new InformedNotification('User(' . $user->email . ') has been registered.'));
+			$super_admins = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->get();
+			foreach ($super_admins as $super_admin) {
+				if ($super_admin->email) {
+					$super_admin->notify(new InformedNotification('User(' . $user->email . ') has been registered.'));
+				}
+			}
 
 			return response()->json([
 				'status' => 'success',

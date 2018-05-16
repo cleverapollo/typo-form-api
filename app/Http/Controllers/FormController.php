@@ -86,7 +86,9 @@ class FormController extends Controller
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('Form has been created successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('Form has been created successfully.'));
+					}
 				}
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
@@ -173,7 +175,9 @@ class FormController extends Controller
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
+					}
 				}
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
@@ -216,7 +220,9 @@ class FormController extends Controller
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
-					$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
+					}
 				}
 
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
