@@ -58,7 +58,7 @@ class QuestionTriggerController extends Controller
 			'parent_question_id' => 'required|integer|min:1',
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'required|integer|min:1',
-			'order' => 'required|integer|min:1',
+//			'order' => 'required|integer|min:1',
 			'operator' => 'required|boolean'
 		]);
 
@@ -99,10 +99,10 @@ class QuestionTriggerController extends Controller
 			}
 
 			// Count order
-//			$order = 1;
-//			if (count($question->triggers) > 0) {
-//				$order = $form->triggers()->max('order') + 1;
-//			}
+			$order = 1;
+			if (count($question->triggers) > 0) {
+				$order = $form->triggers()->where('question_id', $question->id)->max('order') + 1;
+			}
 
 			// Create trigger
 			$trigger = $form->triggers()->create([
@@ -111,7 +111,7 @@ class QuestionTriggerController extends Controller
 				'parent_answer_id' => $parent_answer->id,
 				'value' => $request->input('value', null),
 				'comparator_id' => $comparator->id,
-				'order' => $request->input('order'),
+				'order' => $order,
 				'operator' => $request->input('operator')
 			]);
 
@@ -170,7 +170,7 @@ class QuestionTriggerController extends Controller
 			'parent_question_id' => 'filled|integer|min:1',
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'filled|integer|min:1',
-			'order' => 'filled|integer|min:1',
+//			'order' => 'filled|integer|min:1',
 			'operator' => 'filled|boolean'
 		]);
 
@@ -226,7 +226,7 @@ class QuestionTriggerController extends Controller
 			}
 
 			// Update trigger
-			if ($trigger->fill($request->only('question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator'))->save()) {
+			if ($trigger->fill($request->only('question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'operator'))->save()) {
 				return $this->returnSuccessMessage('trigger', new QuestionTriggerResource($trigger));
 			}
 
