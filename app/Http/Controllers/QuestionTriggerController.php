@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Answer;
 use Exception;
 use App\Models\Form;
 use App\Models\Question;
@@ -84,11 +85,13 @@ class QuestionTriggerController extends Controller
 				return $this->returnError('parent question', 404, 'create trigger');
 			}
 
-			$parent_answer = Question::find($request->input('parent_answer_id'));
+			if ($parent_answer_id = $request->input('parent_answer_id', null)) {
+				$parent_answer = Answer::find($parent_answer_id);
 
-			// Send error if parent answer does not exist
-			if (!$parent_answer) {
-				return $this->returnError('parent answer', 404, 'create trigger');
+				// Send error if parent answer does not exist
+				if (!$parent_answer) {
+					return $this->returnError('parent answer', 404, 'create trigger');
+				}
 			}
 
 			$comparator = Comparator::find($request->input('comparator_id'));
@@ -108,7 +111,7 @@ class QuestionTriggerController extends Controller
 			$trigger = $form->triggers()->create([
 				'question_id' => $question->id,
 				'parent_question_id' => $parent_question->id,
-				'parent_answer_id' => $parent_answer->id,
+				'parent_answer_id' => $parent_answer_id,
 				'value' => $request->input('value', null),
 				'comparator_id' => $comparator->id,
 				'order' => $order,
@@ -208,7 +211,7 @@ class QuestionTriggerController extends Controller
 			}
 
 			if ($parent_answer_id = $request->input('parent_answer_id', null)) {
-				$parent_answer = Question::find($parent_answer_id);
+				$parent_answer = Answer::find($parent_answer_id);
 
 				// Send error if parent answer does not exist
 				if (!$parent_answer) {
