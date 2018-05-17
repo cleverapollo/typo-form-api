@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\Form;
 use App\Models\Status;
 use App\Http\Resources\SubmissionResource;
+use App\Notifications\InformedNotification;
 use App\Exports\CSVExport;
 use Illuminate\Http\Request;
 
@@ -82,6 +83,19 @@ class SubmissionController extends Controller
 			]);
 
 			if ($submission) {
+				// Send notification email
+				if ($team_id) {
+					foreach (Team::find($team_id)->users as $user) {
+						if ($user->email) {
+							$user->notify(new InformedNotification('Submission is created successfully.'));
+						}
+					}
+				} else {
+					if (Auth::user()->email) {
+						Auth::user()->notify(new InformedNotification('Submission is created successfully.'));
+					}
+				}
+
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
@@ -169,6 +183,28 @@ class SubmissionController extends Controller
 
 			// Update submission
 			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
+				// Send notification email
+				if ($status_id) {
+					$admin_users = $this->applicationAdmins($form->application);
+					foreach ($admin_users as $admin_user) {
+						if ($admin_user->email) {
+							$admin_user->notify(new InformedNotification('Submission status is updated successfully.'));
+						}
+					}
+				}
+
+				if ($submission->team) {
+					foreach ($submission->team->users as $user) {
+						if ($user->email) {
+							$user->notify(new InformedNotification('Submission is updated successfully.'));
+						}
+					}
+				} else {
+					if ($submission->user->email) {
+						$submission->user->notify(new InformedNotification('Submission is updated successfully.'));
+					}
+				}
+
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
@@ -208,7 +244,26 @@ class SubmissionController extends Controller
 				return $this->returnError('submission', 404, 'delete');
 			}
 
+			if ($submission->team) {
+				$team = $submission->team;
+			} else {
+				$user = $submission->user;
+			}
+
 			if ($submission->delete()) {
+				// Send email notification
+				if ($team) {
+					foreach ($team->users as $tuser) {
+						if ($tuser->email) {
+							$tuser->notify(new InformedNotification('Submission is deleted successfully.'));
+						}
+					}
+				} else {
+					if ($user->email) {
+						$user->notify(new InformedNotification('Submission is deleted successfully.'));
+					}
+				}
+
 				return $this->returnSuccessMessage('message', 'Submission has been deleted successfully.');
 			}
 
