@@ -49,7 +49,8 @@ class QuestionController extends Controller
 		$this->validate($request, [
 			'question' => 'required',
 			'mandatory' => 'required|boolean',
-			'question_type_id' => 'required|integer|min:1'
+			'question_type_id' => 'required|integer|min:1',
+			'width' => 'filled|integer|min:1|max:12'
 		]);
 
 		try {
@@ -81,7 +82,8 @@ class QuestionController extends Controller
 				'description' => $request->input('description', null),
 				'mandatory' => $request->input('mandatory', 0),
 				'question_type_id' => $question_type_id,
-				'order' => $order
+				'order' => $order,
+				'width' => $request->input('width', null)
 			]);
 
 			if ($question) {
@@ -127,7 +129,8 @@ class QuestionController extends Controller
 				'description' => $question->description,
 				'mandatory' => $question->mandatory,
 				'question_type_id' => $question->question_type_id,
-				'order' => ($question->order + 1)
+				'order' => ($question->order + 1),
+				'width' => $question->width
 			]);
 
 			if ($newQuestion) {
@@ -207,7 +210,8 @@ class QuestionController extends Controller
 		$this->validate($request, [
 			'question' => 'filled',
 			'mandatory' => 'filled|boolean',
-			'question_type_id' => 'filled|integer|min:1'
+			'question_type_id' => 'filled|integer|min:1',
+			'width' => 'filled|integer|min:1|max:12'
 		]);
 
 		try {
@@ -232,7 +236,7 @@ class QuestionController extends Controller
 			}
 
 			// Update question
-			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id'))->save()) {
+			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width'))->save()) {
 				return $this->returnSuccessMessage('question', new QuestionResource($question));
 			}
 
