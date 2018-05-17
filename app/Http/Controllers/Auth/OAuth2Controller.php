@@ -28,7 +28,7 @@ class OAuth2Controller extends Controller
 			return $this->returnErrorMessage(503, 'Invalid request');
 		}
 
-		$user = $this->findOrCreateUser($social_id, $provider);
+		$user = $this->findOrCreateUser($request);
 
 		// Login user
 		$api_token = base64_encode(str_random(40));
@@ -47,13 +47,15 @@ class OAuth2Controller extends Controller
 	/**
 	 * Find or create user based on social_id and provider
 	 *
-	 * @param  $social_id
-	 * @param  $provider
+	 * @param  Request $request
 	 *
 	 * @return \Illuminate\Contracts\Auth\Authenticatable|mixed $user
 	 */
-	public function findOrCreateUser($social_id, $provider)
+	public function findOrCreateUser(Request $request)
 	{
+		$social_id = $request->input('id', null);
+		$provider = $request->input('provider', null);
+
 		$authUser = User::where([
 			['social_id', '=', $social_id],
 			['provider', '=', $provider],
@@ -72,9 +74,9 @@ class OAuth2Controller extends Controller
 		}
 
 		return User::create([
-			'first_name' => '',
-			'last_name' => '',
-			'email' => '',
+			'first_name' => $request->input('first_name', ''),
+			'last_name' => $request->input('last_name', ''),
+			'email' => $request->input('email', ''),
 			'password' => '',
 			'social_id' => $social_id,
 			'provider' => $provider,
