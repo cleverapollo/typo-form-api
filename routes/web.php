@@ -96,6 +96,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'SubmissionController@show');
+				$router->get('/data', 'SubmissionController@getData');
 				$router->put('/', 'SubmissionController@update');
 				$router->delete('/', 'SubmissionController@destroy');
 			});

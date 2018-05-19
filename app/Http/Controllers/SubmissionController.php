@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AnswerResource;
+use App\Http\Resources\QuestionResource;
+use App\Http\Resources\ResponseResource;
+use App\Http\Resources\SectionResource;
 use Auth;
 use Exception;
 use App\Models\Team;
@@ -85,7 +89,8 @@ class SubmissionController extends Controller
 			if ($submission) {
 				// Send notification email
 				if ($team_id) {
-					foreach (Team::find($team_id)->users as $user) {
+					$team_users = Team::find($team_id)->users;
+					foreach ($team_users as $user) {
 						if ($user->email) {
 							$user->notify(new InformedNotification('Submission is created successfully.'));
 						}
@@ -132,6 +137,51 @@ class SubmissionController extends Controller
 			}
 
 			return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
+		}
+
+		// Send error if submission does not exist
+		return $this->returnError('submission', 404, 'show');
+	}
+
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int $form_id
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function getData($form_id, $id)
+	{
+		$form = Form::find($form_id);
+
+		// Send error if form does not exist
+		if (!$form) {
+			return $this->returnError('form', 404, 'show submission');
+		}
+
+		$submission = $form->submissions()->find($id);
+		if ($submission) {
+			$user = Auth::user();
+			if ($user->role->name != 'Super Admin' || $submission->user_id != $user->id) {
+				return $this->returnError('submission', 403, 'see');
+			}
+
+			$data = SectionResource::collection($form->sections()->get());
+			foreach ($data as $section) {
+				$questions = QuestionResource::collection($section->questions()->get());
+				foreach ($questions as $question) {
+					$answers = AnswerResource::collection($question->answers()->get());
+					foreach ($answers as $answer) {
+						$answer['responses'] = ResponseResource::collection($answer->responses()->where([
+							['submission_id', '=', $id],
+							['question_id', '=', $question->id]
+						]));
+					}
+				}
+			}
+
+			return $this->returnSuccessMessage('data', $data);
 		}
 
 		// Send error if submission does not exist
@@ -194,7 +244,8 @@ class SubmissionController extends Controller
 				}
 
 				if ($submission->team) {
-					foreach ($submission->team->users as $user) {
+					$team_users = $submission->team->users;
+					foreach ($team_users as $user) {
 						if ($user->email) {
 							$user->notify(new InformedNotification('Submission is updated successfully.'));
 						}

@@ -261,7 +261,8 @@ class FormController extends Controller
 					foreach ($data as $dt) {
 						// Handling Section
 						$created = false;
-						foreach ($form->sections()->get() as $s) {
+						$sections = $form->sections()->get();
+						foreach ($sections as $s) {
 							if ($s->name == $dt->section_name) {
 								$created = true;
 								$section = $s;
@@ -272,7 +273,7 @@ class FormController extends Controller
 						if (!$created) {
 							$parent_section_id = null;
 							if ($dt->parent_section_name) {
-								foreach ($form->sections()->get() as $s) {
+								foreach ($sections as $s) {
 									if ($s->name == $dt->parent_section_name) {
 										$parent_section_id = $s->id;
 									}
@@ -292,7 +293,8 @@ class FormController extends Controller
 						if ($dt->question) {
 							// Handling Question
 							$created = false;
-							foreach ($section->questions()->get() as $q) {
+							$questions = $section->questions()->get();
+							foreach ($questions as $q) {
 								if ($q->question == $dt->question && $q->order == $dt->question_order) {
 									$created = true;
 									$question = $q;
@@ -319,7 +321,8 @@ class FormController extends Controller
 							if ($dt->answer) {
 								// Handling Answer
 								$created = false;
-								foreach ($question->answers()->get() as $a) {
+								$answers = $question->answers()->get();
+								foreach ($answers as $a) {
 									if ($a->answer == $dt->answer && $a->order == $dt->answer_order) {
 										$created = true;
 									}
