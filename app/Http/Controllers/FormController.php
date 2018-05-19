@@ -228,7 +228,7 @@ class FormController extends Controller
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('form', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error

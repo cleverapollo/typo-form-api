@@ -86,6 +86,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->delete('/', 'FormController@destroy');
 				});
 			});
+
+			$router->group(['prefix' => 'application-email'], function () use ($router) {
+				$router->get('/', 'ApplicationEmailController@index');
+				$router->post('/', 'ApplicationEmailController@store');
+
+				$router->group(['prefix' => '{id}'], function () use ($router) {
+					$router->get('/', 'ApplicationEmailController@show');
+					$router->put('/', 'ApplicationEmailController@update');
+					$router->delete('/', 'ApplicationEmailController@destroy');
+				});
+			});
 		});
 	});
 

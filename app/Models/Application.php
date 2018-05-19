@@ -54,6 +54,14 @@ class Application extends Model
 	}
 
 	/**
+	 * Get the application emails for the Application.
+	 */
+	public function applicationEmails()
+	{
+		return $this->hasMany('App\Models\Emails');
+	}
+
+	/**
 	 * Get all of the Application's meta data
 	 */
 	public function meta()
