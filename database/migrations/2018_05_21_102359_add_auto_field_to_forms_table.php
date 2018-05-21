@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddAutoFieldToApplicationTable extends Migration
+class AddAutoFieldToFormsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddAutoFieldToApplicationTable extends Migration
      */
     public function up()
     {
-        Schema::table('applications', function (Blueprint $table) {
-            $table->boolean('auto')->default(false)->after('icon');
+        Schema::table('forms', function (Blueprint $table) {
+	        $table->boolean('auto')->default(false)->after('show_progress');
         });
     }
 
@@ -25,7 +25,7 @@ class AddAutoFieldToApplicationTable extends Migration
      */
     public function down()
     {
-        Schema::table('applications', function (Blueprint $table) {
+        Schema::table('forms', function (Blueprint $table) {
             $table->dropColumn('auto');
         });
     }

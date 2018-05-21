@@ -51,7 +51,6 @@ class ApplicationController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|unique:applications|max:191',
-			'auto' =>'boolean',
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
 			'invitations.*.application_role_id' => 'required|integer|min:2'
@@ -83,7 +82,6 @@ class ApplicationController extends Controller
 				'slug' => $slug,
 				'css' => $request->input('css', null),
 				'icon' => $request->input('icon', null),
-				'auto' => $request->input('auto', false),
 				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
@@ -152,8 +150,7 @@ class ApplicationController extends Controller
 	public function update($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'filled|unique:applications|max:191',
-			'auto' =>'filled|boolean'
+			'name' => 'filled|unique:applications|max:191'
 		]);
 
 		try {
@@ -182,7 +179,7 @@ class ApplicationController extends Controller
 				$application->slug = $slug;
 			}
 
-			if ($application->fill($request->only('name', 'css', 'icon', 'auto'))->save()) {
+			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
 				// Send notification email to application admin and super admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {

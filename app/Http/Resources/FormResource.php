@@ -21,7 +21,8 @@ class FormResource extends JsonResource
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
 			'period_id' => $this->period_id,
-			'show_progress' => $this->show_progress
+			'show_progress' => $this->show_progress,
+			'auto' => $this->auto
 		];
 	}
 }

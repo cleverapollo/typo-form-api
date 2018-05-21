@@ -59,6 +59,7 @@ class FormController extends Controller
 			'period_end' => 'nullable|date',
 			'period_id' => 'nullable|integer|min:1',
 			'show_progress' => 'required|boolean',
+			'auto' => 'filled|boolean',
 			'csv' => 'file'
 		]);
 
@@ -78,7 +79,7 @@ class FormController extends Controller
 			}
 
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'));
+			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress', 'auto'));
 
 			if ($form) {
 				$this->analyzeCSV($form, $request);
@@ -145,7 +146,8 @@ class FormController extends Controller
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date',
 			'period_id' => 'nullable|integer|min:1',
-			'show_progress' => 'filled|boolean'
+			'show_progress' => 'filled|boolean',
+			'auto' => 'filled|boolean'
 		]);
 
 		try {
@@ -171,7 +173,7 @@ class FormController extends Controller
 			}
 
 			// Update form
-			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'))->save()) {
+			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress', 'auto'))->save()) {
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
