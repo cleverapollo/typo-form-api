@@ -59,7 +59,6 @@ class FormController extends Controller
 			'period_end' => 'nullable|date',
 			'period_id' => 'nullable|integer|min:1',
 			'show_progress' => 'required|boolean',
-			'auto' => 'filled|boolean',
 			'csv' => 'file'
 		]);
 
@@ -79,7 +78,7 @@ class FormController extends Controller
 			}
 
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress', 'auto'));
+			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'));
 
 			if ($form) {
 				$this->analyzeCSV($form, $request);
@@ -146,8 +145,7 @@ class FormController extends Controller
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date',
 			'period_id' => 'nullable|integer|min:1',
-			'show_progress' => 'filled|boolean',
-			'auto' => 'filled|boolean'
+			'show_progress' => 'filled|boolean'
 		]);
 
 		try {
@@ -173,7 +171,7 @@ class FormController extends Controller
 			}
 
 			// Update form
-			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress', 'auto'))->save()) {
+			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'))->save()) {
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application);
 				foreach ($admin_users as $admin_user) {
@@ -346,6 +344,48 @@ class FormController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, 'Invalid CSV file.');
+		}
+	}
+
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  string $application_slug
+	 * @param  \Illuminate\Http\Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
+	 */
+	public function setAuto($application_slug, Request $request)
+	{
+		$this->validate($request, [
+			'form_ids' => 'required|array',
+			'form_ids.*' => 'integer'
+		]);
+
+		try {
+			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$form_ids = $request->input('form_ids', []);
+			$forms = $application->forms()->get();
+			foreach ($forms as $form) {
+				if (in_array($form->id, $form_ids)) {
+					$form->auto = true;
+				} else {
+					$form->auto = false;
+				}
+				$form->save();
+			}
+
+			return $this->returnSuccessMessage('message', 'Auto fields are updated successfully.');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 }

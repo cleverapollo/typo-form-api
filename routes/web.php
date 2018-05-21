@@ -79,6 +79,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->group(['prefix' => 'form'], function () use ($router) {
 				$router->get('/', 'FormController@index');
 				$router->post('/', 'FormController@store');
+				$router->post('auto', 'FormController@setAuto');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'FormController@show');
