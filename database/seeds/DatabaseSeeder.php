@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
 		$this->call('ValidationTypeTableSeeder');
 		$this->call('StatusesTableSeeder');
 		$this->call('ComparatorsTableSeeder');
+		$this->call('ActionTypesTableSeeder');
 	}
 }
