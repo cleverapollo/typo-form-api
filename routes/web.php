@@ -256,4 +256,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 //			$router->delete('/', 'ComparatorController@destroy');
 		});
 	});
+
+	$router->group(['prefix' => 'action-type'], function () use ($router) {
+		$router->get('/', 'ActionTypeController@index');
+		$router->post('/', 'QuestionTypeController@store');
+
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'ActionTypeController@show');
+//			$router->put('/', 'ActionTypeController@update');
+//			$router->delete('/', 'ActionTypeController@destroy');
+		});
+	});
 });
