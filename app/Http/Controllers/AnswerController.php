@@ -181,7 +181,7 @@ class AnswerController extends Controller
 				return $this->returnSuccessMessage('message', 'Answer has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('answer', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
@@ -214,7 +214,7 @@ class AnswerController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			// return $this->returnError('answers', 503, 'delete');
 		}
 	}
@@ -244,7 +244,7 @@ class AnswerController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			// return $this->returnError('answer', 503, 'delete');
 		}
 	}

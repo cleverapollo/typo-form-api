@@ -229,10 +229,12 @@ class QuestionController extends Controller
 				return $this->returnError('question', 404, 'update');
 			}
 
-			// Check whether the question type exists or not
-			$question_type = QuestionType::find($request->input('question_type_id'));
-			if (!$question_type) {
-				return $this->returnError('question type', 404, 'update question');
+			if ($question_type_id = $request->input('question_type_id', null)) {
+				// Check whether the question type exists or not
+				$question_type = QuestionType::find($question_type_id);
+				if (!$question_type) {
+					return $this->returnError('question type', 404, 'update question');
+				}
 			}
 
 			// Update question
@@ -277,7 +279,7 @@ class QuestionController extends Controller
 				return $this->returnSuccessMessage('message', 'Question has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('question', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error

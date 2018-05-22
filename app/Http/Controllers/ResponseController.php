@@ -220,7 +220,7 @@ class ResponseController extends Controller
 				return $this->returnSuccessMessage('message', 'Response has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('response', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error

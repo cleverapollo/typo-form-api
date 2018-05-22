@@ -149,7 +149,7 @@ class QuestionTypeController extends Controller
 				return $this->returnSuccessMessage('message', 'Question Type has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('question type', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error

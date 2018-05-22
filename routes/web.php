@@ -259,12 +259,23 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 	$router->group(['prefix' => 'action-type'], function () use ($router) {
 		$router->get('/', 'ActionTypeController@index');
-		$router->post('/', 'QuestionTypeController@store');
+		$router->post('/', 'ActionTypeController@store');
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'ActionTypeController@show');
 //			$router->put('/', 'ActionTypeController@update');
 //			$router->delete('/', 'ActionTypeController@destroy');
+		});
+	});
+
+	$router->group(['prefix' => 'trigger-type'], function () use ($router) {
+		$router->get('/', 'TriggerTypeController@index');
+//		$router->post('/', 'TriggerTypeController@store');
+
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'TriggerTypeController@show');
+//			$router->put('/', 'TriggerTypeController@update');
+//			$router->delete('/', 'TriggerTypeController@destroy');
 		});
 	});
 });

@@ -22,4 +22,12 @@ class QuestionType extends Model
 	{
 		return $this->hasMany('App\Models\Question');
 	}
+
+	/**
+	 * Get the trigger types for the Question Type.
+	 */
+	public function triggerTypes()
+	{
+		return $this->hasMany('App\Models\TriggerType');
+	}
 }
