@@ -90,7 +90,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => 'application-email'], function () use ($router) {
 				$router->get('/', 'ApplicationEmailController@index');
-				$router->post('/', 'ApplicationEmailController@store');
+//				$router->post('/', 'ApplicationEmailController@store');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'ApplicationEmailController@show');

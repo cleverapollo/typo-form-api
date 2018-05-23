@@ -56,7 +56,7 @@ class Application extends Model
 	/**
 	 * Get the application emails for the Application.
 	 */
-	public function applicationEmails()
+	public function emails()
 	{
 		return $this->hasMany('App\Models\Emails');
 	}

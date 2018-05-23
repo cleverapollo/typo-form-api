@@ -35,47 +35,7 @@ class ApplicationEmailController extends Controller
 			return $this->returnApplicationNameError();
 		}
 
-		return $this->returnSuccessMessage('application_emails', ApplicationEmailResource::collection($application->applicationEmails()->get()));
-	}
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @param  string $application_slug
-	 * @param  \Illuminate\Http\Request $request
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 * @throws \Illuminate\Validation\ValidationException
-	 */
-	public function store($application_slug, Request $request)
-	{
-		$this->validate($request, [
-			'recipients' => 'required|max:191',
-			'subject' => 'required|max:191',
-			'body' => 'required'
-		]);
-
-		try {
-			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
-
-			// Send error if application does not exist
-			if (!$application) {
-				return $this->returnApplicationNameError();
-			}
-
-			// Create application email
-			$application_email = $application->applicationEmails()->create($request->only('recipients', 'subject', 'body'));
-
-			if ($application_email) {
-				return $this->returnSuccessMessage('application_email', new ApplicationEmailResource($application_email));
-			}
-
-			// Send error if application email is not created
-			return $this->returnError('application email', 503, 'create');
-		} catch (Exception $e) {
-			// Send error
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
+		return $this->returnSuccessMessage('application_emails', ApplicationEmailResource::collection($application->emails()->get()));
 	}
 
 	/**
@@ -95,7 +55,7 @@ class ApplicationEmailController extends Controller
 			return $this->returnApplicationNameError();
 		}
 
-		$application_email = $application->applicationEmails()->find($id);
+		$application_email = $application->emails()->find($id);
 		if ($application_email) {
 			return $this->returnSuccessMessage('application_email', new ApplicationEmailResource($application_email));
 		}
@@ -130,7 +90,7 @@ class ApplicationEmailController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$application_email = $application->applicationEmails()->find($id);
+			$application_email = $application->emails()->find($id);
 
 			// Send error if application email does not exist
 			if (!$application_email) {
@@ -168,7 +128,7 @@ class ApplicationEmailController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$application_email = $application->applicationEmails()->find($id);
+			$application_email = $application->emails()->find($id);
 
 			// Send error if application email does not exist
 			if (!$application_email) {

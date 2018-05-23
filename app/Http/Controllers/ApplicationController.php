@@ -12,6 +12,7 @@ use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
+use App\Http\Resources\ApplicationEmailResource;
 use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
@@ -103,6 +104,8 @@ class ApplicationController extends Controller
 					}
 				}
 
+				$this->createApplicationEmail($application, $user->email);
+
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
@@ -111,6 +114,33 @@ class ApplicationController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Store a newly created email resource in storage.
+	 *
+	 * @param  $application
+	 * @param  $email
+	 *
+	 * @return \Exception
+	 */
+	public function createApplicationEmail($application, $email)
+	{
+		try {
+			// Create application email
+			$application_email = $application->emails()->create([
+				'recipients' => $email,
+				'subject' => 'Create submission',
+				'body' => 'Submission is created successfully. Please fill out the form and send submission.',
+			]);
+
+			if (!$application_email) {
+				throw new Exception('Cannot create application email.');
+			}
+		} catch (Exception $e) {
+			// Send error
+			return $e;
 		}
 	}
 
