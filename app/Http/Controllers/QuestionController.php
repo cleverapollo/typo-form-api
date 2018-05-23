@@ -312,7 +312,7 @@ class QuestionController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			// return $this->returnError('questions', 503, 'delete');
 		}
 	}

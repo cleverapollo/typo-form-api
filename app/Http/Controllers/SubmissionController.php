@@ -318,7 +318,7 @@ class SubmissionController extends Controller
 				return $this->returnSuccessMessage('message', 'Submission has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('submission', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error

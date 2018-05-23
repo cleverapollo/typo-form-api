@@ -270,7 +270,7 @@ class QuestionTriggerController extends Controller
 				return $this->returnSuccessMessage('message', 'QuestionTrigger has been deleted successfully.');
 			}
 
-			// Send error if there is an error on update
+			// Send error if there is an error on delete
 			return $this->returnError('trigger', 503, 'delete');
 		} catch (Exception $e) {
 			// Send error
