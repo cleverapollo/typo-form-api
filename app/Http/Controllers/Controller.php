@@ -15,9 +15,9 @@ use App\Models\Status;
 use App\Models\ActionType;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use App\Notifications\InformedNotification;
+use App\Jobs\ProcessInvitationEmail;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
 class Controller extends BaseController
@@ -155,17 +155,14 @@ class Controller extends BaseController
 						'updated_at' => Carbon::now()
 					]);
 
-					// Send email to the invitee
-					Mail::send('emails.invitation', [
+					dispatch(new ProcessInvitationEmail([
 						'type' => $type,
 						'name' => $data->name,
-						'userName' => $user->first_name . ' ' . $user->last_name,
+						'user_name' => $user->first_name . ' ' . $user->last_name,
 						'role' => $role->name,
-						'token' => $token
-					], function ($message) use ($invitation) {
-						$message->from('info@informed365.com', 'Informed 365');
-						$message->to($invitation['email']);
-					});
+						'token' => $token,
+						'email' => $invitation['email']
+					]));
 				}
 			}
 		}
