@@ -8,14 +8,13 @@ use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\TeamUser;
-use App\Models\Action;
 use App\Models\Role;
 use App\Models\Status;
-use App\Models\ActionType;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use App\Notifications\InformedNotification;
 use App\Jobs\ProcessInvitationEmail;
+use App\Jobs\ApplicationAdminNotification;
+use App\Jobs\TeamAdminNotification;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -192,22 +191,22 @@ class Controller extends BaseController
 		}
 
 		if ($type == 'team') {
-			$dataId = $invitation->team_id;
+			$type_id = $invitation->team_id;
 		} else {
-			$dataId = $invitation->application_id;
+			$type_id = $invitation->application_id;
 		}
 
 		// Send error if user already exists in the Team or Application
 		if (DB::table($type . '_users')->where([
 			'user_id' => $user->id,
-			$type . '_id' => $dataId
+			$type . '_id' => $type_id
 		])->first()) {
 			return $this->returnErrorMessage(403, 'User is already included in the ' . $type);
 		}
 
 		if (DB::table($type . '_users')->insert([
 			'user_id' => $user->id,
-			$type . '_id' => $dataId,
+			$type . '_id' => $type_id,
 			'role_id' => $invitation->role_id,
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
@@ -224,14 +223,15 @@ class Controller extends BaseController
 				if ($user->email) {
 					$user->notify(new InformedNotification('Welcome to the application.'));
 				}
-				$admin_users = $this->applicationAdmins($dataId);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('User(' . $user->email . ') has accepted invitation to application.'));
-					}
-				}
 
-				$forms = Application::find($dataId)->forms('auto', true)->get();
+				dispatch(new ApplicationAdminNotification([
+					'application_id' => $type_id,
+					'message' => 'User(' . $user->email . ') has accepted invitation to application.'
+				]));
+
+
+				// ToDo: Trigger action
+				$forms = Application::find($type_id)->forms('auto', true)->get();
 				foreach ($forms as $form) {
 					$submission = $form->submissions()->create([
 						'user_id' => $user->id,
@@ -239,24 +239,20 @@ class Controller extends BaseController
 						'status_id' => Status::where('status', 'opened')->first()->id
 					]);
 
-					Action::create([
-						'user_id' => $user->id,
-						'action_id' => $submission->id,
-						'action_type_id' => ActionType::where('type', 'send submission'),
-						'trigger_at'
-					]);
+					// Notify to send submission 24
 				}
 			} else {
 				// Send email notification
 				if ($user->email) {
 					$user->notify(new InformedNotification('Welcome to the team.'));
 				}
-				$admin_users = $this->applicationAdmins($dataId);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('User(' . $user->email . ') has accepted invitation to team.'));
-					}
-				}
+
+				dispatch(new TeamAdminNotification([
+					'team_id' => $type_id,
+					'message' => 'User(' . $user->email . ') has accepted invitation to team.'
+				]));
+
+				// ToDo: Trigger action
 			}
 
 			return $this->returnSuccessMessage('message', 'Invitation has been successfully accepted.');
@@ -334,49 +330,5 @@ class Controller extends BaseController
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
-	}
-
-	/**
-	 * Get application admins
-	 *
-	 * @param  $application_id
-	 *
-	 * @return array
-	 */
-	protected function applicationAdmins($application_id)
-	{
-		$admins = ApplicationUser::where([
-			'application_id' => $application_id,
-			'role_id' => Role::where('name', 'Admin')->first()->id
-		])->get();
-
-		$admin_users = [];
-		foreach ($admins as $admin) {
-			$admin_users[] = User::find($admin->user_id);
-		}
-
-		return $admin_users;
-	}
-
-	/**
-	 * Get application admins
-	 *
-	 * @param  $team_id
-	 *
-	 * @return array
-	 */
-	protected function teamAdmins($team_id)
-	{
-		$admins = TeamUser::where([
-			'team_id' => $team_id,
-			'role_id' => Role::where('name', 'Admin')->first()->id
-		])->get();
-
-		$admin_users = [];
-		foreach ($admins as $admin) {
-			$admin_users[] = User::find($admin->user_id);
-		}
-
-		return $admin_users;
 	}
 }
