@@ -51,10 +51,7 @@ class ApplicationController extends Controller
 	public function store(Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|unique:applications|max:191',
-			'invitations' => 'array',
-			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role_id' => 'required|integer|min:2'
+			'name' => 'required|unique:applications|max:191'
 		]);
 
 		try {
@@ -89,23 +86,6 @@ class ApplicationController extends Controller
 			]);
 
 			if ($application) {
-				// Send invitation
-				$invitations = $request->input('invitations', []);
-				$this->sendInvitation('application', $application, $invitations);
-
-				// Send notification email to application admin and super admin
-				if ($user->email) {
-					$user->notify(new InformedNotification('New application has been created successfully.'));
-				}
-				$super_admins = $this->getSuperAdmins();
-				foreach ($super_admins as $super_admin) {
-					if ($super_admin->email) {
-						$super_admin->notify(new InformedNotification('New application has been created successfully.'));
-					}
-				}
-
-				$this->createApplicationEmail($application, $user->email);
-
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
