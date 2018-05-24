@@ -3,16 +3,22 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Exception;
 use Carbon\Carbon;
 use App\User;
-use App\Models\Role;
+use App\Models\Application;
 use App\Models\ApplicationUser;
+use App\Models\TeamUser;
+use App\Models\Action;
+use App\Models\Role;
+use App\Models\Status;
+use App\Models\ActionType;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
+use App\Notifications\InformedNotification;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
-use Exception;
 
 class Controller extends BaseController
 {
@@ -50,7 +56,6 @@ class Controller extends BaseController
 	{
 		return $this->returnErrorMessage(404, 'There is no application with this name');
 	}
-
 
 	/**
 	 * Return error response
@@ -217,6 +222,46 @@ class Controller extends BaseController
 				'updated_at' => Carbon::now()
 			]);
 
+			if ($type == 'application') {
+				// Send email notification
+				if ($user->email) {
+					$user->notify(new InformedNotification('Welcome to the application.'));
+				}
+				$admin_users = $this->applicationAdmins($dataId);
+				foreach ($admin_users as $admin_user) {
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('User(' . $user->email . ') has accepted invitation to application.'));
+					}
+				}
+
+				$forms = Application::find($dataId)->forms('auto', true)->get();
+				foreach ($forms as $form) {
+					$submission = $form->submissions()->create([
+						'user_id' => $user->id,
+						'team_id' => null,
+						'status_id' => Status::where('status', 'opened')->first()->id
+					]);
+
+					Action::create([
+						'user_id' => $user->id,
+						'action_id' => $submission->id,
+						'action_type_id' => ActionType::where('type', 'send submission'),
+						'trigger_at'
+					]);
+				}
+			} else {
+				// Send email notification
+				if ($user->email) {
+					$user->notify(new InformedNotification('Welcome to the team.'));
+				}
+				$admin_users = $this->applicationAdmins($dataId);
+				foreach ($admin_users as $admin_user) {
+					if ($admin_user->email) {
+						$admin_user->notify(new InformedNotification('User(' . $user->email . ') has accepted invitation to team.'));
+					}
+				}
+			}
+
 			return $this->returnSuccessMessage('message', 'Invitation has been successfully accepted.');
 		};
 
@@ -297,14 +342,36 @@ class Controller extends BaseController
 	/**
 	 * Get application admins
 	 *
-	 * @param  $application
+	 * @param  $application_id
 	 *
 	 * @return array
 	 */
-	protected function applicationAdmins($application)
+	protected function applicationAdmins($application_id)
 	{
 		$admins = ApplicationUser::where([
-			'application_id' => $application->id,
+			'application_id' => $application_id,
+			'role_id' => Role::where('name', 'Admin')->first()->id
+		])->get();
+
+		$admin_users = [];
+		foreach ($admins as $admin) {
+			$admin_users[] = User::find($admin->user_id);
+		}
+
+		return $admin_users;
+	}
+
+	/**
+	 * Get application admins
+	 *
+	 * @param  $team_id
+	 *
+	 * @return array
+	 */
+	protected function teamAdmins($team_id)
+	{
+		$admins = TeamUser::where([
+			'team_id' => $team_id,
 			'role_id' => Role::where('name', 'Admin')->first()->id
 		])->get();
 

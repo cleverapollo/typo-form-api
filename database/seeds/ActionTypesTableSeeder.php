@@ -29,13 +29,13 @@ class ActionTypesTableSeeder extends Seeder
 	    ]);
 
 	    DB::table('action_types')->insert([
-		    'type' => 'create submit',
+		    'type' => 'create submission',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('action_types')->insert([
-		    'type' => 'send submit',
+		    'type' => 'send submission',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

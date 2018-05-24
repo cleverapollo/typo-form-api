@@ -99,7 +99,7 @@ class TeamController extends Controller
 				$this->sendInvitation('team', $team, $invitations);
 
 				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application);
+				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('Team has been created successfully.'));
@@ -196,7 +196,7 @@ class TeamController extends Controller
 			// Update team
 			if ($team->fill($request->only('name', 'description'))->save()) {
 				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application);
+				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('Team has been updated successfully.'));
@@ -251,7 +251,7 @@ class TeamController extends Controller
 			$team_users = $team->users;
 			if ($team->delete()) {
 				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application);
+				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('Team has been deleted successfully.'));
