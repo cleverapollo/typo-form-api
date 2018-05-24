@@ -55,11 +55,7 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
-			'period_start' => 'nullable|date',
-			'period_end' => 'nullable|date',
-			'period_id' => 'nullable|integer|min:1',
-			'show_progress' => 'required|boolean',
-			'csv' => 'file'
+			'show_progress' => 'required|boolean'
 		]);
 
 		try {
@@ -78,10 +74,10 @@ class FormController extends Controller
 			}
 
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'));
+			$form = $application->forms()->create($request->only('name', 'show_progress'));
 
 			if ($form) {
-				$this->analyzeCSV($form, $request);
+				/* $this->analyzeCSV($form, $request);
 
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application->id);
@@ -89,7 +85,7 @@ class FormController extends Controller
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('Form has been created successfully.'));
 					}
-				}
+				} */
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
@@ -142,9 +138,6 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'period_start' => 'nullable|date',
-			'period_end' => 'nullable|date',
-			'period_id' => 'nullable|integer|min:1',
 			'show_progress' => 'filled|boolean'
 		]);
 
@@ -171,7 +164,7 @@ class FormController extends Controller
 			}
 
 			// Update form
-			if ($form->fill($request->only('name', 'period_start', 'period_end', 'period_id', 'show_progress'))->save()) {
+			if ($form->fill($request->only('name', 'show_progress'))->save()) {
 				// Send notification email to application admin
 				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
