@@ -12,7 +12,6 @@ use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
-use App\Http\Resources\ApplicationEmailResource;
 use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
@@ -191,7 +190,7 @@ class ApplicationController extends Controller
 
 			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
 				// Send notification email to application admin and super admin
-				$admin_users = $this->applicationAdmins($application);
+				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('Application has been updated successfully.'));
@@ -233,7 +232,7 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'delete');
 			}
 
-			$admin_users = $this->applicationAdmins($application);
+			$admin_users = $this->applicationAdmins($application->id);
 			// Delete Application
 			if ($application->delete()) {
 				// Send notification email to application admin and super admin
@@ -465,7 +464,7 @@ class ApplicationController extends Controller
 
 			if ($application_user->delete()) {
 				// Send notification email to application admin and super admin
-				$admin_users = $this->applicationAdmins($application);
+				$admin_users = $this->applicationAdmins($application->id);
 				foreach ($admin_users as $admin_user) {
 					if ($admin_user->email) {
 						$admin_user->notify(new InformedNotification('User has been deleted from application successfully.'));

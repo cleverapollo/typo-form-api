@@ -235,7 +235,7 @@ class SubmissionController extends Controller
 			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
 				// Send notification email
 				if ($status_id) {
-					$admin_users = $this->applicationAdmins($form->application);
+					$admin_users = $this->applicationAdmins($form->application->id);
 					foreach ($admin_users as $admin_user) {
 						if ($admin_user->email) {
 							$admin_user->notify(new InformedNotification('Submission status is updated successfully.'));
