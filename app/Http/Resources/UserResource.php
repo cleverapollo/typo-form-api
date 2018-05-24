@@ -22,6 +22,7 @@ class UserResource extends JsonResource
 			'role_id' => $this->role_id,
 			'social_id' => $this->social_id,
 			'provider' => $this->provider,
+			'created_at' => $this->created_at,
 			'team_role_id' => $this->whenPivotLoaded('team_users', function () {
 				return $this->pivot->role_id;
 			}),
