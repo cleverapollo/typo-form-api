@@ -61,10 +61,7 @@ class TeamController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'invitations' => 'array',
-			'invitations.*.email' => 'required|email',
-			'invitations.*.team_role_id' => 'required|integer|min:2'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -93,10 +90,6 @@ class TeamController extends Controller
 			]);
 
 			if ($team) {
-				// Send invitation
-				$invitations = $request->input('invitations', []);
-				$this->sendInvitation('team', $team, $invitations);
-
 				return $this->returnSuccessMessage('team', new TeamResource($team));
 			}
 
