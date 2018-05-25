@@ -65,13 +65,6 @@ class FormController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Create form
 			$form = $application->forms()->create($request->only('name', 'show_progress'));
 
@@ -127,7 +120,8 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'show_progress' => 'filled|boolean'
+			'show_progress' => 'filled|boolean',
+			'css' => 'file'
 		]);
 
 		try {
@@ -145,17 +139,10 @@ class FormController extends Controller
 				return $this->returnError('form', 404, 'update');
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Update form
 			if ($form->fill($request->only('name', 'show_progress'))->save()) {
-				// Analyze CSV
-				// $this->analyzeCSV($form, $request);
+				 // Analyze CSV
+				 $this->analyzeCSV($form, $request);
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
@@ -217,9 +204,21 @@ class FormController extends Controller
 	{
 		try {
 			if ($request->hasFile('csv') && $request->file('csv')->isValid()) {
+				// Remove original data of form
+				$form->sections->each(function ($section) {
+					$section->delete();
+				});
+				$form->submissions->each(function ($submission) {
+					$submission->delete();
+				});
+				$form->validations->each(function ($validation) {
+					$validation->delete();
+				});
+
+				// Read data from csv file
 				$path = $request->file('csv')->getRealPath();
-				$data = Excel::load($path, function ($reader) {
-				})->get();
+
+				$data = Excel::load($path, function ($reader) {})->get();
 
 				if (!empty($data) && $data->count()) {
 					// If there is multiple sheets

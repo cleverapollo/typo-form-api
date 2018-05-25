@@ -18,9 +18,6 @@ class FormResource extends JsonResource
 			'id' => $this->id,
 			'name' => $this->name,
 			'application_id' => $this->application_id,
-			'period_start' => $this->period_start,
-			'period_end' => $this->period_end,
-			'period_id' => $this->period_id,
 			'show_progress' => $this->show_progress,
 			'auto' => $this->auto
 		];
