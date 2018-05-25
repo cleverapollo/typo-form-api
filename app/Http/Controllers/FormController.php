@@ -53,8 +53,7 @@ class FormController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'show_progress' => 'required|boolean'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -66,7 +65,7 @@ class FormController extends Controller
 			}
 
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'show_progress'));
+			$form = $application->forms()->create($request->only('name'));
 
 			if ($form) {
 				return $this->returnSuccessMessage('form', new FormResource($form));
