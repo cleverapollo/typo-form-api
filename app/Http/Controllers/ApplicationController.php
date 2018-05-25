@@ -76,8 +76,6 @@ class ApplicationController extends Controller
 			$application = $user->applications()->create([
 				'name' => $name,
 				'slug' => $slug,
-				'css' => $request->input('css', null),
-				'icon' => $request->input('icon', null),
 				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
