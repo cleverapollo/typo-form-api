@@ -322,17 +322,9 @@ class TeamController extends Controller
 				'status' => 0
 			])->get();
 
-			$unacceptedUsers = [];
-			foreach ($invitedUsers as $invitedUser) {
-				$unacceptedUser = User::where('email', $invitedUser->invitee)->first();
-				if ($unacceptedUser) {
-					array_push($unacceptedUsers, new UserResource($unacceptedUser));
-				}
-			}
-
 			return $this->returnSuccessMessage('users', [
 				'current' => UserResource::collection($currentUsers),
-				'unaccepted' => $unacceptedUsers
+				'unaccepted' => $invitedUsers
 			]);
 		}
 
