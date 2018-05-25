@@ -86,10 +86,6 @@ class ApplicationController extends Controller
 			]);
 
 			if ($application) {
-				dispatch(new SuperAdminNotification([
-					'message' => 'Application has been created successfully.'
-				]));
-
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 

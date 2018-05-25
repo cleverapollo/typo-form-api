@@ -53,7 +53,7 @@ class Controller extends BaseController
 	 */
 	protected function returnApplicationNameError()
 	{
-		return $this->returnErrorMessage(404, 'There is no application with this name');
+		return $this->returnErrorMessage(404, 'There is no application with this name.');
 	}
 
 	/**
@@ -181,13 +181,14 @@ class Controller extends BaseController
 
 		$invitation = DB::table($type . '_invitations')->where([
 			'invitee' => $user->email,
-			'token' => $token,
-			'status' => 0
+			'token' => $token
 		])->first();
 
-		// Send error if token does not exist
+		// Invalid invitation
 		if (!$invitation) {
-			return $this->returnErrorMessage(403, 'Invalid token.');
+			return $this->returnErrorMessage(403, 'Invalid invitation.');
+		} elseif($invitation->status === 1) {
+			return $this->returnErrorMessage(403, 'Invitation has previously been accepted.');
 		}
 
 		if ($type == 'team') {
@@ -201,7 +202,7 @@ class Controller extends BaseController
 			'user_id' => $user->id,
 			$type . '_id' => $type_id
 		])->first()) {
-			return $this->returnErrorMessage(403, 'User is already included in the ' . $type);
+			return $this->returnErrorMessage(403, 'User has already joined in the ' . $type);
 		}
 
 		if (DB::table($type . '_users')->insert([
@@ -213,7 +214,6 @@ class Controller extends BaseController
 		])) {
 			// Remove token and update status at invitations table
 			DB::table($type . '_invitations')->where('id', $invitation->id)->update([
-				'token' => null,
 				'status' => 1,
 				'updated_at' => Carbon::now()
 			]);
@@ -255,7 +255,11 @@ class Controller extends BaseController
 				// ToDo: Trigger action
 			}
 
-			return $this->returnSuccessMessage('message', 'Invitation has been successfully accepted.');
+			return $this->returnSuccessMessage('data', [
+				'message' => 'Invitation has been successfully accepted.',
+				'type_id' => $type_id,
+				'type' => $type
+			]);
 		};
 
 		// Send error
