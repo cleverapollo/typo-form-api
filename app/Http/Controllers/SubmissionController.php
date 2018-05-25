@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AnswerResource;
-use App\Http\Resources\QuestionResource;
-use App\Http\Resources\ResponseResource;
-use App\Http\Resources\SectionResource;
 use Auth;
 use Exception;
 use App\Models\Team;
 use App\Models\Form;
 use App\Models\Status;
+use App\Http\Resources\SectionResource;
+use App\Http\Resources\QuestionResource;
+use App\Http\Resources\AnswerResource;
 use App\Http\Resources\SubmissionResource;
-use App\Notifications\InformedNotification;
-use App\Exports\CSVExport;
+use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -87,20 +85,6 @@ class SubmissionController extends Controller
 			]);
 
 			if ($submission) {
-				// Send notification email
-				if ($team_id) {
-					$team_users = Team::find($team_id)->users;
-					foreach ($team_users as $user) {
-						if ($user->email) {
-							$user->notify(new InformedNotification('Submission is created successfully.'));
-						}
-					}
-				} else {
-					if (Auth::user()->email) {
-						Auth::user()->notify(new InformedNotification('Submission is created successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
@@ -233,29 +217,6 @@ class SubmissionController extends Controller
 
 			// Update submission
 			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
-				// Send notification email
-				if ($status_id) {
-					$admin_users = $this->applicationAdmins($form->application->id);
-					foreach ($admin_users as $admin_user) {
-						if ($admin_user->email) {
-							$admin_user->notify(new InformedNotification('Submission status is updated successfully.'));
-						}
-					}
-				}
-
-				if ($submission->team) {
-					$team_users = $submission->team->users;
-					foreach ($team_users as $user) {
-						if ($user->email) {
-							$user->notify(new InformedNotification('Submission is updated successfully.'));
-						}
-					}
-				} else {
-					if ($submission->user->email) {
-						$submission->user->notify(new InformedNotification('Submission is updated successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
@@ -302,19 +263,6 @@ class SubmissionController extends Controller
 			}
 
 			if ($submission->delete()) {
-				// Send email notification
-				if ($team) {
-					foreach ($team->users as $tuser) {
-						if ($tuser->email) {
-							$tuser->notify(new InformedNotification('Submission is deleted successfully.'));
-						}
-					}
-				} else {
-					if ($user->email) {
-						$user->notify(new InformedNotification('Submission is deleted successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'Submission has been deleted successfully.');
 			}
 
@@ -324,25 +272,5 @@ class SubmissionController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
-	}
-
-	/**
-	 * Download csv file
-	 *
-	 * @return CSVExport
-	 */
-	public function export()
-	{
-		return new CSVExport();
-	}
-
-	/**
-	 * Store submissions as csv file
-	 *
-	 * @return bool|\Illuminate\Foundation\Bus\PendingDispatch
-	 */
-	public function storeCSV()
-	{
-		return (new CSVExport)->store('submissions.csv');
 	}
 }

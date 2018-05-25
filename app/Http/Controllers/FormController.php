@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Period;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -77,16 +76,6 @@ class FormController extends Controller
 			$form = $application->forms()->create($request->only('name', 'show_progress'));
 
 			if ($form) {
-				/* $this->analyzeCSV($form, $request);
-
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been created successfully.'));
-					}
-				} */
-
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
 
@@ -165,13 +154,8 @@ class FormController extends Controller
 
 			// Update form
 			if ($form->fill($request->only('name', 'show_progress'))->save()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
-					}
-				}
+				// Analyze CSV
+				// $this->analyzeCSV($form, $request);
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
@@ -210,14 +194,6 @@ class FormController extends Controller
 			}
 
 			if ($form->delete()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 
@@ -367,11 +343,7 @@ class FormController extends Controller
 			$form_ids = $request->input('form_ids', []);
 			$forms = $application->forms()->get();
 			foreach ($forms as $form) {
-				if (in_array($form->id, $form_ids)) {
-					$form->auto = true;
-				} else {
-					$form->auto = false;
-				}
+				$form->auto = in_array($form->id, $form_ids);
 				$form->save();
 			}
 

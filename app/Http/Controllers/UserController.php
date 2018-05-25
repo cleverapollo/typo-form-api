@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Http\Resources\UserResource;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -52,11 +51,6 @@ class UserController extends Controller
 		try {
 			$user = Auth::user();
 			if ($user->fill($request->only('first_name', 'last_name'))->save()) {
-				// Send notification email to user
-				if ($user->email) {
-					$user->notify(new InformedNotification('Your account has been updated successfully.'));
-				}
-
 				return $this->returnSuccessMessage('user', new UserResource($user));
 			}
 
@@ -107,11 +101,6 @@ class UserController extends Controller
 			$user = Auth::user();
 			if (Hash::check($request->input('password'), $user->password)) {
 				if ($user->update(['email' => $request->input('email')])) {
-					// Send notification email to user
-					if ($user->email) {
-						$user->notify(new InformedNotification('Email has been updated successfully.'));
-					}
-
 					return $this->returnSuccessMessage('user', new UserResource($user));
 				}
 
@@ -145,11 +134,6 @@ class UserController extends Controller
 			$user = Auth::user();
 			if (Hash::check($request->input('password'), $user->password)) {
 				if ($user->update(['password' => app('hash')->make($request->input('newPassword'))])) {
-					// Send notification email to user
-					if ($user->email) {
-						$user->notify(new InformedNotification('Password has been updated successfully.'));
-					}
-
 					return $this->returnSuccessMessage('user', new UserResource($user));
 				}
 

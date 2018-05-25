@@ -12,7 +12,6 @@ use App\Models\TeamInvitation;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\TeamUserResource;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -97,17 +96,6 @@ class TeamController extends Controller
 				// Send invitation
 				$invitations = $request->input('invitations', []);
 				$this->sendInvitation('team', $team, $invitations);
-
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been created successfully.'));
-					}
-				}
-				if ($user->email) {
-					$user->notify(new InformedNotification('Team has been created successfully.'));
-				}
 
 				return $this->returnSuccessMessage('team', new TeamResource($team));
 			}
@@ -195,18 +183,6 @@ class TeamController extends Controller
 
 			// Update team
 			if ($team->fill($request->only('name', 'description'))->save()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been updated successfully.'));
-					}
-				}
-				foreach ($team->users as $team_user) {
-					if ($team_user->email) {
-						$team_user->notify(new InformedNotification('Team has been updated successfully.'));
-					}
-				}
 				return $this->returnSuccessMessage('team', new TeamResource($team));
 			}
 
@@ -248,20 +224,7 @@ class TeamController extends Controller
 				return $this->returnError('team', 403, 'delete');
 			}
 
-			$team_users = $team->users;
 			if ($team->delete()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been deleted successfully.'));
-					}
-				}
-				foreach ($team_users as $team_user) {
-					if ($team_user->email) {
-						$team_user->notify(new InformedNotification('Team has been deleted successfully.'));
-					}
-				}
 				return $this->returnSuccessMessage('message', 'Team has been deleted successfully.');
 			}
 
@@ -494,11 +457,6 @@ class TeamController extends Controller
 
 			// Update user role
 			if ($team_user->fill(['role_id' => $role->id])->save()) {
-				// Send notification email to team user
-				if ($team_user->email) {
-					$team_user->notify(new InformedNotification('Team user role has been deleted successfully.'));
-				}
-
 				return $this->returnSuccessMessage('user', new TeamUserResource($team_user));
 			}
 
@@ -557,21 +515,6 @@ class TeamController extends Controller
 			}
 
 			if ($team_user->delete()) {
-				// Send notification email to user and team admin
-				if ($user->email) {
-					$user->notify(new InformedNotification('You have been deleted from team.'));
-				}
-				foreach ($team->users as $team_user) {
-					$team_role = TeamUser::where([
-						'user_id' => $team_user,
-						'team_id' => $team->id
-					])->first()->role_id;
-
-					if (Role::find($team_role)->name == 'Admin' && $team_user->email) {
-						$team_user->notify(new InformedNotification('User has been deleted from team successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'User has been removed from team successfully.');
 			}
 

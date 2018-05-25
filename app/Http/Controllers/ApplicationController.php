@@ -11,8 +11,6 @@ use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
-use App\Jobs\ApplicationAdminNotification;
-use App\Jobs\SuperAdminNotification;
 use App\Jobs\UsersNotification;
 use Illuminate\Http\Request;
 
@@ -86,10 +84,6 @@ class ApplicationController extends Controller
 			]);
 
 			if ($application) {
-				dispatch(new SuperAdminNotification([
-					'message' => 'Application has been created successfully.'
-				]));
-
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
@@ -194,15 +188,6 @@ class ApplicationController extends Controller
 			}
 
 			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'Application has been updated successfully.'
-				]));
-
-				dispatch(new SuperAdminNotification([
-					'message' => 'Application has been updated successfully.'
-				]));
-
 				return $this->returnSuccessMessage('application', new ApplicationResource($application));
 			}
 
@@ -232,20 +217,8 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'delete');
 			}
 
-			$admin_users = $this->applicationAdmins($application->id);
-
 			// Delete Application
 			if ($application->delete()) {
-				dispatch(new UsersNotification([
-					'users' => $admin_users,
-					'message' => 'Application has been deleted successfully.'
-				]));
-
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'Application has been deleted successfully.'
-				]));
-
 				return $this->returnSuccessMessage('message', 'Application has been deleted successfully.');
 			}
 
@@ -453,16 +426,6 @@ class ApplicationController extends Controller
 			}
 
 			if ($application_user->delete()) {
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'User(' . $application_user->email . ') has been deleted from application successfully.'
-				]));
-
-				dispatch(new UsersNotification([
-					'users' => [$application_user],
-					'message' => 'You have been deleted from application.'
-				]));
-
 				return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
 			}
 
