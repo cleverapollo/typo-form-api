@@ -7,7 +7,6 @@ use App\Models\Role;
 use Carbon\Carbon;
 use App\Http\Resources\AuthResource;
 use App\Http\Controllers\Controller;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 
 class OAuth2Controller extends Controller
@@ -63,14 +62,6 @@ class OAuth2Controller extends Controller
 
 		if (!empty($authUser)) {
 			return $authUser;
-		}
-
-		// Send notification email to super admin
-		$super_admins = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->get();
-		foreach ($super_admins as $super_admin) {
-			if ($super_admin->email) {
-				$super_admin->notify(new InformedNotification('New social user has been registered.'));
-			}
 		}
 
 		return User::create([

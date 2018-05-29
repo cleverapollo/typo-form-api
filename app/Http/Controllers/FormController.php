@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Period;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -54,8 +53,7 @@ class FormController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'show_progress' => 'required|boolean'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -66,27 +64,10 @@ class FormController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'show_progress'));
+			$form = $application->forms()->create($request->only('name'));
 
 			if ($form) {
-				/* $this->analyzeCSV($form, $request);
-
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been created successfully.'));
-					}
-				} */
-
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
 
@@ -138,7 +119,8 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'show_progress' => 'filled|boolean'
+			'show_progress' => 'required|integer|between:0,1',
+			'csv' => 'file'
 		]);
 
 		try {
@@ -156,22 +138,10 @@ class FormController extends Controller
 				return $this->returnError('form', 404, 'update');
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Update form
 			if ($form->fill($request->only('name', 'show_progress'))->save()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
-					}
-				}
+				// Analyze CSV
+				$this->analyzeCSV($form, $request);
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
@@ -210,14 +180,6 @@ class FormController extends Controller
 			}
 
 			if ($form->delete()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 
@@ -241,9 +203,21 @@ class FormController extends Controller
 	{
 		try {
 			if ($request->hasFile('csv') && $request->file('csv')->isValid()) {
+				// Remove original data of form
+				$form->sections->each(function ($section) {
+					$section->delete();
+				});
+				$form->submissions->each(function ($submission) {
+					$submission->delete();
+				});
+				$form->validations->each(function ($validation) {
+					$validation->delete();
+				});
+
+				// Read data from csv file
 				$path = $request->file('csv')->getRealPath();
-				$data = Excel::load($path, function ($reader) {
-				})->get();
+
+				$data = Excel::load($path, function ($reader) {})->get();
 
 				if (!empty($data) && $data->count()) {
 					// If there is multiple sheets
@@ -367,11 +341,7 @@ class FormController extends Controller
 			$form_ids = $request->input('form_ids', []);
 			$forms = $application->forms()->get();
 			foreach ($forms as $form) {
-				if (in_array($form->id, $form_ids)) {
-					$form->auto = true;
-				} else {
-					$form->auto = false;
-				}
+				$form->auto = in_array($form->id, $form_ids);
 				$form->save();
 			}
 

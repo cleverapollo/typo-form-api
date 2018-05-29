@@ -8,14 +8,11 @@ use Storage;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
+use App\Models\Team;
 use App\Models\ApplicationUser;
 use App\Models\Role;
-use App\Models\Status;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
-use App\Notifications\InformedNotification;
 use App\Jobs\ProcessInvitationEmail;
-use App\Jobs\ApplicationAdminNotification;
-use App\Jobs\TeamAdminNotification;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -219,48 +216,12 @@ class Controller extends BaseController
 				'updated_at' => Carbon::now()
 			]);
 
-			if ($type == 'application') {
-				// Send email notification
-				if ($user->email) {
-					$user->notify(new InformedNotification('Welcome to the application.'));
-				}
-
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $type_id,
-					'message' => 'User(' . $user->email . ') has accepted invitation to application.'
-				]));
-
-
-				// ToDo: Trigger action
-				$forms = Application::find($type_id)->forms('auto', true)->get();
-				foreach ($forms as $form) {
-					$submission = $form->submissions()->create([
-						'user_id' => $user->id,
-						'team_id' => null,
-						'status_id' => Status::where('status', 'opened')->first()->id
-					]);
-
-					// Notify to send submission 24
-				}
-			} else {
-				// Send email notification
-				if ($user->email) {
-					$user->notify(new InformedNotification('Welcome to the team.'));
-				}
-
-				dispatch(new TeamAdminNotification([
-					'team_id' => $type_id,
-					'message' => 'User(' . $user->email . ') has accepted invitation to team.'
-				]));
-
-				// ToDo: Trigger action
-			}
-
-			return $this->returnSuccessMessage('data', [
+			// ToDo: Trigger action
+			return response()->json([
+				'status' => 'success',
 				'message' => 'Invitation has been successfully accepted.',
-				'type_id' => $type_id,
-				'type' => $type
-			]);
+				'data' => $type == 'team' ? Team::where('id', $type_id)->first() : Application::where('id', $type_id)->first()
+			], 200);
 		};
 
 		// Send error
