@@ -49,6 +49,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->put('/', 'ApplicationController@update');
 			$router->delete('/', 'ApplicationController@destroy');
 
+			$router->get('/submission', 'SubmissionController@all');
+
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');
 				$router->put('{id}', 'ApplicationController@updateUser');
@@ -83,7 +85,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'FormController@show');
-					$router->put('/', 'FormController@update');
+					$router->post('/', 'FormController@update');
 					$router->delete('/', 'FormController@destroy');
 				});
 			});

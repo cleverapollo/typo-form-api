@@ -25,10 +25,16 @@ class SubmissionResource extends JsonResource
 				'name' => $this->team->name,
 				'description' => $this->team->description
 			] : null,
+			'form' => [
+				'id' => $this->form_id,
+				'name' => $this->form->name
+			],
 			'progress' => $this->progress,
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
 			'status_id' => $this->status_id,
+			'created_at' => $this->created_at,
+			'updated_at' => $this->updated_at,
 			'responses' => ResponseResource::collection($this->responses)
 		];
 	}

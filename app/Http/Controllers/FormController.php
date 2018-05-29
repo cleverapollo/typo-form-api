@@ -119,8 +119,8 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'show_progress' => 'filled|boolean',
-			'css' => 'file'
+			'show_progress' => 'required|integer|between:0,1',
+			'csv' => 'file'
 		]);
 
 		try {
@@ -140,8 +140,8 @@ class FormController extends Controller
 
 			// Update form
 			if ($form->fill($request->only('name', 'show_progress'))->save()) {
-				 // Analyze CSV
-				 $this->analyzeCSV($form, $request);
+				// Analyze CSV
+				$this->analyzeCSV($form, $request);
 
 				return $this->returnSuccessMessage('form', new FormResource($form));
 			}
