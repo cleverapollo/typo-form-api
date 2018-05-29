@@ -6,6 +6,8 @@ use Auth;
 use Exception;
 use Carbon\Carbon;
 use App\User;
+use App\Models\Application;
+use App\Models\Team;
 use App\Models\ApplicationUser;
 use App\Models\Role;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
@@ -214,8 +216,11 @@ class Controller extends BaseController
 			]);
 
 			// ToDo: Trigger action
-
-			return $this->returnSuccessMessage('message', 'Invitation has been successfully accepted.');
+			return response()->json([
+				'status' => 'success',
+				'message' => 'Invitation has been successfully accepted.',
+				'data' => $type == 'team' ? Team::where('id', $type_id)->first() : Application::where('id', $type_id)->first()
+			], 200);
 		};
 
 		// Send error
