@@ -11,6 +11,3 @@ Homestead.yaml
 
 # Environment
 .env
-
-# Upload folder
-public/uploads/*

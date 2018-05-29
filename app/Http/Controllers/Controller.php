@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use Storage;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
@@ -318,20 +319,10 @@ class Controller extends BaseController
 	public function fileUpload(Request $request)
 	{
 		try {
-			if ($request->hasFile('file')) {
-				$file = $request->file('file');
-				if ($file->isValid()) {
-					$file_name = time() . '_' . $file->getClientOriginalName();
-					$file->move(public_path() . '/uploads', $file_name);
-					return $this->returnSuccessMessage('path', $file_name);
-				}
-
-				return $this->returnErrorMessage(403, 'Invalid file.');
-			}
-
-			return $this->returnErrorMessage(404, 'Sorry, we cannot find the file to upload.');
+			$path = Storage::putFile('uploads', $request->file('file'));
+			$url = Storage::url($path);
+			return $this->returnSuccessMessage('path', $url);
 		} catch (Exception $e) {
-			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
