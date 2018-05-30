@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\Period;
+use App\Models\Application;
+use App\Models\Form;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
 use Illuminate\Http\Request;
@@ -68,7 +69,7 @@ class FormController extends Controller
 			$form = $application->forms()->create($request->only('name'));
 
 			if ($form) {
-				return $this->returnSuccessMessage('form', new FormResource($form));
+				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 			}
 
 			// Send error if form is not created
@@ -119,7 +120,7 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'show_progress' => 'required|integer|between:0,1',
+			'show_progress' => 'filled|boolean',
 			'csv' => 'file'
 		]);
 
@@ -143,7 +144,7 @@ class FormController extends Controller
 				// Analyze CSV
 				$this->analyzeCSV($form, $request);
 
-				return $this->returnSuccessMessage('form', new FormResource($form));
+				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 			}
 
 			// Send error if there is an error on update
@@ -311,6 +312,112 @@ class FormController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, 'Invalid CSV file.');
+		}
+	}
+
+	/**
+	 * Export data to CSV
+	 *
+	 * @param $application_slug
+	 * @param $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function exportCSV($application_slug, $id)
+	{
+		try {
+			$application = Application::where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$form = $application->forms()->find($id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'export');
+			}
+
+			$data = [];
+			$sections = $form->sections;
+			if (count($sections) > 0) {
+				foreach ($sections as $section) {
+					$questions = $section->questions;
+
+					if (count($questions) > 0) {
+						foreach ($questions as $question) {
+							$answers = $question->answers;
+
+							if (count($answers) > 0) {
+								foreach ($answers as $answer) {
+									$data[] = [
+										'section_name' => $section->name,
+										'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
+										'section_order' => $section->order,
+										'section_repeatable' => (bool)($section->repeatable),
+										'section repeatable rows min count' => $section->min_rows,
+										'section repeatable rows max count' => $section->max_rows,
+										'question' => $question->question,
+										'description' => $question->description,
+										'question order' => $question->order,
+										'question mandatory' => $question->mandatory,
+										'question type' => QuestionType::find($question->question_type_id)->type,
+										'answer' => $answer->answer,
+										'parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
+										'answer order' => $answer->order
+									];
+								}
+							} else {
+								$data[] = [
+									'section_name' => $section->name,
+									'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
+									'section_order' => $section->order,
+									'section_repeatable' => (bool)($section->repeatable),
+									'section repeatable rows min count' => $section->min_rows,
+									'section repeatable rows max count' => $section->max_rows,
+									'question' => $question->question,
+									'description' => $question->description,
+									'question order' => $question->order,
+									'question mandatory' => $question->mandatory,
+									'question type' => QuestionType::find($question->question_type_id)->type,
+									'answer' => '',
+									'parameter' => '',
+									'answer order' => ''
+								];
+							}
+						}
+					} else {
+						$data[] = [
+							'section_name' => $section->name,
+							'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
+							'section_order' => $section->order,
+							'section_repeatable' => (bool)($section->repeatable),
+							'section repeatable rows min count' => $section->min_rows,
+							'section repeatable rows max count' => $section->max_rows,
+							'question' => '',
+							'description' => '',
+							'question order' => '',
+							'question mandatory' => '',
+							'question type' => '',
+							'answer' => '',
+							'parameter' => '',
+							'answer order' => ''
+						];
+					}
+				}
+			}
+
+//			return $this->returnSuccessMessage('data', $data);
+			return Excel::create($form->name, function ($excel) use ($data) {
+				$excel->sheet('Sheet 1', function ($sheet) use ($data) {
+					$sheet->fromArray($data);
+				});
+			})->download('xlsx');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 

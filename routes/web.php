@@ -87,6 +87,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->get('/', 'FormController@show');
 					$router->post('/', 'FormController@update');
 					$router->delete('/', 'FormController@destroy');
+					$router->get('export', 'FormController@exportCSV');
 				});
 			});
 

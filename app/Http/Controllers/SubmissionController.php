@@ -124,7 +124,7 @@ class SubmissionController extends Controller
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', $form->period_start),
 				'period_end' => $request->input('period_end', $form->period_end),
-				'status_id' => Status::where('status', 'opened')->first()->id
+				'status_id' => Status::where('status', 'Opened')->first()->id
 			]);
 
 			if ($submission) {
