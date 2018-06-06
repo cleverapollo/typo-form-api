@@ -260,6 +260,7 @@ class SubmissionController extends Controller
 
 			// Update submission
 			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
+				$submission->touch();
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}
 
