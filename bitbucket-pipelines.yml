@@ -25,6 +25,12 @@ pipelines:
           - curl -vk http://localhost:8000
         services:
           - mysql
+    - step:
+        script:
+          - apt-get update && apt-get install -y python-dev
+          - curl -O https://bootstrap.pypa.io/get-pip.py
+          - python get-pip.py
+          - pip install awsebcli --upgrade
 
 definitions:
   services:
