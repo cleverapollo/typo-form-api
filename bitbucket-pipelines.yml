@@ -22,7 +22,6 @@ pipelines:
           - php artisan migrate
           - php artisan serve &
           - sleep 5
-          - ./vendor/bin/phpunit
           - curl -vk http://localhost:8000
         services:
           - mysql
