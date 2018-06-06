@@ -57,6 +57,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->delete('{id}', 'ApplicationController@deleteUser');
 			});
 
+			$router->group(['prefix' => 'invited'], function () use ($router) {
+				$router->put('{id}', 'ApplicationController@updateInvitedUser');
+				$router->delete('{id}', 'ApplicationController@deleteInvitedUser');
+			});
+
 			$router->post('invite', 'ApplicationController@inviteUsers');
 
 			$router->group(['prefix' => 'team'], function () use ($router) {
@@ -74,6 +79,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 						$router->get('/', 'TeamController@getUsers');
 						$router->put('{user_id}', 'TeamController@updateUser');
 						$router->delete('{user_id}', 'TeamController@deleteUser');
+					});
+
+					$router->group(['prefix' => 'invited'], function () use ($router) {
+						$router->put('{invited_id}', 'TeamController@updateInvitedUser');
+						$router->delete('{invited_id}', 'TeamController@deleteInvitedUser');
 					});
 				});
 			});
