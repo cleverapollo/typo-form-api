@@ -11,6 +11,7 @@ use App\Models\ApplicationInvitation;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
+use App\Http\Resources\ApplicationInvitationResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Http\Request;
 
@@ -283,7 +284,7 @@ class ApplicationController extends Controller
 
 		return $this->returnSuccessMessage('users', [
 			'current' => UserResource::collection($currentUsers),
-			'unaccepted' => $invitedUsers
+			'unaccepted' => ApplicationInvitationResource::collection($invitedUsers)
 		]);
 	}
 
@@ -361,7 +362,7 @@ class ApplicationController extends Controller
 				'application_id' => $application->id
 			])->first();
 
-			// Send error if user does not exist in the team
+			// Send error if user does not exist in the application
 			if (!$application_user) {
 				return $this->returnError('user', 404, 'update role');
 			}
@@ -413,7 +414,7 @@ class ApplicationController extends Controller
 				'application_id' => $application->id
 			])->first();
 
-			// Send error if user does not exist in the team
+			// Send error if user does not exist in the application
 			if (!$application_user) {
 				return $this->returnError('user', 404, 'delete');
 			}
@@ -425,6 +426,111 @@ class ApplicationController extends Controller
 
 			if ($application_user->delete()) {
 				return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
+			}
+
+			// Send error if there is an error on delete
+			return $this->returnError('user', 503, 'delete');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Update invited user role in the Application.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 * @param  Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
+	 */
+	public function updateInvitedUser($application_slug, $id, Request $request)
+	{
+		$this->validate($request, [
+			'application_role_id' => 'required|integer|min:2'
+		]);
+
+		try {
+			// Check whether the role exists or not
+			$role = Role::find($request->input('application_role_id'));
+			if (!$role) {
+				return $this->returnError('role', 404, 'update invited user');
+			}
+
+			$user = Auth::user();
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$application_invitation = ApplicationInvitation::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if invited user does not exist in the application
+			if (!$application_invitation) {
+				return $this->returnError('user', 404, 'update role');
+			}
+
+			// Check whether user has permission to update
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'update user');
+			}
+
+			// Update user role
+			if ($application_invitation->fill(['role_id' => $role->id])->save()) {
+				return $this->returnSuccessMessage('user', new ApplicationInvitationResource($application_invitation));
+			}
+
+			// Send error if there is an error on update
+			return $this->returnError('user role', 503, 'update');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Delete invited user from the Application.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteInvitedUser($application_slug, $id)
+	{
+		try {
+			$user = Auth::user();
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$application_invitation = ApplicationInvitation::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if invited user does not exist in the application
+			if (!$application_invitation) {
+				return $this->returnError('user', 404, 'delete');
+			}
+
+			// Check whether user has permission to delete
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'delete invited user');
+			}
+
+			if ($application_invitation->delete()) {
+				return $this->returnSuccessMessage('message', 'Invited User has been removed from application successfully.');
 			}
 
 			// Send error if there is an error on delete
