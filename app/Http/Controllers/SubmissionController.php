@@ -228,6 +228,8 @@ class SubmissionController extends Controller
 	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
+			'user_id' => 'nullable|integer|min:1',
+			'team_id' => 'nullable|integer|min:1',
 			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date',
@@ -259,7 +261,7 @@ class SubmissionController extends Controller
 			}
 
 			// Update submission
-			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
+			if ($submission->fill($request->only('user_id', 'team_id', 'progress', 'period_start', 'period_end', 'status_id'))->save()) {
 				$submission->touch();
 				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
 			}

@@ -15,10 +15,12 @@ class ApplicationInvitationResource extends JsonResource
 	public function toArray($request)
 	{
 		return [
+			'id' => $this->id,
 			'inviter_id' => $this->inviter_id,
 			'invitee' => $this->invitee,
 			'application_id' => $this->application_id,
-			'application_role_id' => $this->role_id
+			'application_role_id' => $this->role_id,
+			'created_at' => $this->created_at
 		];
 	}
 }

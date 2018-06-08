@@ -17,11 +17,13 @@ class SubmissionResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'user' => [
+				'id' => $this->user->id,
 				'first_name' => $this->user->first_name,
 				'last_name' => $this->user->last_name,
 				'email' => $this->user->email
 			],
 			'team' => $this->team ? [
+				'id' => $this->team->id,
 				'name' => $this->team->name,
 				'description' => $this->team->description
 			] : null,
