@@ -9,7 +9,7 @@ pipelines:
   default:
     - step:
         script:
-          - apt-get update && apt-get install -y python-dev
+          - apt-get update && apt-get install -y python-dev git
           - curl -O https://bootstrap.pypa.io/get-pip.py
           - python get-pip.py
           - pip install awsebcli --upgrade
