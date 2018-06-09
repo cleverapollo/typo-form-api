@@ -25,7 +25,7 @@ class MakeApplicationNameUnique extends Migration
      */
     public function down()
     {
-	    Schema::table('submissions', function (Blueprint $table) {
+	    Schema::table('applications', function (Blueprint $table) {
 		    $table->string('name')->change();
 	    });
     }
