@@ -1,11 +1,5 @@
 container_commands:
   01-install_dependencies:
-    command: "composer install"
-  02-update_env:
-    command: "ln -s .env.pipelines .env"
-  03-update_cache_driver:
-    command: "export CACHE_DRIVER=redis"
-  04-update_session_driver:
-    command: "export SESSION_DRIVER=redis"
-  05-artisan_migrate:
+    command: "/usr/bin/composer.phar install"
+  02-artisan_migrate:
     command: "php artisan migrate --seed"
