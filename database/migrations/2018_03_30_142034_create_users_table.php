@@ -22,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->unsignedInteger('role_id')->nullable();
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
             $table->string('api_token')->nullable()->unique();
-            $table->timestamp('expire_date');
+            $table->timestamp('expire_date')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
