@@ -9,12 +9,6 @@ pipelines:
   default:
     - step:
         script:
-          - apt-get update && apt-get install -y unzip git
-          - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-          - composer install
-          - ln -s .env.pipelines .env
-          - export CACHE_DRIVER=redis
-          - export SESSION_DRIVER=redis
           - apt-get update && apt-get install -y python-dev
           - curl -O https://bootstrap.pypa.io/get-pip.py
           - python get-pip.py
