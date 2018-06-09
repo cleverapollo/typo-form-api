@@ -1,5 +1,3 @@
 container_commands:
-  01-install_dependencies:
-    command: "/usr/bin/composer.phar install"
-  02-artisan_migrate:
-    command: "php artisan migrate --seed"
+  01-change_permision:
+    command: "sudo chown -R www-data:www-data /var/app/current"
