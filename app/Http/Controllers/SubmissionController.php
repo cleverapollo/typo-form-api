@@ -7,6 +7,7 @@ use Exception;
 use App\User;
 use App\Models\Team;
 use App\Models\Form;
+use App\Models\Submission;
 use App\Models\Status;
 use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
@@ -124,11 +125,11 @@ class SubmissionController extends Controller
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', $form->period_start),
 				'period_end' => $request->input('period_end', $form->period_end),
-				'status_id' => Status::where('status', 'Opened')->first()->id
+				'status_id' => Status::where('status', 'Open')->first()->id
 			]);
 
 			if ($submission) {
-				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
+				return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
 			}
 
 			// Send error if submission is not created
@@ -260,7 +261,7 @@ class SubmissionController extends Controller
 
 			// Update submission
 			if ($submission->fill($request->only('progress', 'period_start', 'period_end', 'status_id'))->save()) {
-				return $this->returnSuccessMessage('submission', new SubmissionResource($submission));
+				return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
 			}
 
 			// Send error if there is an error on update

@@ -409,7 +409,6 @@ class FormController extends Controller
 				}
 			}
 
-//			return $this->returnSuccessMessage('data', $data);
 			return Excel::create($form->name, function ($excel) use ($data) {
 				$excel->sheet('Sheet 1', function ($sheet) use ($data) {
 					$sheet->fromArray($data);

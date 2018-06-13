@@ -44,8 +44,7 @@ class UserController extends Controller
 	{
 		$this->validate($request, [
 			'first_name' => 'filled|max:191',
-			'last_name' => 'filled|max:191',
-//			'email' => 'filled|email|max:191'
+			'last_name' => 'filled|max:191'
 		]);
 
 		try {
