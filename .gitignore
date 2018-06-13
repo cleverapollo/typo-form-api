@@ -5,6 +5,8 @@
 .idea/
 .vscode/
 
+# Upload folder
+public/uploads/*
 
 Homestead.json
 Homestead.yaml
