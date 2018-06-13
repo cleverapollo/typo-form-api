@@ -17,7 +17,7 @@ class StatusesTableSeeder extends Seeder
 	    DB::table('statuses')->delete();
 
 	    DB::table('statuses')->insert([
-		    'status' => 'Opened',
+		    'status' => 'Open',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

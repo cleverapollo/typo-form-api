@@ -83,7 +83,7 @@ class ApplicationController extends Controller
 			]);
 
 			if ($application) {
-				return $this->returnSuccessMessage('application', new ApplicationResource($application));
+				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
 			// Send error if application is not created
@@ -187,7 +187,7 @@ class ApplicationController extends Controller
 			}
 
 			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
-				return $this->returnSuccessMessage('application', new ApplicationResource($application));
+				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
 			// Send error if there is an error on update
@@ -379,7 +379,7 @@ class ApplicationController extends Controller
 					'message' => 'Application user role has been updated successfully.'
 				]));
 
-				return $this->returnSuccessMessage('user', new ApplicationUserResource($application_user));
+				return $this->returnSuccessMessage('user', new ApplicationUserResource(ApplicationUser::find($application_user->id)));
 			}
 
 			// Send error if there is an error on update
@@ -484,7 +484,7 @@ class ApplicationController extends Controller
 
 			// Update user role
 			if ($application_invitation->fill(['role_id' => $role->id])->save()) {
-				return $this->returnSuccessMessage('user', new ApplicationInvitationResource($application_invitation));
+				return $this->returnSuccessMessage('user', new ApplicationInvitationResource(ApplicationInvitation::find($application_invitation->id)));
 			}
 
 			// Send error if there is an error on update
