@@ -92,6 +92,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->get('/', 'FormController@index');
 				$router->post('/', 'FormController@store');
 				$router->post('auto', 'FormController@setAuto');
+                $router->post('analyze', 'FormController@analyzeCSV');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'FormController@show');

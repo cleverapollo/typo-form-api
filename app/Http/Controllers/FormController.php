@@ -20,7 +20,7 @@ class FormController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api');
+		$this->middleware('auth:api', ['except' => ['exportCSV']]);
 	}
 
 	/**
@@ -251,7 +251,7 @@ class FormController extends Controller
 							$section = $form->sections()->create([
 								'name' => $dt->section_name,
 								'parent_section_id' => $parent_section_id,
-								'order' => $dt->section_order,
+								'order' => $dt->section_order || 1,
 								'repeatable' => $dt->section_repeatable || 0,
 								'max_rows' => $dt->section_repeatable_rows_max_count,
 								'min_rows' => $dt->section_repeatable_rows_min_count
@@ -279,10 +279,10 @@ class FormController extends Controller
 
 								$question = $section->questions()->create([
 									'question' => $dt->question,
-									'description' => $dt->description,
+									'description' => $dt->question_description,
 									'mandatory' => $dt->question_mandatory,
 									'question_type_id' => $question_type_id,
-									'order' => $dt->question_order
+									'order' => $dt->question_order || 1
 								]);
 							}
 
@@ -300,8 +300,8 @@ class FormController extends Controller
 								if (!$created) {
 									$question->answers()->create([
 										'answer' => $dt->answer,
-										'parameter' => $dt->parameter,
-										'order' => $dt->answer_order
+										'parameter' => $dt->answer_parameter,
+										'order' => $dt->answer_order || 1
 									]);
 								}
 							}
@@ -353,57 +353,66 @@ class FormController extends Controller
 							if (count($answers) > 0) {
 								foreach ($answers as $answer) {
 									$data[] = [
-										'section_name' => $section->name,
-										'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
-										'section_order' => $section->order,
-										'section_repeatable' => (bool)($section->repeatable),
-										'section repeatable rows min count' => $section->min_rows,
-										'section repeatable rows max count' => $section->max_rows,
-										'question' => $question->question,
-										'description' => $question->description,
-										'question order' => $question->order,
-										'question mandatory' => $question->mandatory,
-										'question type' => QuestionType::find($question->question_type_id)->type,
-										'answer' => $answer->answer,
-										'parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
-										'answer order' => $answer->order
+									    'Section ID' => $section->id,
+										'Section Name' => $section->name,
+										'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+										'Section Order' => $section->order,
+										'Section Repeatable' => (bool)($section->repeatable),
+										'Section Repeatable Rows Min Count' => $section->min_rows,
+										'Section Repeatable Rows Max Count' => $section->max_rows,
+                                        'Question ID' => $question->id,
+										'Question' => $question->question,
+										'Question Description' => $question->description,
+										'Question Order' => $question->order,
+										'Question Mandatory' => $question->mandatory,
+										'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                        'Answer ID' => $answer->id,
+										'Answer' => $answer->answer,
+										'Answer Parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
+										'Answer Order' => $answer->order
 									];
 								}
 							} else {
 								$data[] = [
-									'section_name' => $section->name,
-									'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
-									'section_order' => $section->order,
-									'section_repeatable' => (bool)($section->repeatable),
-									'section repeatable rows min count' => $section->min_rows,
-									'section repeatable rows max count' => $section->max_rows,
-									'question' => $question->question,
-									'description' => $question->description,
-									'question order' => $question->order,
-									'question mandatory' => $question->mandatory,
-									'question type' => QuestionType::find($question->question_type_id)->type,
-									'answer' => '',
-									'parameter' => '',
-									'answer order' => ''
+                                    'Section ID' => $section->id,
+                                    'Section Name' => $section->name,
+									'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+									'Section Order' => $section->order,
+									'Section Repeatable' => (bool)($section->repeatable),
+									'Section Repeatable Rows Min Count' => $section->min_rows,
+									'Section Repeatable Rows Max Count' => $section->max_rows,
+                                    'Question ID' => $question->id,
+									'Question' => $question->question,
+									'Question Description' => $question->description,
+									'Question Order' => $question->order,
+									'Question Mandatory' => $question->mandatory,
+									'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                    'Answer ID' => '',
+									'Answer' => '',
+									'Answer Parameter' => '',
+									'Answer Order' => ''
 								];
 							}
 						}
 					} else {
 						$data[] = [
-							'section_name' => $section->name,
-							'parent_section_name' => $section->parent_section_id ? $section->parent->name : '',
-							'section_order' => $section->order,
-							'section_repeatable' => (bool)($section->repeatable),
-							'section repeatable rows min count' => $section->min_rows,
-							'section repeatable rows max count' => $section->max_rows,
-							'question' => '',
-							'description' => '',
-							'question order' => '',
-							'question mandatory' => '',
-							'question type' => '',
-							'answer' => '',
-							'parameter' => '',
-							'answer order' => ''
+                            'Section ID' => $section->id,
+							'Section Name' => $section->name,
+							'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+							'Section Order' => $section->order,
+							'Section Repeatable' => (bool)($section->repeatable),
+							'Section Repeatable Rows Min Count' => $section->min_rows,
+							'Section Repeatable Rows Max Count' => $section->max_rows,
+                            'Question ID' => '',
+							'Question' => '',
+							'Question Description' => '',
+							'Question Order' => '',
+							'Question Mandatory' => '',
+							'Question Type' => '',
+                            'Answer ID' => '',
+							'Answer' => '',
+							'Answer Parameter' => '',
+							'Answer Order' => ''
 						];
 					}
 				}
