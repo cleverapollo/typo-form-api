@@ -341,82 +341,75 @@ class FormController extends Controller
 			}
 
 			$data = [];
-			$sections = $form->sections;
-			if (count($sections) > 0) {
-				foreach ($sections as $section) {
-					$questions = $section->questions;
-
-					if (count($questions) > 0) {
-						foreach ($questions as $question) {
-							$answers = $question->answers;
-
-							if (count($answers) > 0) {
-								foreach ($answers as $answer) {
-									$data[] = [
-									    'Section ID' => $section->id,
-										'Section Name' => $section->name,
-										'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-										'Section Order' => $section->order,
-										'Section Repeatable' => (bool)($section->repeatable),
-										'Section Repeatable Rows Min Count' => $section->min_rows,
-										'Section Repeatable Rows Max Count' => $section->max_rows,
-                                        'Question ID' => $question->id,
-										'Question' => $question->question,
-										'Question Description' => $question->description,
-										'Question Order' => $question->order,
-										'Question Mandatory' => $question->mandatory,
-										'Question Type' => QuestionType::find($question->question_type_id)->type,
-                                        'Answer ID' => $answer->id,
-										'Answer' => $answer->answer,
-										'Answer Parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
-										'Answer Order' => $answer->order
-									];
-								}
-							} else {
-								$data[] = [
+            foreach ($form->sections as $section) {
+                if (count($section->questions) > 0) {
+                    foreach ($section->questions as $question) {
+                        if (count($question->answers) > 0) {
+                            foreach ($question->answers as $answer) {
+                                $data[] = [
                                     'Section ID' => $section->id,
                                     'Section Name' => $section->name,
-									'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-									'Section Order' => $section->order,
-									'Section Repeatable' => (bool)($section->repeatable),
-									'Section Repeatable Rows Min Count' => $section->min_rows,
-									'Section Repeatable Rows Max Count' => $section->max_rows,
+                                    'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                                    'Section Order' => $section->order,
+                                    'Section Repeatable' => (bool)($section->repeatable),
+                                    'Section Repeatable Rows Min Count' => $section->min_rows,
+                                    'Section Repeatable Rows Max Count' => $section->max_rows,
                                     'Question ID' => $question->id,
-									'Question' => $question->question,
-									'Question Description' => $question->description,
-									'Question Order' => $question->order,
-									'Question Mandatory' => $question->mandatory,
-									'Question Type' => QuestionType::find($question->question_type_id)->type,
-                                    'Answer ID' => '',
-									'Answer' => '',
-									'Answer Parameter' => '',
-									'Answer Order' => ''
-								];
-							}
-						}
-					} else {
-						$data[] = [
-                            'Section ID' => $section->id,
-							'Section Name' => $section->name,
-							'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-							'Section Order' => $section->order,
-							'Section Repeatable' => (bool)($section->repeatable),
-							'Section Repeatable Rows Min Count' => $section->min_rows,
-							'Section Repeatable Rows Max Count' => $section->max_rows,
-                            'Question ID' => '',
-							'Question' => '',
-							'Question Description' => '',
-							'Question Order' => '',
-							'Question Mandatory' => '',
-							'Question Type' => '',
-                            'Answer ID' => '',
-							'Answer' => '',
-							'Answer Parameter' => '',
-							'Answer Order' => ''
-						];
-					}
-				}
-			}
+                                    'Question' => $question->question,
+                                    'Question Description' => $question->description,
+                                    'Question Order' => $question->order,
+                                    'Question Mandatory' => $question->mandatory,
+                                    'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                    'Answer ID' => $answer->id,
+                                    'Answer' => $answer->answer,
+                                    'Answer Parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
+                                    'Answer Order' => $answer->order
+                                ];
+                            }
+                        } else {
+                            $data[] = [
+                                'Section ID' => $section->id,
+                                'Section Name' => $section->name,
+                                'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                                'Section Order' => $section->order,
+                                'Section Repeatable' => (bool)($section->repeatable),
+                                'Section Repeatable Rows Min Count' => $section->min_rows,
+                                'Section Repeatable Rows Max Count' => $section->max_rows,
+                                'Question ID' => $question->id,
+                                'Question' => $question->question,
+                                'Question Description' => $question->description,
+                                'Question Order' => $question->order,
+                                'Question Mandatory' => $question->mandatory,
+                                'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                'Answer ID' => '',
+                                'Answer' => '',
+                                'Answer Parameter' => '',
+                                'Answer Order' => ''
+                            ];
+                        }
+                    }
+                } else {
+                    $data[] = [
+                        'Section ID' => $section->id,
+                        'Section Name' => $section->name,
+                        'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                        'Section Order' => $section->order,
+                        'Section Repeatable' => (bool)($section->repeatable),
+                        'Section Repeatable Rows Min Count' => $section->min_rows,
+                        'Section Repeatable Rows Max Count' => $section->max_rows,
+                        'Question ID' => '',
+                        'Question' => '',
+                        'Question Description' => '',
+                        'Question Order' => '',
+                        'Question Mandatory' => '',
+                        'Question Type' => '',
+                        'Answer ID' => '',
+                        'Answer' => '',
+                        'Answer Parameter' => '',
+                        'Answer Order' => ''
+                    ];
+                }
+            }
 
 			return Excel::create($form->name, function ($excel) use ($data) {
 				$excel->sheet('Sheet 1', function ($sheet) use ($data) {
