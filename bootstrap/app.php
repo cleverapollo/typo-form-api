@@ -27,6 +27,8 @@ $app->withFacades();
 
 $app->withEloquent();
 
+$app->configure('filesystems');
+
 $app->configure('database');
 
 $app->configure('services');
@@ -88,16 +90,17 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(\Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 $app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 $app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
+$app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
 
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 class_alias('Illuminate\Support\Facades\Response','Response');
+class_alias('Illuminate\Support\Facades\Storage', 'Storage');
 
 /*
 |--------------------------------------------------------------------------

@@ -5,16 +5,18 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Role;
+use App\Models\Status;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\ApplicationInvitation;
+use App\Models\QuestionType;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
-use App\Jobs\ApplicationAdminNotification;
-use App\Jobs\SuperAdminNotification;
+use App\Http\Resources\ApplicationInvitationResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ApplicationController extends Controller
 {
@@ -25,7 +27,7 @@ class ApplicationController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api', ['except' => 'show']);
+		$this->middleware('auth:api', ['except' => ['show']]);
 	}
 
 	/**
@@ -67,7 +69,7 @@ class ApplicationController extends Controller
 			}
 
 			$name = $request->input('name');
-			$slug = strtolower(str_replace(' ', '', $name));
+			$slug = strtolower(str_replace(' ', '_', $name));
 			if ($user->applications()->where('slug', $slug)->count() > 0) {
 				return response()->json([
 					'slug' => ['The slug has already been taken.']
@@ -78,15 +80,13 @@ class ApplicationController extends Controller
 			$application = $user->applications()->create([
 				'name' => $name,
 				'slug' => $slug,
-				'css' => $request->input('css', null),
-				'icon' => $request->input('icon', null),
 				'share_token' => $share_token
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
 
 			if ($application) {
-				return $this->returnSuccessMessage('application', new ApplicationResource($application));
+				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
 			// Send error if application is not created
@@ -190,16 +190,7 @@ class ApplicationController extends Controller
 			}
 
 			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'Application has been updated successfully.'
-				]));
-
-				dispatch(new SuperAdminNotification([
-					'message' => 'Application has been updated successfully.'
-				]));
-
-				return $this->returnSuccessMessage('application', new ApplicationResource($application));
+				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
 			// Send error if there is an error on update
@@ -228,20 +219,8 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'delete');
 			}
 
-			$admin_users = $this->applicationAdmins($application->id);
-
 			// Delete Application
 			if ($application->delete()) {
-				dispatch(new UsersNotification([
-					'users' => $admin_users,
-					'message' => 'Application has been deleted successfully.'
-				]));
-
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'Application has been deleted successfully.'
-				]));
-
 				return $this->returnSuccessMessage('message', 'Application has been deleted successfully.');
 			}
 
@@ -308,7 +287,7 @@ class ApplicationController extends Controller
 
 		return $this->returnSuccessMessage('users', [
 			'current' => UserResource::collection($currentUsers),
-			'unaccepted' => $invitedUsers
+			'unaccepted' => ApplicationInvitationResource::collection($invitedUsers)
 		]);
 	}
 
@@ -386,7 +365,7 @@ class ApplicationController extends Controller
 				'application_id' => $application->id
 			])->first();
 
-			// Send error if user does not exist in the team
+			// Send error if user does not exist in the application
 			if (!$application_user) {
 				return $this->returnError('user', 404, 'update role');
 			}
@@ -403,7 +382,7 @@ class ApplicationController extends Controller
 					'message' => 'Application user role has been updated successfully.'
 				]));
 
-				return $this->returnSuccessMessage('user', new ApplicationUserResource($application_user));
+				return $this->returnSuccessMessage('user', new ApplicationUserResource(ApplicationUser::find($application_user->id)));
 			}
 
 			// Send error if there is an error on update
@@ -438,7 +417,7 @@ class ApplicationController extends Controller
 				'application_id' => $application->id
 			])->first();
 
-			// Send error if user does not exist in the team
+			// Send error if user does not exist in the application
 			if (!$application_user) {
 				return $this->returnError('user', 404, 'delete');
 			}
@@ -449,16 +428,6 @@ class ApplicationController extends Controller
 			}
 
 			if ($application_user->delete()) {
-				dispatch(new ApplicationAdminNotification([
-					'application_id' => $application->id,
-					'message' => 'User(' . $application_user->email . ') has been deleted from application successfully.'
-				]));
-
-				dispatch(new UsersNotification([
-					'users' => [$application_user],
-					'message' => 'You have been deleted from application.'
-				]));
-
 				return $this->returnSuccessMessage('message', 'User has been removed from application successfully.');
 			}
 
@@ -469,6 +438,254 @@ class ApplicationController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
+
+	/**
+	 * Update invited user role in the Application.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 * @param  Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
+	 */
+	public function updateInvitedUser($application_slug, $id, Request $request)
+	{
+		$this->validate($request, [
+			'application_role_id' => 'required|integer|min:2'
+		]);
+
+		try {
+			// Check whether the role exists or not
+			$role = Role::find($request->input('application_role_id'));
+			if (!$role) {
+				return $this->returnError('role', 404, 'update invited user');
+			}
+
+			$user = Auth::user();
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$application_invitation = ApplicationInvitation::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if invited user does not exist in the application
+			if (!$application_invitation) {
+				return $this->returnError('user', 404, 'update role');
+			}
+
+			// Check whether user has permission to update
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'update user');
+			}
+
+			// Update user role
+			if ($application_invitation->fill(['role_id' => $role->id])->save()) {
+				return $this->returnSuccessMessage('user', new ApplicationInvitationResource(ApplicationInvitation::find($application_invitation->id)));
+			}
+
+			// Send error if there is an error on update
+			return $this->returnError('user role', 503, 'update');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Delete invited user from the Application.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteInvitedUser($application_slug, $id)
+	{
+		try {
+			$user = Auth::user();
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$application_invitation = ApplicationInvitation::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if invited user does not exist in the application
+			if (!$application_invitation) {
+				return $this->returnError('user', 404, 'delete');
+			}
+
+			// Check whether user has permission to delete
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'delete invited user');
+			}
+
+			if ($application_invitation->delete()) {
+				return $this->returnSuccessMessage('message', 'Invited User has been removed from application successfully.');
+			}
+
+			// Send error if there is an error on delete
+			return $this->returnError('user', 503, 'delete');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	public function exportCSV($application_slug)
+    {
+        try {
+            $user = Auth::user();
+            $application = $user->applications()->where('slug', $application_slug)->first();
+
+            // Check whether user has permission to delete
+            if (!$this->hasPermission($user, $application)) {
+                return $this->returnError('application', 403, 'export');
+            }
+
+            // $application = Application::where('slug', $application_slug)->first();
+
+            $userData = [];
+            foreach ($application->users as $u) {
+                $userData[] = [
+                    'User ID' => $u->id,
+                    'First Name' => $u->first_name,
+                    'Last Name' => $u->last_name,
+                    'Email' => $u->email,
+                    'Application Role' => Role::find($u->pivot->role_id)->name
+                ];
+            }
+
+            $teamData = [];
+            foreach ($application->teams as $t) {
+                $teamData[] = [
+                    'Team ID' => $t->id,
+                    'Name' => $t->name,
+                    'Description' => $t->description,
+                    'Share Token' => $t->share_token
+                ];
+            }
+
+            $formData = [];
+            $submissionsData = [];
+            $questionData = [];
+            $answerData = [];
+            $responseData = [];
+            foreach ($application->forms as $f) {
+                $formData[] = [
+                    'Form ID' => $f->id,
+                    'Name' => $f->name,
+                    'Application' => $f->application->name,
+                    'Show Progress' => (bool)($f->show_progress),
+                    'Auto' => (bool)($f->auto)
+                ];
+
+                foreach ($f->submissions as $s) {
+                    $submissionsData[] = [
+                        'Submission ID' => $s->id,
+                        'Form ID' => $s->form_id,
+                        'User ID' => $s->user_id,
+                        'Team ID' => $s->team_id,
+                        'Progress' => $s->progress,
+                        'Period Start' => $s->period_start,
+                        'Period End' => $s->period_end,
+                        'Status' => Status::find($s->status_id)->status
+                    ];
+                }
+
+                foreach ($f->sections as $s) {
+                    foreach ($s->questions as $q) {
+                        $questionData[] = [
+                            'Question ID' => $q->id,
+                            'Section ID' => $q->section_id,
+                            'Question' => $q->question,
+                            'Description' => $q->description,
+                            'Mandatory' => (bool)($q->mandatory),
+                            'Question Type' => QuestionType::find($q->question_type_id)->type,
+                            'Order' => $q->order,
+                            'Width' => $q->width
+                        ];
+
+                        foreach ($q->answers as $a) {
+                            $answerData[] = [
+                                'Answer ID' => $a->id,
+                                'Question ID' => $a->question_id,
+                                'Answer' => $a->answer,
+                                'Parameter' => $a->parameter,
+                                'Order' => $a->order
+                            ];
+
+                            foreach ($a->responses as $r) {
+                                $responseData[] = [
+                                    'Response ID' => $r->id,
+                                    'Question ID' => $r->question_id,
+                                    'Answer ID' => $r->answer_id,
+                                    'Submission ID' => $r->submission_id,
+                                    'Response' => $r->response,
+                                    'Order' => $r->order
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            $data = [
+                'Users' => $userData,
+                'Teams' => $teamData,
+                'Forms' => $formData,
+                'Submissions' => $submissionsData,
+                'Questions' => $questionData,
+                'Answers' => $answerData,
+                'Responses' => $responseData
+            ];
+
+            return Excel::create($application->name, function ($excel) use ($data) {
+                $excel->sheet('Users', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Users']);
+                });
+
+                $excel->sheet('Teams', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Teams']);
+                });
+
+                $excel->sheet('Forms', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Forms']);
+                });
+
+                $excel->sheet('Submissions', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Submissions']);
+                });
+
+                $excel->sheet('Questions', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Questions']);
+                });
+
+                $excel->sheet('Answers', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Answers']);
+                });
+
+                $excel->sheet('Responses', function ($sheet) use ($data) {
+                    $sheet->fromArray($data['Responses']);
+                });
+            })->download('xlsx');
+        } catch (Exception $e) {
+            // Send error
+            return $this->returnErrorMessage(503, $e->getMessage());
+        }
+    }
 
 	/**
 	 * Check whether user has permission or not

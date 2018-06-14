@@ -17,25 +17,25 @@ class StatusesTableSeeder extends Seeder
 	    DB::table('statuses')->delete();
 
 	    DB::table('statuses')->insert([
-		    'status' => 'opened',
+		    'status' => 'Open',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('statuses')->insert([
-		    'status' => 'closed',
+		    'status' => 'Closed',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('statuses')->insert([
-		    'status' => 'archived',
+		    'status' => 'Archived',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
 	    DB::table('statuses')->insert([
-		    'status' => 'locked',
+		    'status' => 'Locked',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

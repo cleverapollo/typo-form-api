@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Submission;
 use App\Models\Question;
 use App\Models\Answer;
+use App\Models\Response;
 use App\Http\Resources\ResponseResource;
 use Illuminate\Http\Request;
 
@@ -84,7 +85,7 @@ class ResponseController extends Controller
 			]);
 
 			if ($response) {
-				return $this->returnSuccessMessage('response', new ResponseResource($response));
+				return $this->returnSuccessMessage('response', new ResponseResource(Response::find($response->id)));
 			}
 
 			// Send error if response is not created
@@ -179,7 +180,7 @@ class ResponseController extends Controller
 				]);
 
 				if ($new) {
-					return $this->returnSuccessMessage('response', new ResponseResource($new));
+					return $this->returnSuccessMessage('response', new ResponseResource(Response::find($new->id)));
 				}
 			}
 
