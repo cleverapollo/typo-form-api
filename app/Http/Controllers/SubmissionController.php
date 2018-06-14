@@ -303,12 +303,6 @@ class SubmissionController extends Controller
 				return $this->returnError('submission', 404, 'delete');
 			}
 
-			if ($submission->team) {
-				$team = $submission->team;
-			} else {
-				$user = $submission->user;
-			}
-
 			if ($submission->delete()) {
 				return $this->returnSuccessMessage('message', 'Submission has been deleted successfully.');
 			}

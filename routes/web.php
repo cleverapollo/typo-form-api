@@ -123,7 +123,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->get('/', 'SubmissionController@show');
 				$router->put('/', 'SubmissionController@update');
 				$router->delete('/', 'SubmissionController@destroy');
-				$router->get('/data', 'SubmissionController@getData');
+				$router->get('data', 'SubmissionController@getData');
 			});
 		});
 
