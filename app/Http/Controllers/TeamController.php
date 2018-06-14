@@ -62,10 +62,7 @@ class TeamController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'invitations' => 'array',
-			'invitations.*.email' => 'required|email',
-			'invitations.*.team_role_id' => 'required|integer|min:2'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -86,7 +83,6 @@ class TeamController extends Controller
 			// Create team
 			$team = $user->teams()->create([
 				'name' => $request->input('name'),
-				'description' => $request->input('description', null),
 				'application_id' => $application->id,
 				'share_token' => $share_token
 			], [
