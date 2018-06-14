@@ -281,7 +281,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 	$router->group(['prefix' => 'trigger-type'], function () use ($router) {
 		$router->get('/', 'TriggerTypeController@index');
-		// $router->post('/', 'TriggerTypeController@store');
+		$router->post('/', 'TriggerTypeController@store');
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'TriggerTypeController@show');
