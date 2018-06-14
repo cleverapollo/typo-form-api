@@ -107,8 +107,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'ApplicationEmailController@show');
-					$router->put('/', 'ApplicationEmailController@update');
-					$router->delete('/', 'ApplicationEmailController@destroy');
+					// $router->put('/', 'ApplicationEmailController@update');
+					// $router->delete('/', 'ApplicationEmailController@destroy');
 				});
 			});
 		});
@@ -146,8 +146,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'ValidationController@show');
-				$router->put('/', 'ValidationController@update');
-				$router->delete('/', 'ValidationController@destroy');
+				// $router->put('/', 'ValidationController@update');
+				// $router->delete('/', 'ValidationController@destroy');
 			});
 		});
 
@@ -157,8 +157,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'QuestionTriggerController@show');
-				$router->put('/', 'QuestionTriggerController@update');
-				$router->delete('/', 'QuestionTriggerController@destroy');
+				// $router->put('/', 'QuestionTriggerController@update');
+				// $router->delete('/', 'QuestionTriggerController@destroy');
 			});
 		});
 	});
@@ -281,7 +281,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 	$router->group(['prefix' => 'trigger-type'], function () use ($router) {
 		$router->get('/', 'TriggerTypeController@index');
-		// $router->post('/', 'TriggerTypeController@store');
+		$router->post('/', 'TriggerTypeController@store');
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'TriggerTypeController@show');
