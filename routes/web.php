@@ -130,8 +130,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		$router->group(['prefix' => 'section'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
-			$router->post('store', 'SectionController@storeSections');
-			$router->put('update', 'SectionController@updateSections');
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'SectionController@show');
