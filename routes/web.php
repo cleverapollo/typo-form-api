@@ -50,7 +50,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('/', 'ApplicationController@destroy');
             $router->get('export', 'ApplicationController@exportCSV');
 
-			$router->get('/submission', 'SubmissionController@all');
+			$router->get('submission', 'SubmissionController@all');
 
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');
@@ -73,7 +73,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->get('/', 'TeamController@show');
 					$router->put('/', 'TeamController@update');
 					$router->delete('/', 'TeamController@destroy');
-					$router->get('get-token', 'TeamController@getInvitationToken');
 					$router->post('invite', 'TeamController@inviteUsers');
 
 					$router->group(['prefix' => 'user'], function () use ($router) {
