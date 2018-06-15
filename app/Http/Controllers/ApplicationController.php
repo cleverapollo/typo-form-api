@@ -69,7 +69,7 @@ class ApplicationController extends Controller
 			}
 
 			$name = $request->input('name');
-			$slug = strtolower(str_replace(' ', '_', $name));
+			$slug = strtolower(str_replace(' ', '', $name));
 			if ($user->applications()->where('slug', $slug)->count() > 0) {
 				return response()->json([
 					'slug' => ['The slug has already been taken.']
