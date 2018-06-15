@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Form;
+use App\Models\Section;
 use App\Http\Resources\SectionResource;
 use Illuminate\Http\Request;
 
@@ -86,14 +87,11 @@ class SectionController extends Controller
 			$section = $form->sections()->create([
 				'name' => $request->input('name'),
 				'parent_section_id' => $parent_section_id,
-				'order' => $order,
-				'repeatable' => $request->input('repeatable', 0),
-				'max_rows' => $request->input('max_rows', null),
-				'min_rows' => $request->input('min_rows', null)
+				'order' => $order
 			]);
 
 			if ($section) {
-				return $this->returnSuccessMessage('section', new SectionResource($section));
+				return $this->returnSuccessMessage('section', new SectionResource(Section::find($section->id)));
 			}
 
 			// Send error if section is not created
@@ -158,7 +156,7 @@ class SectionController extends Controller
 					});
 				}
 
-				return $this->returnSuccessMessage('section', new SectionResource($newSection));
+				return $this->returnSuccessMessage('section', new SectionResource(Section::find($newSection->id)));
 			}
 
 			// Send error if section is not duplicated
@@ -208,7 +206,10 @@ class SectionController extends Controller
 	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'filled|max:191'
+			'name' => 'filled|max:191',
+            'repeatable' => 'filled|boolean',
+            'max_rows' => 'filled|integer',
+            'min_rows' => 'filled|integer'
 		]);
 
 		try {
@@ -228,7 +229,7 @@ class SectionController extends Controller
 
 			// Update section
 			if ($section->fill($request->only('name', 'repeatable', 'max_rows', 'min_rows'))->save()) {
-				return $this->returnSuccessMessage('section', new SectionResource($section));
+				return $this->returnSuccessMessage('section', new SectionResource(Section::find($section->id)));
 			}
 
 			// Send error if there is an error on update

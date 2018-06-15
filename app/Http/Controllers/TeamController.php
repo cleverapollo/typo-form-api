@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
@@ -12,7 +11,7 @@ use App\Models\TeamInvitation;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\TeamUserResource;
-use App\Notifications\InformedNotification;
+use App\Http\Resources\TeamInvitationResource;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -62,10 +61,7 @@ class TeamController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'invitations' => 'array',
-			'invitations.*.email' => 'required|email',
-			'invitations.*.team_role_id' => 'required|integer|min:2'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -94,21 +90,6 @@ class TeamController extends Controller
 			]);
 
 			if ($team) {
-				// Send invitation
-				$invitations = $request->input('invitations', []);
-				$this->sendInvitation('team', $team, $invitations);
-
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been created successfully.'));
-					}
-				}
-				if ($user->email) {
-					$user->notify(new InformedNotification('Team has been created successfully.'));
-				}
-
 				return $this->returnSuccessMessage('team', new TeamResource($team));
 			}
 
@@ -195,18 +176,6 @@ class TeamController extends Controller
 
 			// Update team
 			if ($team->fill($request->only('name', 'description'))->save()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been updated successfully.'));
-					}
-				}
-				foreach ($team->users as $team_user) {
-					if ($team_user->email) {
-						$team_user->notify(new InformedNotification('Team has been updated successfully.'));
-					}
-				}
 				return $this->returnSuccessMessage('team', new TeamResource($team));
 			}
 
@@ -248,20 +217,7 @@ class TeamController extends Controller
 				return $this->returnError('team', 403, 'delete');
 			}
 
-			$team_users = $team->users;
 			if ($team->delete()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Team has been deleted successfully.'));
-					}
-				}
-				foreach ($team_users as $team_user) {
-					if ($team_user->email) {
-						$team_user->notify(new InformedNotification('Team has been deleted successfully.'));
-					}
-				}
 				return $this->returnSuccessMessage('message', 'Team has been deleted successfully.');
 			}
 
@@ -366,17 +322,9 @@ class TeamController extends Controller
 				'status' => 0
 			])->get();
 
-			$unacceptedUsers = [];
-			foreach ($invitedUsers as $invitedUser) {
-				$unacceptedUser = User::where('email', $invitedUser->invitee)->first();
-				if ($unacceptedUser) {
-					array_push($unacceptedUsers, new UserResource($unacceptedUser));
-				}
-			}
-
 			return $this->returnSuccessMessage('users', [
 				'current' => UserResource::collection($currentUsers),
-				'unaccepted' => $unacceptedUsers
+				'unaccepted' => TeamInvitationResource::collection($invitedUsers)
 			]);
 		}
 
@@ -494,11 +442,6 @@ class TeamController extends Controller
 
 			// Update user role
 			if ($team_user->fill(['role_id' => $role->id])->save()) {
-				// Send notification email to team user
-				if ($team_user->email) {
-					$team_user->notify(new InformedNotification('Team user role has been deleted successfully.'));
-				}
-
 				return $this->returnSuccessMessage('user', new TeamUserResource($team_user));
 			}
 
@@ -557,22 +500,136 @@ class TeamController extends Controller
 			}
 
 			if ($team_user->delete()) {
-				// Send notification email to user and team admin
-				if ($user->email) {
-					$user->notify(new InformedNotification('You have been deleted from team.'));
-				}
-				foreach ($team->users as $team_user) {
-					$team_role = TeamUser::where([
-						'user_id' => $team_user,
-						'team_id' => $team->id
-					])->first()->role_id;
-
-					if (Role::find($team_role)->name == 'Admin' && $team_user->email) {
-						$team_user->notify(new InformedNotification('User has been deleted from team successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'User has been removed from team successfully.');
+			}
+
+			// Send error if there is an error on delete
+			return $this->returnError('user', 503, 'delete');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Update user role in the Team.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 * @param  int $invited_id
+	 * @param  Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
+	 */
+	public function updateInvitedUser($application_slug, $id, $invited_id, Request $request)
+	{
+		$this->validate($request, [
+			'team_role_id' => 'required|integer|min:2'
+		]);
+
+		try {
+			// Check whether the role exists or not
+			$role = Role::find($request->input('team_role_id'));
+			if (!$role) {
+				return $this->returnError('role', 404, 'update user');
+			}
+
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$team = $user->teams()->where([
+				'team_id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if team does not exist
+			if (!$team) {
+				return $this->returnError('team', 404, 'update user');
+			}
+
+			$team_invitation = TeamInvitation::where([
+				'id' => $invited_id,
+				'team_id' => $team->id
+			])->first();
+
+			// Send error if invited user does not exist in the team
+			if (!$team_invitation) {
+				return $this->returnError('user', 404, 'update role');
+			}
+
+			// Check whether user has permission to delete
+			if (!$this->hasPermission($user, $team)) {
+				return $this->returnError('team', 403, 'update invited user');
+			}
+
+			// Update invited user role
+			if ($team_invitation->fill(['role_id' => $role->id])->save()) {
+				return $this->returnSuccessMessage('user', new TeamInvitationResource($team_invitation));
+			}
+
+			// Send error if there is an error on update
+			return $this->returnError('user role', 503, 'update');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Delete user from the Team.
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 * @param  int $invited_id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteInvitedUser($application_slug, $id, $invited_id)
+	{
+		try {
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$team = $user->teams()->where([
+				'team_id' => $id,
+				'application_id' => $application->id
+			])->first();
+
+			// Send error if team does not exist
+			if (!$team) {
+				return $this->returnError('team', 404, 'delete user');
+			}
+
+			$team_invitation = TeamInvitation::where([
+				'id' => $invited_id,
+				'team_id' => $team->id
+			])->first();
+
+			// Send error if invited user does not exist in the team
+			if (!$team_invitation) {
+				return $this->returnError('user', 404, 'delete');
+			}
+
+			// Check whether user has permission to delete
+			if (!$this->hasPermission($user, $team)) {
+				return $this->returnError('team', 403, 'delete invited user');
+			}
+
+			if ($team_invitation->delete()) {
+				return $this->returnSuccessMessage('message', 'Invited User has been removed from team successfully.');
 			}
 
 			// Send error if there is an error on delete

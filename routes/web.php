@@ -48,11 +48,19 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->get('/', 'ApplicationController@show');
 			$router->put('/', 'ApplicationController@update');
 			$router->delete('/', 'ApplicationController@destroy');
+            $router->get('export', 'ApplicationController@exportCSV');
+
+			$router->get('submission', 'SubmissionController@all');
 
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');
 				$router->put('{id}', 'ApplicationController@updateUser');
 				$router->delete('{id}', 'ApplicationController@deleteUser');
+			});
+
+			$router->group(['prefix' => 'invited'], function () use ($router) {
+				$router->put('{id}', 'ApplicationController@updateInvitedUser');
+				$router->delete('{id}', 'ApplicationController@deleteInvitedUser');
 			});
 
 			$router->post('invite', 'ApplicationController@inviteUsers');
@@ -65,13 +73,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->get('/', 'TeamController@show');
 					$router->put('/', 'TeamController@update');
 					$router->delete('/', 'TeamController@destroy');
-					$router->get('get-token', 'TeamController@getInvitationToken');
 					$router->post('invite', 'TeamController@inviteUsers');
 
 					$router->group(['prefix' => 'user'], function () use ($router) {
 						$router->get('/', 'TeamController@getUsers');
 						$router->put('{user_id}', 'TeamController@updateUser');
 						$router->delete('{user_id}', 'TeamController@deleteUser');
+					});
+
+					$router->group(['prefix' => 'invited'], function () use ($router) {
+						$router->put('{invited_id}', 'TeamController@updateInvitedUser');
+						$router->delete('{invited_id}', 'TeamController@deleteInvitedUser');
 					});
 				});
 			});
@@ -83,19 +95,20 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'FormController@show');
-					$router->put('/', 'FormController@update');
+					$router->post('/', 'FormController@update');
 					$router->delete('/', 'FormController@destroy');
+					$router->get('export', 'FormController@exportCSV');
 				});
 			});
 
 			$router->group(['prefix' => 'application-email'], function () use ($router) {
 				$router->get('/', 'ApplicationEmailController@index');
-//				$router->post('/', 'ApplicationEmailController@store');
+				// $router->post('/', 'ApplicationEmailController@store');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'ApplicationEmailController@show');
-					$router->put('/', 'ApplicationEmailController@update');
-					$router->delete('/', 'ApplicationEmailController@destroy');
+					// $router->put('/', 'ApplicationEmailController@update');
+					// $router->delete('/', 'ApplicationEmailController@destroy');
 				});
 			});
 		});
@@ -110,15 +123,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->get('/', 'SubmissionController@show');
 				$router->put('/', 'SubmissionController@update');
 				$router->delete('/', 'SubmissionController@destroy');
-				$router->get('/data', 'SubmissionController@getData');
+				$router->get('data', 'SubmissionController@getData');
 			});
 		});
 
 		$router->group(['prefix' => 'section'], function () use ($router) {
 			$router->get('/', 'SectionController@index');
 			$router->post('/', 'SectionController@store');
-			$router->post('store', 'SectionController@storeSections');
-			$router->put('update', 'SectionController@updateSections');
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'SectionController@show');
@@ -135,8 +146,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'ValidationController@show');
-				$router->put('/', 'ValidationController@update');
-				$router->delete('/', 'ValidationController@destroy');
+				// $router->put('/', 'ValidationController@update');
+				// $router->delete('/', 'ValidationController@destroy');
 			});
 		});
 
@@ -146,8 +157,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'QuestionTriggerController@show');
-				$router->put('/', 'QuestionTriggerController@update');
-				$router->delete('/', 'QuestionTriggerController@destroy');
+				// $router->put('/', 'QuestionTriggerController@update');
+				// $router->delete('/', 'QuestionTriggerController@destroy');
 			});
 		});
 	});
@@ -197,8 +208,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'QuestionTypeController@show');
-//			$router->put('/', 'QuestionTypeController@update');
-//			$router->delete('/', 'QuestionTypeController@destroy');
+			// $router->put('/', 'QuestionTypeController@update');
+			// $router->delete('/', 'QuestionTypeController@destroy');
 		});
 	});
 
@@ -208,8 +219,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'RoleController@show');
-//			$router->put('/', 'RoleController@update');
-//			$router->delete('/', 'RoleController@destroy');
+			// $router->put('/', 'RoleController@update');
+			// $router->delete('/', 'RoleController@destroy');
 		});
 	});
 
@@ -219,8 +230,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'PeriodController@show');
-//			$router->put('/', 'PeriodController@update');
-//			$router->delete('/', 'PeriodController@destroy');
+			// $router->put('/', 'PeriodController@update');
+			// $router->delete('/', 'PeriodController@destroy');
 		});
 	});
 
@@ -230,8 +241,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'ValidationTypeController@show');
-//			$router->put('/', 'ValidationTypeController@update');
-//			$router->delete('/', 'ValidationTypeController@destroy');
+			// $router->put('/', 'ValidationTypeController@update');
+			// $router->delete('/', 'ValidationTypeController@destroy');
 		});
 	});
 
@@ -241,8 +252,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'StatusController@show');
-//			$router->put('/', 'StatusController@update');
-//			$router->delete('/', 'StatusController@destroy');
+			// $router->put('/', 'StatusController@update');
+			// $router->delete('/', 'StatusController@destroy');
 		});
 	});
 
@@ -252,8 +263,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'ComparatorController@show');
-//			$router->put('/', 'ComparatorController@update');
-//			$router->delete('/', 'ComparatorController@destroy');
+			// $router->put('/', 'ComparatorController@update');
+			// $router->delete('/', 'ComparatorController@destroy');
 		});
 	});
 
@@ -263,19 +274,19 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'ActionTypeController@show');
-//			$router->put('/', 'ActionTypeController@update');
-//			$router->delete('/', 'ActionTypeController@destroy');
+			// $router->put('/', 'ActionTypeController@update');
+			// $router->delete('/', 'ActionTypeController@destroy');
 		});
 	});
 
 	$router->group(['prefix' => 'trigger-type'], function () use ($router) {
 		$router->get('/', 'TriggerTypeController@index');
-//		$router->post('/', 'TriggerTypeController@store');
+		$router->post('/', 'TriggerTypeController@store');
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'TriggerTypeController@show');
-//			$router->put('/', 'TriggerTypeController@update');
-//			$router->delete('/', 'TriggerTypeController@destroy');
+			// $router->put('/', 'TriggerTypeController@update');
+			// $router->delete('/', 'TriggerTypeController@destroy');
 		});
 	});
 });

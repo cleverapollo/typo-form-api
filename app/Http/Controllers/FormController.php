@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\Period;
+use App\Models\Application;
+use App\Models\Form;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -20,7 +20,7 @@ class FormController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api');
+		$this->middleware('auth:api', ['except' => []]);
 	}
 
 	/**
@@ -54,8 +54,7 @@ class FormController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-			'show_progress' => 'required|boolean'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -66,28 +65,11 @@ class FormController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Create form
-			$form = $application->forms()->create($request->only('name', 'show_progress'));
+			$form = $application->forms()->create($request->only('name'));
 
 			if ($form) {
-				/* $this->analyzeCSV($form, $request);
-
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been created successfully.'));
-					}
-				} */
-
-				return $this->returnSuccessMessage('form', new FormResource($form));
+				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 			}
 
 			// Send error if form is not created
@@ -138,7 +120,8 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-			'show_progress' => 'filled|boolean'
+			'show_progress' => 'filled|boolean',
+			'csv' => 'file'
 		]);
 
 		try {
@@ -156,24 +139,12 @@ class FormController extends Controller
 				return $this->returnError('form', 404, 'update');
 			}
 
-			if ($period_id = $request->input('period_id')) {
-				// Send error if period does not exist
-				if (!Period::find($period_id)) {
-					return $this->returnError('period', 404, 'create form');
-				}
-			}
-
 			// Update form
 			if ($form->fill($request->only('name', 'show_progress'))->save()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been updated successfully.'));
-					}
-				}
+				// Analyze CSV
+				$this->analyzeCSV($form, $request);
 
-				return $this->returnSuccessMessage('form', new FormResource($form));
+				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 			}
 
 			// Send error if there is an error on update
@@ -210,14 +181,6 @@ class FormController extends Controller
 			}
 
 			if ($form->delete()) {
-				// Send notification email to application admin
-				$admin_users = $this->applicationAdmins($application->id);
-				foreach ($admin_users as $admin_user) {
-					if ($admin_user->email) {
-						$admin_user->notify(new InformedNotification('Form has been deleted successfully.'));
-					}
-				}
-
 				return $this->returnSuccessMessage('message', 'Form has been deleted successfully.');
 			}
 
@@ -241,9 +204,21 @@ class FormController extends Controller
 	{
 		try {
 			if ($request->hasFile('csv') && $request->file('csv')->isValid()) {
+				// Remove original data of form
+				$form->sections->each(function ($section) {
+					$section->delete();
+				});
+				$form->submissions->each(function ($submission) {
+					$submission->delete();
+				});
+				$form->validations->each(function ($validation) {
+					$validation->delete();
+				});
+
+				// Read data from csv file
 				$path = $request->file('csv')->getRealPath();
-				$data = Excel::load($path, function ($reader) {
-				})->get();
+
+				$data = Excel::load($path, function ($reader) {})->get();
 
 				if (!empty($data) && $data->count()) {
 					// If there is multiple sheets
@@ -276,7 +251,7 @@ class FormController extends Controller
 							$section = $form->sections()->create([
 								'name' => $dt->section_name,
 								'parent_section_id' => $parent_section_id,
-								'order' => $dt->section_order,
+								'order' => $dt->section_order || 1,
 								'repeatable' => $dt->section_repeatable || 0,
 								'max_rows' => $dt->section_repeatable_rows_max_count,
 								'min_rows' => $dt->section_repeatable_rows_min_count
@@ -304,10 +279,10 @@ class FormController extends Controller
 
 								$question = $section->questions()->create([
 									'question' => $dt->question,
-									'description' => $dt->description,
+									'description' => $dt->question_description,
 									'mandatory' => $dt->question_mandatory,
 									'question_type_id' => $question_type_id,
-									'order' => $dt->question_order
+									'order' => $dt->question_order || 1
 								]);
 							}
 
@@ -325,8 +300,8 @@ class FormController extends Controller
 								if (!$created) {
 									$question->answers()->create([
 										'answer' => $dt->answer,
-										'parameter' => $dt->parameter,
-										'order' => $dt->answer_order
+										'parameter' => $dt->answer_parameter,
+										'order' => $dt->answer_order || 1
 									]);
 								}
 							}
@@ -337,6 +312,113 @@ class FormController extends Controller
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, 'Invalid CSV file.');
+		}
+	}
+
+	/**
+	 * Export data to CSV
+	 *
+	 * @param $application_slug
+	 * @param $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function exportCSV($application_slug, $id)
+	{
+		try {
+			$application = Application::where('slug', $application_slug)->first();
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$form = $application->forms()->find($id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'export');
+			}
+
+			$data = [];
+            foreach ($form->sections as $section) {
+                if (count($section->questions) > 0) {
+                    foreach ($section->questions as $question) {
+                        if (count($question->answers) > 0) {
+                            foreach ($question->answers as $answer) {
+                                $data[] = [
+                                    'Section ID' => $section->id,
+                                    'Section Name' => $section->name,
+                                    'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                                    'Section Order' => $section->order,
+                                    'Section Repeatable' => (bool)($section->repeatable),
+                                    'Section Repeatable Rows Min Count' => $section->min_rows,
+                                    'Section Repeatable Rows Max Count' => $section->max_rows,
+                                    'Question ID' => $question->id,
+                                    'Question' => $question->question,
+                                    'Question Description' => $question->description,
+                                    'Question Order' => $question->order,
+                                    'Question Mandatory' => $question->mandatory,
+                                    'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                    'Answer ID' => $answer->id,
+                                    'Answer' => $answer->answer,
+                                    'Answer Parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
+                                    'Answer Order' => $answer->order
+                                ];
+                            }
+                        } else {
+                            $data[] = [
+                                'Section ID' => $section->id,
+                                'Section Name' => $section->name,
+                                'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                                'Section Order' => $section->order,
+                                'Section Repeatable' => (bool)($section->repeatable),
+                                'Section Repeatable Rows Min Count' => $section->min_rows,
+                                'Section Repeatable Rows Max Count' => $section->max_rows,
+                                'Question ID' => $question->id,
+                                'Question' => $question->question,
+                                'Question Description' => $question->description,
+                                'Question Order' => $question->order,
+                                'Question Mandatory' => $question->mandatory,
+                                'Question Type' => QuestionType::find($question->question_type_id)->type,
+                                'Answer ID' => '',
+                                'Answer' => '',
+                                'Answer Parameter' => '',
+                                'Answer Order' => ''
+                            ];
+                        }
+                    }
+                } else {
+                    $data[] = [
+                        'Section ID' => $section->id,
+                        'Section Name' => $section->name,
+                        'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
+                        'Section Order' => $section->order,
+                        'Section Repeatable' => (bool)($section->repeatable),
+                        'Section Repeatable Rows Min Count' => $section->min_rows,
+                        'Section Repeatable Rows Max Count' => $section->max_rows,
+                        'Question ID' => '',
+                        'Question' => '',
+                        'Question Description' => '',
+                        'Question Order' => '',
+                        'Question Mandatory' => '',
+                        'Question Type' => '',
+                        'Answer ID' => '',
+                        'Answer' => '',
+                        'Answer Parameter' => '',
+                        'Answer Order' => ''
+                    ];
+                }
+            }
+
+			return Excel::create($form->name, function ($excel) use ($data) {
+				$excel->sheet('Sheet 1', function ($sheet) use ($data) {
+					$sheet->fromArray($data);
+				});
+			})->download('xlsx');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
 
@@ -367,11 +449,7 @@ class FormController extends Controller
 			$form_ids = $request->input('form_ids', []);
 			$forms = $application->forms()->get();
 			foreach ($forms as $form) {
-				if (in_array($form->id, $form_ids)) {
-					$form->auto = true;
-				} else {
-					$form->auto = false;
-				}
+				$form->auto = in_array($form->id, $form_ids);
 				$form->save();
 			}
 

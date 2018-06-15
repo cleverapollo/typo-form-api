@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Section;
+use App\Models\Question;
 use App\Models\QuestionType;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\SectionResource;
@@ -87,7 +88,7 @@ class QuestionController extends Controller
 			]);
 
 			if ($question) {
-				return $this->returnSuccessMessage('question', new QuestionResource($question));
+				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($question->id)));
 			}
 
 			// Send error if question is not created
@@ -158,7 +159,7 @@ class QuestionController extends Controller
 					]);
 				});
 
-				return $this->returnSuccessMessage('question', new QuestionResource($newQuestion));
+				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($newQuestion->id)));
 			}
 
 			// Send error if question is not created
@@ -239,7 +240,7 @@ class QuestionController extends Controller
 
 			// Update question
 			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width'))->save()) {
-				return $this->returnSuccessMessage('question', new QuestionResource($question));
+				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($question->id)));
 			}
 
 			// Send error if there is an error on update

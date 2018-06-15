@@ -81,5 +81,11 @@ class QuestionTypeTableSeeder extends Seeder
 			'created_at' => Carbon::now(),
 			'updated_at' => Carbon::now()
 		]);
+
+		DB::table('question_types')->insert([
+			'type' => 'Content Block',
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now()
+		]);
 	}
 }

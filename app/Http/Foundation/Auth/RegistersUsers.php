@@ -2,9 +2,7 @@
 
 namespace App\Http\Foundation\Auth;
 
-use App\User;
 use App\Models\Role;
-use App\Notifications\InformedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
@@ -44,15 +42,6 @@ trait RegistersUsers
 		if ($user) {
 			$user->role_id = Role::where('name', 'User')->first()->id;
 			$user->save();
-
-			// Send notification email to user and super admin
-			$user->notify(new InformedNotification('Congratulations! Your account has been created successfully.'));
-			$super_admins = User::where('role_id', Role::where('name', 'Super Admin')->first()->id)->get();
-			foreach ($super_admins as $super_admin) {
-				if ($super_admin->email) {
-					$super_admin->notify(new InformedNotification('User(' . $user->email . ') has been registered.'));
-				}
-			}
 
 			return response()->json([
 				'status' => 'success',
