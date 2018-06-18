@@ -70,7 +70,7 @@ class SubmissionController extends Controller
 			}
 		}
 
-		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
+		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionResource::collection($submissions) : []);
 	}
 
 	/**

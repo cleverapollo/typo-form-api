@@ -146,8 +146,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'ValidationController@show');
-				// $router->put('/', 'ValidationController@update');
-				// $router->delete('/', 'ValidationController@destroy');
+				$router->put('/', 'ValidationController@update');
+				$router->delete('/', 'ValidationController@destroy');
 			});
 		});
 
@@ -157,8 +157,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'QuestionTriggerController@show');
-				// $router->put('/', 'QuestionTriggerController@update');
-				// $router->delete('/', 'QuestionTriggerController@destroy');
+				$router->put('/', 'QuestionTriggerController@update');
+				$router->delete('/', 'QuestionTriggerController@destroy');
 			});
 		});
 	});
