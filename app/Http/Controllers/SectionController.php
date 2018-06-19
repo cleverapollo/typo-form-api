@@ -87,7 +87,8 @@ class SectionController extends Controller
 			$section = $form->sections()->create([
 				'name' => $request->input('name'),
 				'parent_section_id' => $parent_section_id,
-				'order' => $order
+				'order' => $order,
+				'min_rows' => 1
 			]);
 
 			if ($section) {
