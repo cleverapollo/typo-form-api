@@ -125,12 +125,12 @@ class UserController extends Controller
 	public function updatePassword(Request $request)
 	{
 		$this->validate($request, [
-			'newPassword' => 'required|min:6|max:191'
+			'password' => 'required|min:6|max:191'
 		]);
 
 		try {
 			$user = Auth::user();
-			if ($user->update(['password' => app('hash')->make($request->input('newPassword'))])) {
+			if ($user->update(['password' => app('hash')->make($request->input('password'))])) {
 				return $this->returnSuccessMessage('user', new UserResource($user));
 			}
 
