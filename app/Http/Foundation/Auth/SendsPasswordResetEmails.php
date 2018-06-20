@@ -2,7 +2,7 @@
 
 namespace App\Http\Foundation\Auth;
 
-use  Illuminate\Http\Request;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 
 trait SendsPasswordResetEmails
