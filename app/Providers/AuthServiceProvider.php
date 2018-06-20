@@ -31,9 +31,9 @@ class AuthServiceProvider extends ServiceProvider
         // the User instance via an API token or any other method necessary.
 
         $this->app['auth']->viaRequest('api', function ($request) {
-            if ($request->header('Authorization')) {
+            if ($request->header('API-Token')) {
                 return User::where('expire_date', '>', Carbon::now()->subHours(24))
-                    ->where('api_token', substr($request->header('Authorization'), 7))->first();
+                    ->where('api_token', $request->header('API-Token'))->first();
             }
         });
     }
