@@ -279,7 +279,7 @@ class FormController extends Controller
 
 								$question = $section->questions()->create([
 									'question' => $dt->question,
-									'description' => $dt->question_description,
+									'description' => $dt->question_description || null,
 									'mandatory' => $dt->question_mandatory,
 									'question_type_id' => $question_type_id,
 									'order' => $dt->question_order || 1
