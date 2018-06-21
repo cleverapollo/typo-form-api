@@ -279,7 +279,7 @@ class FormController extends Controller
 
 								$question = $section->questions()->create([
 									'question' => $dt->question,
-									'description' => $dt->question_description,
+									'description' => ($dt->question_description ? $dt->question_description : ''),
 									'mandatory' => $dt->question_mandatory,
 									'question_type_id' => $question_type_id,
 									'order' => ($dt->question_order ? $dt->question_order : 1)
@@ -300,7 +300,7 @@ class FormController extends Controller
 								if (!$created) {
 									$question->answers()->create([
 										'answer' => $dt->answer,
-										'parameter' => $dt->answer_parameter,
+										'parameter' => ($dt->answer_parameter ? $dt->answer_parameter : true),
 										'order' => ($dt->answer_order ? $dt->answer_order : 1)
 									]);
 								}
