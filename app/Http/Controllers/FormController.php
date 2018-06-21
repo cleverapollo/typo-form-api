@@ -300,7 +300,7 @@ class FormController extends Controller
 								if (!$created) {
 									$question->answers()->create([
 										'answer' => $dt->answer,
-										'parameter' => $dt->answer_parameter,
+										'parameter' => $dt->answer_parameter || true,
 										'order' => $dt->answer_order || 1
 									]);
 								}
