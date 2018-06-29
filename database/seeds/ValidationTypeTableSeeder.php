@@ -29,7 +29,13 @@ class ValidationTypeTableSeeder extends Seeder
 	    ]);
 
 	    DB::table('validation_types')->insert([
-		    'type' => 'Text',
+		    'type' => 'Words',
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('validation_types')->insert([
+		    'type' => 'Letters',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

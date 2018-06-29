@@ -47,7 +47,7 @@ class ComparatorsTableSeeder extends Seeder
 	    ]);
 
 	    DB::table('comparators')->insert([
-		    'comparator' => 'contain',
+		    'comparator' => 'contains',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
