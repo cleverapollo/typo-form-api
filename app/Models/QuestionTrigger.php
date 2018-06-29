@@ -12,7 +12,7 @@ class QuestionTrigger extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator'
+		'form_id', 'question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator', 'type'
 	];
 
 	/**

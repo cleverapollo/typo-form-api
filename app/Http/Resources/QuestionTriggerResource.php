@@ -22,7 +22,8 @@ class QuestionTriggerResource extends JsonResource
 			'value' => $this->value,
 			'comparator_id' => $this->comparator_id,
 			'order' => $this->order,
-			'operator' => $this->operator
+			'operator' => $this->operator,
+			'type' => $this->type
 		];
 	}
 }

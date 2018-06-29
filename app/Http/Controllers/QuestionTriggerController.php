@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Answer;
 use Exception;
 use App\Models\Form;
+use App\Models\Section;
 use App\Models\Question;
 use App\Models\Comparator;
 use App\Http\Resources\QuestionTriggerResource;
@@ -60,7 +61,8 @@ class QuestionTriggerController extends Controller
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'required|integer|min:1',
 //			'order' => 'required|integer|min:1',
-			'operator' => 'required|boolean'
+			'operator' => 'required|boolean',
+			'type' => 'required|string'
 		]);
 
 		try {
@@ -71,10 +73,17 @@ class QuestionTriggerController extends Controller
 				return $this->returnError('form', 404, 'create trigger');
 			}
 
-			$question = Question::find($request->input('question_id'));
+			// Check type of trigger
+			$type = $request->input('type');
+
+			if($type == 'Section') {
+				$element = Section::find($request->input('question_id'));
+			} else {
+				$element = Question::find($request->input('question_id'));
+			}
 
 			// Send error if question does not exist
-			if (!$question) {
+			if (!$element) {
 				return $this->returnError('question', 404, 'create trigger');
 			}
 
@@ -103,19 +112,20 @@ class QuestionTriggerController extends Controller
 
 			// Count order
 			$order = 1;
-			if (count($question->triggers) > 0) {
-				$order = $form->triggers()->where('question_id', $question->id)->max('order') + 1;
+			if (count($element->triggers) > 0) {
+				$order = $form->triggers()->where('question_id', $element->id)->max('order') + 1;
 			}
 
 			// Create trigger
 			$trigger = $form->triggers()->create([
-				'question_id' => $question->id,
+				'question_id' => $element->id,
 				'parent_question_id' => $parent_question->id,
 				'parent_answer_id' => $parent_answer_id,
 				'value' => $request->input('value', null),
 				'comparator_id' => $comparator->id,
 				'order' => $order,
-				'operator' => $request->input('operator')
+				'operator' => $request->input('operator'),
+				'type' => $request->input('type')
 			]);
 
 			if ($trigger) {
@@ -174,7 +184,8 @@ class QuestionTriggerController extends Controller
 			'parent_answer_id' => 'nullable|integer|min:1',
 			'comparator_id' => 'filled|integer|min:1',
 //			'order' => 'filled|integer|min:1',
-			'operator' => 'filled|boolean'
+			'operator' => 'filled|boolean',
+			'type' => 'filled|string'
 		]);
 
 		try {
@@ -229,7 +240,7 @@ class QuestionTriggerController extends Controller
 			}
 
 			// Update trigger
-			if ($trigger->fill($request->only('question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'operator'))->save()) {
+			if ($trigger->fill($request->only('question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'operator', 'type'))->save()) {
 				return $this->returnSuccessMessage('trigger', new QuestionTriggerResource($trigger));
 			}
 
