@@ -65,7 +65,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'contain')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
 		    'answer' => false,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -157,7 +157,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'contain')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
 		    'answer' => false,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -233,7 +233,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'contain')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
 		    'answer' => true,
 		    'value' => false,
 		    'created_at' => Carbon::now(),
@@ -405,7 +405,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'contain')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
 		    'answer' => true,
 		    'value' => true,
 		    'created_at' => Carbon::now(),

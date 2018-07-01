@@ -82,4 +82,12 @@ class Section extends Model
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}
+
+	/**
+	 * Get the triggers for the Section.
+	 */
+	public function triggers()
+	{
+		return $this->hasMany('App\Models\QuestionTrigger', 'question_id');
+	}
 }
