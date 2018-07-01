@@ -194,6 +194,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
 		$router->get('/', 'ResponseController@index');
 		$router->post('/', 'ResponseController@store');
+		$router->delete('/section/{section_id}/{order}', 'ResponseController@deleteSectionResponse');
 
 		$router->group(['prefix' => '{id}'], function () use ($router) {
 			$router->get('/', 'ResponseController@show');

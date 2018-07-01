@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Submission;
+use App\Models\Section;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Response;
@@ -223,6 +224,52 @@ class ResponseController extends Controller
 
 			// Send error if there is an error on delete
 			return $this->returnError('response', 503, 'delete');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
+	 * Remove the section resource with order from storage.
+	 *
+	 * @param  int $submission_id
+	 * @param  int $section_id
+	 * @param  int $order
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function deleteSectionResponse($submission_id, $section_id, $order)
+	{
+		try {
+			$submission = Submission::find($submission_id);
+
+			// Send error if submission does not exist
+			if (!$submission) {
+				return $this->returnError('submission', 404, 'show response');
+			}
+
+			$section = Section::find($section_id);
+
+			// Send error if section does not exist
+			if (!$section) {
+				return $this->returnError('section', 404, 'delete question');
+			}
+
+			$section->questions()->get()->each(function ($question) use ($order) {
+				$question->responses()->get()->each(function ($response) use ($order) {
+					if ($response->order == $order) {
+						$response->delete();
+					} else if ($response->order > $order) {
+						$response->order -= 1;
+						$response->save();
+					}
+				});
+			});
+
+			$responses = Submission::find($submission_id)->responses()->get();
+
+			return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());

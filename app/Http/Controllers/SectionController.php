@@ -208,7 +208,7 @@ class SectionController extends Controller
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
-            'repeatable' => 'filled|boolean',
+            'repeatable' => 'filled|integer',
             'max_rows' => 'filled|integer',
             'min_rows' => 'filled|integer'
 		]);
