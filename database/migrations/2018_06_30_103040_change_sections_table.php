@@ -14,7 +14,7 @@ class ChangeSectionsTable extends Migration
     public function up()
     {
         Schema::table('sections', function (Blueprint $table) {
-            $table->unsignedInteger('repeatable')->change();
+            $table->integer('repeatable')->change();
         });
     }
 
@@ -26,7 +26,7 @@ class ChangeSectionsTable extends Migration
     public function down()
     {
         Schema::table('sections', function (Blueprint $table) {
-            $table->boolean('repeatable');
+            $table->boolean('repeatable')->change();
         });
     }
 }
