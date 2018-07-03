@@ -14,7 +14,7 @@ class AddRepeatableToSectionsTable extends Migration
     public function up()
     {
         Schema::table('sections', function (Blueprint $table) {
-            $table->integer('repeatable')->after('order');
+            $table->integer('repeatable')->default(0)->after('order');
         });
     }
 
