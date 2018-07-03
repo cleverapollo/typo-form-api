@@ -14,7 +14,7 @@ class ChangeSectionsTable extends Migration
     public function up()
     {
         Schema::table('sections', function (Blueprint $table) {
-            $table->integer('repeatable')->change();
+            $table->integer('repeatable')->nullable()->change();
         });
     }
 
