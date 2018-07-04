@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\User;
+use App\Models\Application;
 use App\Models\Team;
 use App\Models\Form;
 use App\Models\Submission;
@@ -37,7 +38,13 @@ class SubmissionController extends Controller
 	 */
 	public function index($form_id)
 	{
-		$submissions = Auth::user()->submissions()->where('form_id', $form_id)->get();
+		$user = Auth::user();
+
+		$submissions = $user->submissions()->where('form_id', $form_id)->get();
+
+		if ($user->role->name == 'Super Admin') {
+			$submissions = Submission::where('form_id', $form_id)->get();
+		}
 
 		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
 	}
@@ -51,7 +58,13 @@ class SubmissionController extends Controller
 	 */
 	public function all($application_slug)
 	{
-		$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('slug', $application_slug)->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -62,7 +75,12 @@ class SubmissionController extends Controller
 		$submissions = null;
 
 		foreach ($forms as $form) {
-			$form_submissions = Auth::user()->submissions()->where('form_id', $form->id)->get();
+			$form_submissions = $user->submissions()->where('form_id', $form->id)->get();
+
+			if ($user->role->name == 'Super Admin') {
+				$form_submissions = Submission::where('form_id', $form->id)->get();
+			}
+
 			if ($submissions) {
 				$submissions = $submissions->merge($form_submissions);
 			} else {

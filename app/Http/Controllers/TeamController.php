@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Role;
+use App\Models\Application;
 use App\Models\Team;
 use App\Models\TeamUser;
 use App\Models\TeamInvitation;
@@ -39,12 +40,20 @@ class TeamController extends Controller
 
 		$application = $user->applications()->where('slug', $application_slug)->first();
 
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
+
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
 		}
 
 		$teams = $user->teams()->where('application_id', $application->id)->get();
+
+		if ($user->role->name == 'Super Admin') {
+			$teams = Team::where('application_id', $application->id)->get();
+		}
 
 		return $this->returnSuccessMessage('teams', TeamResource::collection($teams));
 	}
@@ -68,6 +77,10 @@ class TeamController extends Controller
 			$user = Auth::user();
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -114,6 +127,10 @@ class TeamController extends Controller
 
 		$application = $user->applications()->where('slug', $application_slug)->first();
 
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
+
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
@@ -123,6 +140,13 @@ class TeamController extends Controller
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$team = Team::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+		}
 
 		if ($team) {
 			return $this->returnSuccessMessage('team', new TeamResource($team));
@@ -153,6 +177,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -162,6 +190,13 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Send error if team does not exist
 			if (!$team) {
@@ -201,6 +236,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -210,6 +249,13 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Check whether user has permission to delete
 			if (!$this->hasPermission($user, $team)) {
@@ -242,6 +288,10 @@ class TeamController extends Controller
 
 		$application = $user->applications()->where('slug', $application_slug)->first();
 
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
+
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
@@ -251,6 +301,13 @@ class TeamController extends Controller
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$team = Team::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+		}
 
 		// Send error if team does not exist
 		if (!$team) {
@@ -303,6 +360,10 @@ class TeamController extends Controller
 
 		$application = $user->applications()->where('slug', $application_slug)->first();
 
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
+
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
@@ -312,6 +373,13 @@ class TeamController extends Controller
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$team = Team::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+		}
 
 		if ($team) {
 			$currentUsers = $team->users()->get();
@@ -353,6 +421,10 @@ class TeamController extends Controller
 
 		$application = $user->applications()->where('slug', $application_slug)->first();
 
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
+
 		// Send error if application does not exist
 		if (!$application) {
 			return $this->returnApplicationNameError();
@@ -362,6 +434,13 @@ class TeamController extends Controller
 			'team_id' => $id,
 			'application_id' => $application->id
 		])->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$team = Team::where([
+				'id' => $id,
+				'application_id' => $application->id
+			])->first();
+		}
 
 		// Send error if team does not exist
 		if (!$team) {
@@ -409,6 +488,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -418,6 +501,13 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Send error if team does not exist
 			if (!$team) {
@@ -468,6 +558,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -477,6 +571,13 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Send error if team does not exist
 			if (!$team) {
@@ -538,6 +639,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -547,6 +652,13 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Send error if team does not exist
 			if (!$team) {
@@ -597,6 +709,10 @@ class TeamController extends Controller
 
 			$application = $user->applications()->where('slug', $application_slug)->first();
 
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -606,6 +722,14 @@ class TeamController extends Controller
 				'team_id' => $id,
 				'application_id' => $application->id
 			])->first();
+
+
+			if ($user->role->name == 'Super Admin') {
+				$team = Team::where([
+					'id' => $id,
+					'application_id' => $application->id
+				])->first();
+			}
 
 			// Send error if team does not exist
 			if (!$team) {

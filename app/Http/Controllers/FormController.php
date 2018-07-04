@@ -32,7 +32,13 @@ class FormController extends Controller
 	 */
 	public function index($application_slug)
 	{
-		$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('slug', $application_slug)->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -58,7 +64,13 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -90,7 +102,13 @@ class FormController extends Controller
 	 */
 	public function show($application_slug, $id)
 	{
-		$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+		$user = Auth::user();
+
+		$application = $user->applications()->where('slug', $application_slug)->first();
+
+		if ($user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		}
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -125,7 +143,13 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -166,7 +190,13 @@ class FormController extends Controller
 	public function destroy($application_slug, $id)
 	{
 		try {
-			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -439,7 +469,13 @@ class FormController extends Controller
 		]);
 
 		try {
-			$application = Auth::user()->applications()->where('slug', $application_slug)->first();
+			$user = Auth::user();
+
+			$application = $user->applications()->where('slug', $application_slug)->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$application = Application::where('slug', $application_slug)->first();
+			}
 
 			// Send error if application does not exist
 			if (!$application) {
