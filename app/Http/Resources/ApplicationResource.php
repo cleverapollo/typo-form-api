@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Auth;
 use App\Models\Role;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,8 +25,8 @@ class ApplicationResource extends JsonResource
 			'application_role_id' => $this->whenPivotLoaded('application_users', function () {
 				return $this->pivot->role_id;
 			}),
-			'share_token' => $this->whenPivotLoaded('application_users', function () {
-				return (Role::find($this->pivot->role_id)->name == 'Admin') ? $this->share_token : null;
+			'share_token' => Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('application_users', function () {
+				return Role::find($this->pivot->role_id)->name == 'Admin' ? $this->share_token : null;
 			})
 		];
 	}
