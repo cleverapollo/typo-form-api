@@ -45,5 +45,11 @@ class ValidationTypeTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
+
+	    DB::table('validation_types')->insert([
+		    'type' => 'Dropdown',
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
     }
 }

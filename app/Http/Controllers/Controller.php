@@ -280,8 +280,8 @@ class Controller extends BaseController
 	public function fileUpload(Request $request)
 	{
 		try {
-			$path = Storage::putFile('uploads', $request->file('file'));
-			$url = Storage::url($path);
+			$path = Storage::disk('s3')->putFile('uploads', $request->file('file'));
+			$url = Storage::disk('s3')->url($path);
 			return $this->returnSuccessMessage('path', $url);
 		} catch (Exception $e) {
 			return $this->returnErrorMessage(503, $e->getMessage());

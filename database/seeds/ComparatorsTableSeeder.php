@@ -22,6 +22,12 @@ class ComparatorsTableSeeder extends Seeder
 		    'updated_at' => Carbon::now()
 	    ]);
 
+		DB::table('comparators')->insert([
+			'comparator' => 'not equal to',
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now()
+		]);
+
 	    DB::table('comparators')->insert([
 		    'comparator' => 'less than',
 		    'created_at' => Carbon::now(),
