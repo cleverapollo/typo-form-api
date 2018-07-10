@@ -125,13 +125,18 @@ class UserController extends Controller
 	public function updatePassword(Request $request)
 	{
 		$this->validate($request, [
-			'password' => 'required|min:6|max:191'
+			'new_password' => 'required|min:6|max:191',
+			'old_password' => 'required|min:6|max:191'
 		]);
 
 		try {
 			$user = Auth::user();
-			if ($user->update(['password' => app('hash')->make($request->input('password'))])) {
-				return $this->returnSuccessMessage('user', new UserResource($user));
+			if (Hash::check($request->input('old_password'), $user->password)) {
+				if ($user->update(['password' => app('hash')->make($request->input('new_password'))])) {
+					return $this->returnSuccessMessage('user', new UserResource($user));
+				}
+				// Send error if there is an error on update user password
+				return $this->returnError('user password', 503, 'update');
 			}
 
 			return $this->returnErrorMessage(403, 'Invalid password.');
