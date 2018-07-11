@@ -54,7 +54,7 @@ trait ThrottlesLogins
 
 		return response()->json([
 			'status' => 'fail',
-			'message' => 'Too much failed login attempt. Login is blocked. Please try again 3 minutes later.'
+			'message' => 'Too many failed login attempts. Please try again in 3 minutes.'
 		], 423);
 	}
 
