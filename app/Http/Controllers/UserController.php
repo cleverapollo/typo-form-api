@@ -93,7 +93,7 @@ class UserController extends Controller
 	{
 		$this->validate($request, [
 			'email' => 'required|email|max:191',
-			'password' => 'required|min:6|max:191'
+			'password' => 'required|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
 		]);
 
 		try {
@@ -125,8 +125,8 @@ class UserController extends Controller
 	public function updatePassword(Request $request)
 	{
 		$this->validate($request, [
-			'new_password' => 'required|min:6|max:191',
-			'old_password' => 'required|min:6|max:191'
+			'new_password' => 'required|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/',
+			'old_password' => 'required|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
 		]);
 
 		try {

@@ -66,7 +66,7 @@ trait ResetsPasswords
 		return [
 			'token' => 'required',
 			'email' => 'required|email',
-			'password' => 'required|confirmed|min:6|max:191',
+			'password' => 'required|confirmed|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/',
 		];
 	}
 
