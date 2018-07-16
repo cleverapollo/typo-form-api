@@ -67,8 +67,9 @@ trait AuthenticatesUsers
 	{
 		$this->validate($request, [
 			$this->username() => 'required|email',
-			'password' => 'required|string|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/',
-			'g-recaptcha-response' => 'required|recaptcha'
+			//'password' => 'required|string|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/',
+			'password' => 'required|string',
+			//'g-recaptcha-response' => 'required|recaptcha'
 		]);
 	}
 
