@@ -2,6 +2,7 @@
 
 namespace App\Http\Foundation\Auth;
 
+use App\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,9 +34,17 @@ trait RegistersUsers
 		$this->validate($request, [
 			'first_name' => 'required|string|max:191',
 			'last_name' => 'required|string|max:191',
-			'email' => 'required|email|max:191|unique:users',
+			'email' => 'required|email|max:191',
 			'password' => 'required|string|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
 		]);
+
+		$email = $request->input('email');
+		if (User::where('email', $email)->count() > 0) {
+			return response()->json([
+				'status' => 'fail',
+				'message' => 'Sorry. There was an error while creating account. Please try again later.'
+			], 503);
+		}
 
 		event(new Registered($user = $this->create($request->only('first_name', 'last_name', 'email', 'password'))));
 

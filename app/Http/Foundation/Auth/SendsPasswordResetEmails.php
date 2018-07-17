@@ -37,7 +37,7 @@ trait SendsPasswordResetEmails
 
 		return response()->json([
 			'status' => 'success',
-			'user' => 'You will receive email if the email is valid.'
+			'user' => 'An email has been sent to the account holder.'
 		], 200);
 	}
 
