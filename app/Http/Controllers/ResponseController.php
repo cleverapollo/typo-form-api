@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Submission;
 use App\Models\Section;
 use App\Models\Question;
+use App\Models\QuestionType;
 use App\Models\Answer;
 use App\Models\Response;
 use App\Http\Resources\ResponseResource;
@@ -77,10 +78,33 @@ class ResponseController extends Controller
 				}
 			}
 
+			// Get Question and Question Type
+			$question = Question::find($question_id);
+			$question_type = QuestionType::find($question->question_type_id);
+
 			// Create response
+			if ($question_type->type == 'ABN Lookup') {
+				$handle = curl_init();
+				curl_setopt_array($handle, [
+					CURLOPT_RETURNTRANSFER => 1,
+					CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='.$request->input('response', null).'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
+					CURLOPT_HTTPHEADER => [
+						'Content-Type: application/x-www-form-urlencoded'
+					]
+				]);
+				$data = curl_exec($handle);
+
+				if (curl_error($handle)) {
+					return response()->json(curl_error($handle), 500);
+				}
+
+				$response_value = substr($data, 9, -1);
+			} else {
+				$response_value = $request->input('response', null);
+			}
 			$response = $submission->responses()->create([
 				'question_id' => $question_id,
-				'response' => $request->input('response', null),
+				'response' => $response_value,
 				'answer_id' => $answer_id,
 				'order' => $request->input('order', null)
 			]);
@@ -173,9 +197,32 @@ class ResponseController extends Controller
 			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id', 'order'));
 
 			if ($submission->responses()->where('id', $id)->delete()) {
+				$question = Question::find($question_id);
+				$question_type = QuestionType::find($question->question_type_id);
+
+				// Create response
+				if ($question_type->type == 'ABN Lookup') {
+					$handle = curl_init();
+					curl_setopt_array($handle, [
+						CURLOPT_RETURNTRANSFER => 1,
+						CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='.$newResponse->response.'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
+						CURLOPT_HTTPHEADER => [
+							'Content-Type: application/x-www-form-urlencoded'
+						]
+					]);
+					$data = curl_exec($handle);
+
+					if (curl_error($handle)) {
+						return response()->json(curl_error($handle), 500);
+					}
+
+					$response_value = substr($data, 9, -1);
+				} else {
+					$response_value = $newResponse->response;
+				}
 				$new = $submission->responses()->create([
 					'question_id' => $newResponse->question_id,
-					'response' => $newResponse->response,
+					'response' => $response_value,
 					'answer_id' => $newResponse->answer_id,
 					'order' => $newResponse->order
 				]);

@@ -263,10 +263,18 @@ class SubmissionController extends Controller
 				return $this->returnError('form', 404, 'update submission');
 			}
 
+			$user = Auth::user();
+
 			$submission = $form->submissions()->where([
 				'id' => $id,
-				'user_id' => Auth::user()->id
+				'user_id' => $user->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$submission = $form->submissions()->where([
+					'id' => $id
+				])->first();
+			}
 
 			// Send error if submission does not exist
 			if (!$submission) {
@@ -305,6 +313,7 @@ class SubmissionController extends Controller
 	{
 		try {
 			$form = Form::find($form_id);
+			$user = Auth::user();
 
 			// Send error if form does not exist
 			if (!$form) {
@@ -313,8 +322,14 @@ class SubmissionController extends Controller
 
 			$submission = $form->submissions()->where([
 				'id' => $id,
-				'user_id' => Auth::user()->id
+				'user_id' => $user->id
 			])->first();
+
+			if ($user->role->name == 'Super Admin') {
+				$submission = $form->submissions()->where([
+					'id' => $id
+				])->first();
+			}
 
 			// Send error if submission does not exist
 			if (!$submission) {
