@@ -25,7 +25,7 @@ class ApplicationResource extends JsonResource
 			'application_role_id' => $this->whenPivotLoaded('application_users', function () {
 				return $this->pivot->role_id;
 			}),
-			'share_token' => Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('application_users', function () {
+			'share_token' => Auth::user() && Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('application_users', function () {
 				return Role::find($this->pivot->role_id)->name == 'Admin' ? $this->share_token : null;
 			})
 		];
