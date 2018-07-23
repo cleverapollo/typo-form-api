@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Exception;
 use App\Models\Application;
+use App\Models\ApplicationUser;
 use App\Models\Form;
 use App\Models\QuestionType;
 use App\Http\Resources\FormResource;
@@ -72,6 +73,11 @@ class FormController extends Controller
 				$application = Application::where('slug', $application_slug)->first();
 			}
 
+			// Check whether user has permission
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'create forms');
+			}
+
 			// Send error if application does not exist
 			if (!$application) {
 				return $this->returnApplicationNameError();
@@ -108,6 +114,11 @@ class FormController extends Controller
 
 		if ($user->role->name == 'Super Admin') {
 			$application = Application::where('slug', $application_slug)->first();
+		}
+
+		// Check whether user has permission
+		if (!$this->hasPermission($user, $application)) {
+			return $this->returnError('application', 403, 'view forms');
 		}
 
 		// Send error if application does not exist
@@ -149,6 +160,11 @@ class FormController extends Controller
 
 			if ($user->role->name == 'Super Admin') {
 				$application = Application::where('slug', $application_slug)->first();
+			}
+
+			// Check whether user has permission
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'update forms');
 			}
 
 			// Send error if application does not exist
@@ -196,6 +212,11 @@ class FormController extends Controller
 
 			if ($user->role->name == 'Super Admin') {
 				$application = Application::where('slug', $application_slug)->first();
+			}
+
+			// Check whether user has permission
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'delete forms');
 			}
 
 			// Send error if application does not exist
@@ -494,5 +515,31 @@ class FormController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
+	}
+
+	/**
+	 * Check whether user has permission or not
+	 *
+	 * @param  $user
+	 * @param  $application
+	 *
+	 * @return bool
+	 */
+	protected function hasPermission($user, $application)
+	{
+		if ($user->role->name == 'Super Admin') {
+			return true;
+		}
+
+		$role = ApplicationUser::where([
+			'user_id' => $user->id,
+			'application_id' => $application->id
+		])->first()->role;
+
+		if ($role->name != 'Admin') {
+			return false;
+		}
+
+		return true;
 	}
 }

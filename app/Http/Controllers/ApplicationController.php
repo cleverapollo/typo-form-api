@@ -65,7 +65,7 @@ class ApplicationController extends Controller
 			// Check whether user is SuperAdmin or not
 			$user = Auth::user();
 			if ($user->role->name != 'Super Admin') {
-				return $this->returnError('application', 403, 'create');
+				return $this->returnError('application', 403, 'create applications');
 			}
 
 			$share_token = base64_encode(str_random(40));
