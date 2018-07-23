@@ -84,10 +84,11 @@ class ResponseController extends Controller
 
 			// Create response
 			if ($question_type->type == 'ABN Lookup') {
+				$query = urlencode(str_replace(' ', '', $request->input('response', null)));
 				$handle = curl_init();
 				curl_setopt_array($handle, [
 					CURLOPT_RETURNTRANSFER => 1,
-					CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='.$request->input('response', null).'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
+					CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='. $query .'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
 					CURLOPT_HTTPHEADER => [
 						'Content-Type: application/x-www-form-urlencoded'
 					]
@@ -202,10 +203,11 @@ class ResponseController extends Controller
 
 				// Create response
 				if ($question_type->type == 'ABN Lookup') {
+					$query = urlencode(str_replace(' ', '', $newResponse->response));
 					$handle = curl_init();
 					curl_setopt_array($handle, [
 						CURLOPT_RETURNTRANSFER => 1,
-						CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='.$newResponse->response.'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
+						CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='. $query .'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
 						CURLOPT_HTTPHEADER => [
 							'Content-Type: application/x-www-form-urlencoded'
 						]
