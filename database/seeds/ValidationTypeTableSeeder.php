@@ -57,5 +57,11 @@ class ValidationTypeTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
+
+	    DB::table('validation_types')->insert([
+		    'type' => 'Decimal validation',
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
     }
 }
