@@ -773,12 +773,16 @@ class TeamController extends Controller
 	 */
 	protected function hasPermission($user, $team)
 	{
+		if ($user->role->name == 'Super Admin') {
+			return true;
+		}
+
 		$role = TeamUser::where([
 			'user_id' => $user->id,
 			'team_id' => $team->id
 		])->first()->role;
 
-		if ($user->role->name != 'Super Admin' && $role->name != 'Admin') {
+		if ($role->name != 'Admin') {
 			return false;
 		}
 
