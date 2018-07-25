@@ -40,7 +40,7 @@ trait AuthenticatesUsers
             ["created_at", ">", Carbon::now()->subMinutes(5)]
         ])->get();
 
-        if (!is_null($throttle) && count($throttle) == 5) {
+        if (!is_null($throttle) && count($throttle) >= 5) {
             $this->fireLockoutEvent($request);
             $this->incrementLoginAttempts($request);
             return $this->sendLockoutResponse($request);
