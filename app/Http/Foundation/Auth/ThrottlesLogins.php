@@ -38,6 +38,15 @@ trait ThrottlesLogins
 		$this->limiter()->hit(
 			$this->throttleKey($request), $this->decayMinutes()
 		);
+
+        $email = $request->input("email");
+        $user = User::where("email", $email)->first();
+
+        $throttle = Throttle::create([
+            "user_id" => !is_null($user) ? $user->id : null,
+            "email" => $email,
+            "ip_address" => $request->ip()
+        ]);
 	}
 
 	/**
@@ -52,15 +61,6 @@ trait ThrottlesLogins
 		$seconds = $this->limiter()->availableIn(
 			$this->throttleKey($request)
 		);
-
-		$email = $request->input("email");
-		$user = User::where("email", $email)->first();
-
-        $throttle = Throttle::create([
-            "user_id" => !is_null($user) ? $user->id : null,
-            "email" => $email,
-            "ip_address" => $request->ip()
-        ]);
 
 		return response()->json([
 			"status" => "fail",

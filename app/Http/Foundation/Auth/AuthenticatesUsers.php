@@ -38,9 +38,9 @@ trait AuthenticatesUsers
         $throttle = Throttle::where([
             ["ip_address", "=", $request->ip()],
             ["created_at", ">", Carbon::now()->subMinutes(5)]
-        ])->first();
+        ])->get();
 
-        if (!is_null($throttle)) {
+        if (!is_null($throttle) && count($throttle) == 5) {
             $this->fireLockoutEvent($request);
 
             return $this->sendLockoutResponse($request);
