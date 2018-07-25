@@ -4,6 +4,7 @@ namespace App\Http\Foundation\Auth;
 
 use App\User;
 use Carbon\Carbon;
+use App\Models\Throttle;
 use App\Http\Resources\AuthResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,18 @@ trait AuthenticatesUsers
 	{
 		$this->validateLogin($request);
 
-		// If the class is using the ThrottlesLogins trait, we can automatically throttle
+        $throttle = Throttle::where([
+            ["ip_address", "=", $request->ip()],
+            ["created_at", ">", Carbon::now()->subMinutes(5)]
+        ])->first();
+
+        if (!is_null($throttle)) {
+            $this->fireLockoutEvent($request);
+
+            return $this->sendLockoutResponse($request);
+        }
+
+        // If the class is using the ThrottlesLogins trait, we can automatically throttle
 		// the login attempts for this application. We'll key this by the username and
 		// the IP address of the client making these requests into this application.
 		if ($this->hasTooManyLoginAttempts($request)) {

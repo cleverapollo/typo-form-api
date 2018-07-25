@@ -3,7 +3,6 @@
 namespace App\Http\Foundation\Auth;
 
 use App\Models\Throttle;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
@@ -22,16 +21,7 @@ trait ThrottlesLogins
 	 */
 	protected function hasTooManyLoginAttempts(Request $request)
 	{
-        $throttle = Throttle::where([
-            ["ip_address", "=", $request->ip()],
-            ["created_at", ">", Carbon::now()->subMinutes(5)]
-        ])->first();
-
-        if (!is_null($throttle)) {
-            return true;
-        }
-
-	    return $this->limiter()->tooManyAttempts(
+        return $this->limiter()->tooManyAttempts(
 			$this->throttleKey($request), $this->maxAttempts()
 		);
 	}
