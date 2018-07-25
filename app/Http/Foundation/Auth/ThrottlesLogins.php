@@ -3,7 +3,6 @@
 namespace App\Http\Foundation\Auth;
 
 use App\Models\Throttle;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
@@ -22,16 +21,7 @@ trait ThrottlesLogins
 	 */
 	protected function hasTooManyLoginAttempts(Request $request)
 	{
-        $throttle = Throttle::where([
-            ["ip_address", "=", $request->ip()],
-            ["created_at", ">", Carbon::now()->subMinutes(5)]
-        ])->first();
-
-        if (!is_null($throttle)) {
-            return true;
-        }
-
-	    return $this->limiter()->tooManyAttempts(
+        return $this->limiter()->tooManyAttempts(
 			$this->throttleKey($request), $this->maxAttempts()
 		);
 	}
@@ -48,6 +38,15 @@ trait ThrottlesLogins
 		$this->limiter()->hit(
 			$this->throttleKey($request), $this->decayMinutes()
 		);
+
+        $email = $request->input("email");
+        $user = User::where("email", $email)->first();
+
+        $throttle = Throttle::create([
+            "user_id" => !is_null($user) ? $user->id : null,
+            "email" => $email,
+            "ip_address" => $request->ip()
+        ]);
 	}
 
 	/**
@@ -62,15 +61,6 @@ trait ThrottlesLogins
 		$seconds = $this->limiter()->availableIn(
 			$this->throttleKey($request)
 		);
-
-		$email = $request->input("email");
-		$user = User::where("email", $email)->first();
-
-        $throttle = Throttle::create([
-            "user_id" => !is_null($user) ? $user->id : null,
-            "email" => $email,
-            "ip_address" => $request->ip()
-        ]);
 
 		return response()->json([
 			"status" => "fail",
