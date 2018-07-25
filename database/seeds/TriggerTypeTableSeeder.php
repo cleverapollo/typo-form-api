@@ -117,6 +117,15 @@ class TriggerTypeTableSeeder extends Seeder
 		    'updated_at' => Carbon::now()
 	    ]);
 
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'in list')->first()->id,
+		    'answer' => false,
+		    'value' => true,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
 	    $question_type_id = DB::table('question_types')->where('type', 'Paragraph')->first()->id;
 
 	    DB::table('trigger_types')->insert([
