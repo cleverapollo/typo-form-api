@@ -23,7 +23,7 @@ trait ThrottlesLogins
 	protected function hasTooManyLoginAttempts(Request $request)
 	{
         $throttle = Throttle::where([
-            ["ip", "=", $request->ip()],
+            ["ip_address", "=", $request->ip()],
             ["created_at", ">", Carbon::now()->subMinutes(5)]
         ])->first();
 
