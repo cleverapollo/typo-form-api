@@ -158,7 +158,8 @@ class Controller extends BaseController
 						'user_name' => $user->first_name . ' ' . $user->last_name,
 						'role' => $role->name,
 						'token' => $token,
-						'email' => $invitation['email']
+						'email' => $invitation['email'],
+						'title' => "You have been invited to join the " . $type . " " . $data->name . " on Informed 365"
 					]));
 				}
 			}

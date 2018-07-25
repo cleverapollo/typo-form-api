@@ -2,6 +2,8 @@
 
 namespace App\Http\Foundation\Auth;
 
+use App\Models\Throttle;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
@@ -20,7 +22,16 @@ trait ThrottlesLogins
 	 */
 	protected function hasTooManyLoginAttempts(Request $request)
 	{
-		return $this->limiter()->tooManyAttempts(
+        $throttle = Throttle::where([
+            ["ip", "=", $request->ip()],
+            ["created_at", ">", Carbon::now()->subMinutes(5)]
+        ])->first();
+
+        if (!is_null($throttle)) {
+            return true;
+        }
+
+	    return $this->limiter()->tooManyAttempts(
 			$this->throttleKey($request), $this->maxAttempts()
 		);
 	}
@@ -52,9 +63,18 @@ trait ThrottlesLogins
 			$this->throttleKey($request)
 		);
 
+		$email = $request->input("email");
+		$user = User::where("email", $email)->first();
+
+        $throttle = Throttle::create([
+            "user_id" => !is_null($user) ? $user->id : null,
+            "email" => $email,
+            "ip_address" => $request->ip()
+        ]);
+
 		return response()->json([
-			'status' => 'fail',
-			'message' => 'Too many failed login attempts. Please try again in 3 minutes.'
+			"status" => "fail",
+			"message" => "Too many failed login attempts. Please try again in 5 minutes."
 		], 423);
 	}
 
@@ -91,7 +111,7 @@ trait ThrottlesLogins
 	 */
 	protected function throttleKey(Request $request)
 	{
-		return Str::lower($request->input($this->username())) . '|' . $request->ip();
+		return Str::lower($request->input($this->username())) . "|" . $request->ip();
 	}
 
 	/**
@@ -111,7 +131,7 @@ trait ThrottlesLogins
 	 */
 	public function maxAttempts()
 	{
-		return property_exists($this, 'maxAttempts') ? $this->maxAttempts : 3;
+		return property_exists($this, "maxAttempts") ? $this->maxAttempts : 5;
 	}
 
 	/**
@@ -121,6 +141,6 @@ trait ThrottlesLogins
 	 */
 	public function decayMinutes()
 	{
-		return property_exists($this, 'decayMinutes') ? $this->decayMinutes : 3;
+		return property_exists($this, "decayMinutes") ? $this->decayMinutes : 5;
 	}
 }
