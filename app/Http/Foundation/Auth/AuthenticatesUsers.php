@@ -42,7 +42,7 @@ trait AuthenticatesUsers
 
         if (!is_null($throttle) && count($throttle) == 5) {
             $this->fireLockoutEvent($request);
-
+            $this->incrementLoginAttempts($request);
             return $this->sendLockoutResponse($request);
         }
 
@@ -51,7 +51,7 @@ trait AuthenticatesUsers
 		// the IP address of the client making these requests into this application.
 		if ($this->hasTooManyLoginAttempts($request)) {
 			$this->fireLockoutEvent($request);
-
+            $this->incrementLoginAttempts($request);
 			return $this->sendLockoutResponse($request);
 		}
 
