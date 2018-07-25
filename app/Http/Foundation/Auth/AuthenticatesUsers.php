@@ -36,7 +36,7 @@ trait AuthenticatesUsers
 		$this->validateLogin($request);
 
         $throttle = Throttle::where([
-            ["ip_address", "=", $request->ip()],
+            ["email", "=", $request->input("email")],
             ["created_at", ">", Carbon::now()->subMinutes(5)]
         ])->get();
 
