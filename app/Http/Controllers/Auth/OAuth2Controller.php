@@ -27,6 +27,11 @@ class OAuth2Controller extends Controller
 			return $this->returnErrorMessage(503, 'Invalid request');
 		}
 
+		$registered = User::where('email', $request->input('email', ''))->first();
+		if (!empty($registered)) {
+            return $this->returnErrorMessage(503, 'Email is already registered.');
+        }
+
 		$user = $this->findOrCreateUser($request);
 
 		// Login user
