@@ -33,13 +33,12 @@ class FormController extends Controller
 	 */
 	public function index($application_slug)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -65,13 +64,12 @@ class FormController extends Controller
 		]);
 
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Check whether user has permission
 			if (!$this->hasPermission($user, $application)) {
@@ -108,13 +106,12 @@ class FormController extends Controller
 	 */
 	public function show($application_slug, $id)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Check whether user has permission
 		if (!$this->hasPermission($user, $application)) {
@@ -154,13 +151,12 @@ class FormController extends Controller
 		]);
 
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Check whether user has permission
 			if (!$this->hasPermission($user, $application)) {
@@ -206,13 +202,12 @@ class FormController extends Controller
 	public function destroy($application_slug, $id)
 	{
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Check whether user has permission
 			if (!$this->hasPermission($user, $application)) {
@@ -377,7 +372,12 @@ class FormController extends Controller
 	public function exportCSV($application_slug, $id)
 	{
 		try {
-			$application = Application::where('slug', $application_slug)->first();
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -490,13 +490,12 @@ class FormController extends Controller
 		]);
 
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
