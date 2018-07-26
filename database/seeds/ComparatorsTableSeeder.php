@@ -93,5 +93,11 @@ class ComparatorsTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
+
+	    DB::table('comparators')->insert([
+		    'comparator' => 'not contains',
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
     }
 }
