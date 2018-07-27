@@ -74,9 +74,10 @@ class ApplicationController extends Controller
 			}
 
 			$name = $request->input('name');
-			$patterns = [' ', '$', '&', '+', ',', '/', ':', ';', '=', '?', '@', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`'];
-			$replacements = [];
-			$slug = strtolower(preg_replace($patterns, $replacements, $name));
+            // $patterns = ['/ /', '/\$/', '/&/', '/\+/', '/,/', '/\//', '/:/', '/;/', '/\?/', '/=/', '/@/', '/>/', '/</', '/#/', '/%/', '/{/', '/}/', '/\|/', '/\^/', '/~/', '/\[/', '/\]/', '/\`/'];
+            // $replacements = [];
+            // $slug = strtolower(preg_replace($patterns, $replacements, stripslashes($name)));
+            $slug = strtolower(preg_replace('/\s|\$|&|\+|,|\/|:|;|\?|=|@|>|<|#|%|{|}|\||\^|~|\[|\]|\`/', '', stripslashes($name)));
 			if (Application::where('slug', $slug)->count() > 0) {
 				return response()->json([
 					'slug' => ['The slug has already been taken.']
@@ -193,9 +194,10 @@ class ApplicationController extends Controller
 			// Update application
 			$name = $request->input('name');
 			if ($name) {
-                $patterns = [' ', '$', '&', '+', ',', '/', ':', ';', '=', '?', '@', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`'];
-                $replacements = [];
-                $slug = strtolower(preg_replace($patterns, $replacements, $name));
+                // $patterns = ['/ /', '/\$/', '/&/', '/\+/', '/,/', '/\//', '/:/', '/;/', '/\?/', '/=/', '/@/', '/>/', '/</', '/#/', '/%/', '/{/', '/}/', '/\|/', '/\^/', '/~/', '/\[/', '/\]/', '/\`/'];
+                // $replacements = [];
+                // $slug = strtolower(preg_replace($patterns, $replacements, stripslashes($name)));
+                $slug = strtolower(preg_replace('/\s|\$|&|\+|,|\/|:|;|\?|=|@|>|<|#|%|{|}|\||\^|~|\[|\]|\`/', '', stripslashes($name)));
 				if (Application::where('slug', $slug)->count() > 0) {
 					return response()->json([
 						'slug' => ['The slug has already been taken.']
