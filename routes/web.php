@@ -290,4 +290,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			// $router->delete('/', 'TriggerTypeController@destroy');
 		});
 	});
+
+	$router->group(['prefix' => 'answer-sort'], function () use ($router) {
+		$router->get('/', 'AnswerSortController@index');
+		$router->post('/', 'AnswerSortController@store');
+
+		$router->group(['prefix' => '{id}'], function () use ($router) {
+			$router->get('/', 'AnswerSortController@show');
+			// $router->put('/', 'AnswerSortController@update');
+			// $router->delete('/', 'AnswerSortController@destroy');
+		});
+	});
 });
