@@ -36,13 +36,12 @@ class TeamController extends Controller
 	 */
 	public function index($application_slug)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -74,13 +73,12 @@ class TeamController extends Controller
 		]);
 
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -123,13 +121,12 @@ class TeamController extends Controller
 	 */
 	public function show($application_slug, $id)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -173,13 +170,12 @@ class TeamController extends Controller
 		]);
 
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -232,13 +228,12 @@ class TeamController extends Controller
 	public function destroy($application_slug, $id)
 	{
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -284,13 +279,12 @@ class TeamController extends Controller
 	 */
 	public function getInvitationToken($application_slug, $id)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -356,13 +350,12 @@ class TeamController extends Controller
 	 */
 	public function getUsers($application_slug, $id)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -417,13 +410,12 @@ class TeamController extends Controller
 			'invitations.*.team_role_id' => 'required|integer|min:2'
 		]);
 
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {
@@ -484,13 +476,12 @@ class TeamController extends Controller
 				return $this->returnError('role', 404, 'update user');
 			}
 
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -554,13 +545,12 @@ class TeamController extends Controller
 	public function deleteUser($application_slug, $id, $user_id)
 	{
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -635,13 +625,12 @@ class TeamController extends Controller
 				return $this->returnError('role', 404, 'update user');
 			}
 
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {
@@ -705,13 +694,12 @@ class TeamController extends Controller
 	public function deleteInvitedUser($application_slug, $id, $invited_id)
 	{
 		try {
-			$user = Auth::user();
-
-			$application = $user->applications()->where('slug', $application_slug)->first();
-
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			}
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
 			// Send error if application does not exist
 			if (!$application) {

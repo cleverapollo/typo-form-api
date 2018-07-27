@@ -58,13 +58,12 @@ class SubmissionController extends Controller
 	 */
 	public function all($application_slug)
 	{
-		$user = Auth::user();
-
-		$application = $user->applications()->where('slug', $application_slug)->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		}
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
 
 		// Send error if application does not exist
 		if (!$application) {

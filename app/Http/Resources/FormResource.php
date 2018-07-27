@@ -19,6 +19,7 @@ class FormResource extends JsonResource
 			'name' => $this->name,
 			'application_id' => $this->application_id,
 			'show_progress' => $this->show_progress,
+			'allow_submit' => $this->allow_submit,
 			'auto' => $this->auto
 		];
 	}

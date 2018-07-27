@@ -27,7 +27,19 @@ class OAuth2Controller extends Controller
 			return $this->returnErrorMessage(503, 'Invalid request');
 		}
 
-		$user = $this->findOrCreateUser($request);
+        $user = User::where([
+            ['social_id', '=', $social_id],
+            ['provider', '=', $provider],
+        ])->first();
+
+        if (empty($user)) {
+            $registered = User::where('email', $request->input('email', ''))->first();
+            if (!empty($registered)) {
+                return $this->returnErrorMessage(503, 'Sorry. There was an error while creating account. Please try again later.');
+            }
+
+            $user = $this->createUser($request);
+        }
 
 		// Login user
 		$api_token = base64_encode(str_random(40));
@@ -50,27 +62,15 @@ class OAuth2Controller extends Controller
 	 *
 	 * @return \Illuminate\Contracts\Auth\Authenticatable|mixed $user
 	 */
-	public function findOrCreateUser(Request $request)
+	public function createUser(Request $request)
 	{
-		$social_id = $request->input('id', null);
-		$provider = $request->input('provider', null);
-
-		$authUser = User::where([
-			['social_id', '=', $social_id],
-			['provider', '=', $provider],
-		])->first();
-
-		if (!empty($authUser)) {
-			return $authUser;
-		}
-
 		return User::create([
 			'first_name' => $request->input('first_name', ''),
 			'last_name' => $request->input('last_name', ''),
 			'email' => $request->input('email', ''),
 			'password' => '',
-			'social_id' => $social_id,
-			'provider' => $provider,
+			'social_id' => $request->input('id', null),
+			'provider' => $request->input('provider', null),
 			'role_id' => Role::where('name', 'User')->first()->id
 		]);
 	}
