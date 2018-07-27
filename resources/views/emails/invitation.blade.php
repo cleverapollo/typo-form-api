@@ -11,7 +11,7 @@
     <p>To accept this invitation:
         <ol>
             <li>Navigate to <a href="https://app.informed365.com">https://app.informed365.com</a></li>
-            <li>Log into your accoun. If you don't have an account you can crete a new account.</li>
+            <li>Log into your account. If you don't have an account you can crete a new account.</li>
             <li>Click the invitation link below</li>
         </ol>
     </p>
