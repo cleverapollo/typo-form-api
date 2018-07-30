@@ -268,9 +268,9 @@ class FormController extends Controller
 
 				if (!empty($data) && $data->count()) {
 					// If there is multiple sheets
-					if (!array_key_exists('section_name', $data[0])) {
+					/* if (!array_key_exists('section_name', $data[0])) {
 						$data = $data[0];
-					}
+					} */
 
 					foreach ($data as $dt) {
 						// Handling Section
