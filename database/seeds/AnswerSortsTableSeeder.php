@@ -23,25 +23,25 @@ class AnswerSortsTableSeeder extends Seeder
 	    ]);
 
         DB::table('answer_sorts')->insert([
-	    	'sort' => 'Text ASC',
+	    	'sort' => 'Alphanumeric Ascending (A-Z)',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
         DB::table('answer_sorts')->insert([
-	    	'sort' => 'Text DESC',
+	    	'sort' => 'Alphanumeric Descending (Z-A)',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
         DB::table('answer_sorts')->insert([
-	    	'sort' => 'Number ASC',
+	    	'sort' => 'Number Ascending (1-9)',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
 
         DB::table('answer_sorts')->insert([
-	    	'sort' => 'Number DESC',
+	    	'sort' => 'Number Descending (9-1)',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
