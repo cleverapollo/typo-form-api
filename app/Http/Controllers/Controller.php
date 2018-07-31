@@ -128,7 +128,13 @@ class Controller extends BaseController
 					])->first();
 
 					// Ignore if invitee is not the application member for team registration
-					if (!$application_user) continue;
+					if (!$application_user) {
+                        $application_user = ApplicationUser::create([
+                            'user_id' => $invitee->id,
+                            'application_id' => $data->application_id,
+                            'role_id' => Role::where('name', 'User')->first()->id
+                        ]);
+                    }
 				}
 
 				// Check if the user is already invited
