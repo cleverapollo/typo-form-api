@@ -775,5 +775,25 @@ class TriggerTypeTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
+
+	    $question_type_id = DB::table('question_types')->where('type', 'ABN Lookup')->first()->id;
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'is null')->first()->id,
+		    'answer' => false,
+		    'value' => false,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'is invalid')->first()->id,
+		    'answer' => false,
+		    'value' => false,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
     }
 }
