@@ -797,7 +797,7 @@ class ApplicationController extends Controller
         $forms = $application->forms()->get();
         $result = [];
         foreach ($forms as $form) {
-            $submissions = $form->submissions();
+            $submissions = $form->submissions;
 
             foreach ($comparisons as $comparison) {
                 switch ($comparison['query']) {
@@ -826,7 +826,7 @@ class ApplicationController extends Controller
                 $invalid = false;
 
                 foreach ($questions as $question) {
-                    $responses = $submission->responses()->where('question_id', $question['question_id']);
+                    $responses = $submission->responses->where('question_id', $question['question_id']);
                     switch ($question['query']) {
                         case 'is null':
                             $responses = $responses->whereNull('response');
