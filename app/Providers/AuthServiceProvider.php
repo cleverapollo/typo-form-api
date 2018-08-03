@@ -33,7 +33,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->app['auth']->viaRequest('api', function ($request) {
             if ($request->header('API-Token')) {
                 $user = User::where([
-                    ['expire_date', '>', Carbon::now()->subMinutes(15)],
+                    ['expire_date', '>', Carbon::now()->subHours(24)],
                     ['api_token', '=', $request->header('API-Token')]
                 ])->first();
 

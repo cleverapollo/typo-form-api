@@ -202,34 +202,55 @@ class Controller extends BaseController
 			$type_id = $invitation->application_id;
 		}
 
-		// Send error if user already exists in the Team or Application
-		if (DB::table($type . '_users')->where([
+		$user_list = DB::table($type . '_users')->where([
 			'user_id' => $user->id,
 			$type . '_id' => $type_id
-		])->first()) {
-			return $this->returnErrorMessage(403, 'User has already joined in the ' . $type);
+		])->first();
+
+		// Check if user already exists in the Team or Application
+		if (!$user_list) {
+
+			if ($user_list = DB::table($type . '_users')->insert([
+				'user_id' => $user->id,
+				$type . '_id' => $type_id,
+				'role_id' => $invitation->role_id,
+				'created_at' => Carbon::now(),
+				'updated_at' => Carbon::now()
+			])) {
+				// Remove token and update status at invitations table
+				DB::table($type . '_invitations')->where('id', $invitation->id)->update([
+					'status' => 1,
+					'updated_at' => Carbon::now()
+				]);
+			}
 		}
 
-		if (DB::table($type . '_users')->insert([
-			'user_id' => $user->id,
-			$type . '_id' => $type_id,
-			'role_id' => $invitation->role_id,
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		])) {
-			// Remove token and update status at invitations table
-			DB::table($type . '_invitations')->where('id', $invitation->id)->update([
-				'status' => 1,
-				'updated_at' => Carbon::now()
-			]);
+		if ($user_list) {
+			if ($type == 'team') {
+				$team = Team::find($type_id);
 
-			// ToDo: Trigger action
+				$application_user = ApplicationUser::where([
+					'user_id' => $user->id,
+					'application_id' => $team->application_id
+				])->first();
+
+				if (!$application_user) {
+					DB::table('application_users')->insert([
+						'user_id' => $user->id,
+						'application_id' => $team->application_id,
+						'role_id' => Role::where('name', 'User')->first()->id,
+						'created_at' => Carbon::now(),
+						'updated_at' => Carbon::now()
+					]);
+				}
+			}
 			return response()->json([
 				'status' => 'success',
 				'message' => 'Invitation has been successfully accepted.',
-				'data' => $type == 'team' ? Team::where('id', $type_id)->first() : Application::where('id', $type_id)->first()
+				'data' => $type == 'team' ? Team::find($type_id) : Application::find($type_id),
+				'slug' => $type == 'team' ? Application::find(Team::find($type_id)->application_id)->slug : Application::find($type_id)->slug
 			], 200);
-		};
+		}
 
 		// Send error
 		return $this->returnErrorMessage(503, 'You cannot accept the invitation right now. Please try again later.');
@@ -256,23 +277,46 @@ class Controller extends BaseController
 			return $this->returnErrorMessage(403, 'Invalid token.');
 		}
 
-		// Send error if user already exists in the Team or Application
-		if (DB::table($type . '_users')->where([
+		$user_list = DB::table($type . '_users')->where([
 			'user_id' => $user->id,
 			$type . '_id' => $data->id
-		])->first()) {
-			return $this->returnErrorMessage(403, 'User is already included in the ' . $type);
+		])->first();
+
+		// Check if user already exists in the Team or Application
+		if (!$user_list) {
+			$user_list = DB::table($type . '_users')->insert([
+				'user_id' => $user->id,
+				$type . '_id' => $data->id,
+				'role_id' => Role::where('name', 'User')->first()->id,
+				'created_at' => Carbon::now(),
+				'updated_at' => Carbon::now()
+			]);
 		}
 
-		if (DB::table($type . '_users')->insert([
-			'user_id' => $user->id,
-			$type . '_id' => $data->id,
-			'role_id' => Role::where('name', 'User')->first()->id,
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		])) {
-			return $this->returnSuccessMessage('message', 'You have joined the ' . $type . ' successfully.');
-		};
+		if ($user_list) {
+			if ($type == 'team') {
+				$application_user = ApplicationUser::where([
+					'user_id' => $user->id,
+					'application_id' => $data->application_id
+				])->first();
+
+				if (!$application_user) {
+					DB::table('application_users')->insert([
+						'user_id' => $user->id,
+						'application_id' => $data->application_id,
+						'role_id' => Role::where('name', 'User')->first()->id,
+						'created_at' => Carbon::now(),
+						'updated_at' => Carbon::now()
+					]);
+				}
+			}
+			return response()->json([
+				'status' => 'success',
+				'message' => 'You have joined the ' . $type . ' successfully.',
+				'data' => $data,
+				'slug' => $type == 'team' ? Application::find($data->application_id)->slug : Application::find($data->id)->slug
+			], 200);
+		}
 
 		// Send error
 		return $this->returnErrorMessage(503, 'You cannot join the ' . $type . ' right now. Please try again later.');

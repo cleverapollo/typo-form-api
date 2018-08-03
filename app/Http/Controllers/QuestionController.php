@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Section;
 use App\Models\Question;
 use App\Models\QuestionType;
+use App\Models\AnswerSort;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\SectionResource;
 use Illuminate\Http\Request;
@@ -68,6 +69,8 @@ class QuestionController extends Controller
 				return $this->returnError('question type', 404, 'create question');
 			}
 
+			$sort_id = AnswerSort::where('sort', 'Default')->first()->id;
+
 			// Count order
 			$order = 1;
 			if (count($section->questions) > 0) {
@@ -84,7 +87,8 @@ class QuestionController extends Controller
 				'mandatory' => $request->input('mandatory', 0),
 				'question_type_id' => $question_type_id,
 				'order' => $order,
-				'width' => $request->input('width', null)
+				'width' => $request->input('width', null),
+				'sort_id' => $sort_id
 			]);
 
 			if ($question) {
@@ -131,7 +135,8 @@ class QuestionController extends Controller
 				'mandatory' => $question->mandatory,
 				'question_type_id' => $question->question_type_id,
 				'order' => ($question->order + 1),
-				'width' => $question->width
+				'width' => $question->width,
+				'sort_id' => $question->sort_id
 			]);
 
 			if ($newQuestion) {
@@ -212,7 +217,8 @@ class QuestionController extends Controller
 			'question' => 'filled',
 			'mandatory' => 'filled|boolean',
 			'question_type_id' => 'filled|integer|min:1',
-			'width' => 'filled|integer|min:1|max:12'
+			'width' => 'filled|integer|min:1|max:12',
+			'sort_id' => 'filled|integer|min:1'
 		]);
 
 		try {
@@ -238,8 +244,16 @@ class QuestionController extends Controller
 				}
 			}
 
+			if ($sort_id = $request->input('sort_id', null)) {
+				// Check whether the answer sort exists or not
+				$sort = AnswerSort::find($sort_id);
+				if (!$sort) {
+					return $this->returnError('answer sort', 404, 'update question');
+				}
+			}
+
 			// Update question
-			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width'))->save()) {
+			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width', 'sort_id'))->save()) {
 				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($question->id)));
 			}
 

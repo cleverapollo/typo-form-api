@@ -126,7 +126,7 @@ class UserController extends Controller
 	{
 		$this->validate($request, [
 			'new_password' => 'required|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/',
-			'old_password' => 'required|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
+			'old_password' => 'required'
 		]);
 
 		try {

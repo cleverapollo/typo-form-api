@@ -83,7 +83,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
 		    'answer' => false,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -211,7 +211,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
 		    'answer' => false,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -341,7 +341,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
 		    'answer' => true,
 		    'value' => false,
 		    'created_at' => Carbon::now(),
@@ -388,7 +388,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'equals')->first()->id,
 		    'answer' => true,
 		    'value' => false,
 		    'created_at' => Carbon::now(),
@@ -397,9 +397,27 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'not equal to')->first()->id,
 		    'answer' => true,
 		    'value' => false,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'contains')->first()->id,
+		    'answer' => false,
+		    'value' => true,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
+		    'answer' => false,
+		    'value' => true,
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
@@ -547,7 +565,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
 		    'answer' => true,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -585,7 +603,7 @@ class TriggerTypeTableSeeder extends Seeder
 
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
-		    'comparator_id' => DB::table('comparators')->where('comparator', 'not contains')->first()->id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'does not contain')->first()->id,
 		    'answer' => true,
 		    'value' => true,
 		    'created_at' => Carbon::now(),
@@ -752,6 +770,26 @@ class TriggerTypeTableSeeder extends Seeder
 	    DB::table('trigger_types')->insert([
 		    'question_type_id' => $question_type_id,
 		    'comparator_id' => DB::table('comparators')->where('comparator', 'is not null')->first()->id,
+		    'answer' => false,
+		    'value' => false,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    $question_type_id = DB::table('question_types')->where('type', 'ABN Lookup')->first()->id;
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'is null')->first()->id,
+		    'answer' => false,
+		    'value' => false,
+		    'created_at' => Carbon::now(),
+		    'updated_at' => Carbon::now()
+	    ]);
+
+	    DB::table('trigger_types')->insert([
+		    'question_type_id' => $question_type_id,
+		    'comparator_id' => DB::table('comparators')->where('comparator', 'is invalid')->first()->id,
 		    'answer' => false,
 		    'value' => false,
 		    'created_at' => Carbon::now(),

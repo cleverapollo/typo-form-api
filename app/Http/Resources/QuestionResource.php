@@ -22,6 +22,7 @@ class QuestionResource extends JsonResource
 			'question_type_id' => $this->question_type_id,
 			'order' => $this->order,
 			'width' => $this->width,
+			'sort_id' => $this->sort_id,
 			'answers' => AnswerResource::collection($this->answers)
 		];
 	}
