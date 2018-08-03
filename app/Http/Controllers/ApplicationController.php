@@ -771,15 +771,24 @@ class ApplicationController extends Controller
 
         // ToDo: check admin
 
-        $submissions = DB::table('submissions');
         $filters = $request->input('filters');
         foreach ($filters as $key => $filter) {
             if ($filter['query']) {
                 $query = Comparator::find($filter['query']);
                 if ($query) {
-                    $comparison = $this->getComparator($query->comparator, $filter['value']);
+                    $filter['comparison'] = $this->getComparator($query->comparator, $filter['value']);
+                }
+            }
+        }
 
-                    switch ($comparison['query']) {
+        $forms = $application->forms()->get();
+        $result = [];
+        foreach ($forms as $form) {
+            $submissions = $form->submissions;
+
+            foreach ($filters as $key => $filter) {
+                if ($filter['comparison']) {
+                    switch ($filter['comparison']['query']) {
                         case 'is null':
                             $submissions = $submissions->whereNull($filter['source']);
                             break;
@@ -787,24 +796,21 @@ class ApplicationController extends Controller
                             $submissions = $submissions->whereNotNull($filter['source']);
                             break;
                         case 'in list':
-                            $submissions = $submissions->whereIn($filter['source'], explode(',', $comparison['value']));
+                            $submissions = $submissions->whereIn($filter['source'], explode(',', $filter['comparison']['value']));
                             break;
                         case 'not in list':
-                            $submissions = $submissions->whereNotIn($filter['source'], explode(',', $comparison['value']));
+                            $submissions = $submissions->whereNotIn($filter['source'], explode(',', $filter['comparison']['value']));
                             break;
                         case '':
                             break;
                         default:
-                            $submissions = $submissions->where($filter['source'], $comparison['query'], $comparison['value']);
+                            $submissions = $submissions->where($filter['source'], $filter['comparison']['query'], $filter['comparison']['value']);
                     }
                 }
             }
-        }
 
-        $submissions = $submissions->get();
-        $result = [];
-        foreach ($submissions as $submission) {
-            if ($submission->form->application->id == $application->id) {
+            $submissions = $submissions->get();
+            foreach ($submissions as $submission) {
                 $result[] = $submission->id;
             }
         }
