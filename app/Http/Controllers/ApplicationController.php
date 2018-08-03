@@ -772,11 +772,14 @@ class ApplicationController extends Controller
         // ToDo: check admin
 
         $filters = $request->input('filters');
+        $comparisons = [];
         foreach ($filters as $key => $filter) {
             if ($filter['query']) {
                 $query = Comparator::find($filter['query']);
                 if ($query) {
-                    $filter['comparison'] = $this->getComparator($query->comparator, $filter['value']);
+                    $comparison = $this->getComparator($query->comparator, $filter['value']);
+                    $comparison['source'] = $filter['source'];
+                    $comparisons[] = $comparison;
                 }
             }
         }
@@ -786,26 +789,24 @@ class ApplicationController extends Controller
         foreach ($forms as $form) {
             $submissions = $form->submissions;
 
-            foreach ($filters as $key => $filter) {
-                if ($filter['comparison']) {
-                    switch ($filter['comparison']['query']) {
-                        case 'is null':
-                            $submissions = $submissions->whereNull($filter['source']);
-                            break;
-                        case 'is not null':
-                            $submissions = $submissions->whereNotNull($filter['source']);
-                            break;
-                        case 'in list':
-                            $submissions = $submissions->whereIn($filter['source'], explode(',', $filter['comparison']['value']));
-                            break;
-                        case 'not in list':
-                            $submissions = $submissions->whereNotIn($filter['source'], explode(',', $filter['comparison']['value']));
-                            break;
-                        case '':
-                            break;
-                        default:
-                            $submissions = $submissions->where($filter['source'], $filter['comparison']['query'], $filter['comparison']['value']);
-                    }
+            foreach ($comparisons as $comparison) {
+                switch ($comparison['query']) {
+                    case 'is null':
+                        $submissions = $submissions->whereNull($comparison['source']);
+                        break;
+                    case 'is not null':
+                        $submissions = $submissions->whereNotNull($comparison['source']);
+                        break;
+                    case 'in list':
+                        $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
+                        break;
+                    case 'not in list':
+                        $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
+                        break;
+                    case '':
+                        break;
+                    default:
+                        $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
                 }
             }
 
