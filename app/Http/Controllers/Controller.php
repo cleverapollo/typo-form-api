@@ -118,24 +118,24 @@ class Controller extends BaseController
 				}
 
 				// Check if user is included in the application for team invitation
-				if ($type == 'team') {
-					// Ignore unregistered emails for team registration
-					if (!$invitee) continue;
-
-					$application_user = ApplicationUser::where([
-						'user_id' => $invitee->id,
-						'application_id' => $data->application_id
-					])->first();
-
-					// Ignore if invitee is not the application member for team registration
-					if (!$application_user) {
-                        $application_user = ApplicationUser::create([
-                            'user_id' => $invitee->id,
-                            'application_id' => $data->application_id,
-                            'role_id' => Role::where('name', 'User')->first()->id
-                        ]);
-                    }
-				}
+//				if ($type == 'team') {
+//					// Ignore unregistered emails for team registration
+//					if (!$invitee) continue;
+//
+//					$application_user = ApplicationUser::where([
+//						'user_id' => $invitee->id,
+//						'application_id' => $data->application_id
+//					])->first();
+//
+//					// Ignore if invitee is not the application member for team registration
+//					if (!$application_user) {
+//                        $application_user = ApplicationUser::create([
+//                            'user_id' => $invitee->id,
+//                            'application_id' => $data->application_id,
+//                            'role_id' => Role::where('name', 'User')->first()->id
+//                        ]);
+//                    }
+//				}
 
 				// Check if the user is already invited
 				$previousInvitation = DB::table($type . '_invitations')->where([
@@ -209,7 +209,6 @@ class Controller extends BaseController
 
 		// Check if user already exists in the Team or Application
 		if (!$user_list) {
-
 			if ($user_list = DB::table($type . '_users')->insert([
 				'user_id' => $user->id,
 				$type . '_id' => $type_id,
@@ -235,15 +234,14 @@ class Controller extends BaseController
 				])->first();
 
 				if (!$application_user) {
-					DB::table('application_users')->insert([
-						'user_id' => $user->id,
-						'application_id' => $team->application_id,
-						'role_id' => Role::where('name', 'User')->first()->id,
-						'created_at' => Carbon::now(),
-						'updated_at' => Carbon::now()
-					]);
+                    $application_user = ApplicationUser::create([
+                        'user_id' => $user->id,
+                        'application_id' => $team->application_id,
+                        'role_id' => Role::where('name', 'User')->first()->id
+                    ]);
 				}
 			}
+
 			return response()->json([
 				'status' => 'success',
 				'message' => 'Invitation has been successfully accepted.',
@@ -301,15 +299,14 @@ class Controller extends BaseController
 				])->first();
 
 				if (!$application_user) {
-					DB::table('application_users')->insert([
-						'user_id' => $user->id,
-						'application_id' => $data->application_id,
-						'role_id' => Role::where('name', 'User')->first()->id,
-						'created_at' => Carbon::now(),
-						'updated_at' => Carbon::now()
-					]);
+                    $application_user = ApplicationUser::create([
+                        'user_id' => $user->id,
+                        'application_id' => $data->application_id,
+                        'role_id' => Role::where('name', 'User')->first()->id
+                    ]);
 				}
 			}
+
 			return response()->json([
 				'status' => 'success',
 				'message' => 'You have joined the ' . $type . ' successfully.',
@@ -321,6 +318,56 @@ class Controller extends BaseController
 		// Send error
 		return $this->returnErrorMessage(503, 'You cannot join the ' . $type . ' right now. Please try again later.');
 	}
+
+	protected function getComparator($comparator, $value)
+    {
+        switch ($comparator) {
+            case 'equals':
+                $query = '=';
+                break;
+            case 'not equal to':
+                $query = '!=';
+                break;
+            case 'less than':
+                $query = '<';
+                break;
+            case 'greater than':
+                $query = '>';
+                break;
+            case 'less than or equal to':
+                $query = '<=';
+                break;
+            case 'greater than or equal to':
+                $query = '>=';
+                break;
+            case 'contains':
+                $query = 'LIKE';
+                $value = '%' . $value . '%';
+                break;
+            case 'does not contain':
+                $query = 'NOT LIKE';
+                $value = '%' . $value . '%';
+                break;
+            case 'starts with':
+                $query = 'LIKE';
+                $value = $value . '%';
+                break;
+            case 'ends with':
+                $query = 'LIKE';
+                $value = '%' . $value;
+                break;
+            case 'is invalid':
+                $query = '';
+                break;
+            default:
+                $query = $comparator;
+        }
+
+        return [
+            'query' => $query,
+            'value' => $value
+        ];
+    }
 
 	/**
 	 * File Upload

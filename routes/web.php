@@ -51,6 +51,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->get('export', 'ApplicationController@exportCSV');
 
 			$router->get('submission', 'SubmissionController@all');
+            $router->post('submission/filter', 'ApplicationController@filterSubmission');
 
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');

@@ -19,5 +19,6 @@ class DatabaseSeeder extends Seeder
 		$this->call('ComparatorsTableSeeder');
 		$this->call('ActionTypesTableSeeder');
 		$this->call('TriggerTypeTableSeeder');
+        $this->call('AnswerSortsTableSeeder');
 	}
 }

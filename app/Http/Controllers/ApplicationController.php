@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SubmissionIDResource;
 use Auth;
 use Exception;
 use App\Models\Role;
@@ -9,6 +10,8 @@ use App\Models\Status;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\ApplicationInvitation;
+use App\Models\Comparator;
+use App\Models\Submission;
 use App\Models\QuestionType;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
@@ -16,6 +19,7 @@ use App\Http\Resources\ApplicationUserResource;
 use App\Http\Resources\ApplicationInvitationResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ApplicationController extends Controller
@@ -734,6 +738,76 @@ class ApplicationController extends Controller
             // Send error
             return $this->returnErrorMessage(503, $e->getMessage());
         }
+    }
+
+    /**
+     * Filter submissions
+     *
+     * @param  $application_slug
+     * @param  Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function filterSubmission($application_slug, Request $request)
+    {
+        $this->validate($request, [
+            'filters' => 'array',
+            'filters.*.source' => 'required',
+            'filters.*.query' => 'integer'
+        ]);
+
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
+
+        // Send error if application does not exist
+        if (!$application) {
+            return $this->returnApplicationNameError();
+        }
+
+        // ToDo: check admin
+
+        $submissions = DB::table('submissions');
+        $filters = $request->input('filters');
+        foreach ($filters as $key => $filter) {
+            if ($filter['query']) {
+                $query = Comparator::find($filter['query']);
+                if ($query) {
+                    $comparison = $this->getComparator($query->comparator, $filter['value']);
+
+                    switch ($comparison['query']) {
+                        case 'is null':
+                            $submissions = $submissions->whereNull($filter['source']);
+                            break;
+                        case 'is not null':
+                            $submissions = $submissions->whereNotNull($filter['source']);
+                            break;
+                        case 'in list':
+                            $submissions = $submissions->whereIn($filter['source'], explode(',', $comparison['value']));
+                            break;
+                        case 'not in list':
+                            $submissions = $submissions->whereNotIn($filter['source'], explode(',', $comparison['value']));
+                            break;
+                        case '':
+                            break;
+                        default:
+                            $submissions = $submissions->where($filter['source'], $comparison['query'], $comparison['value']);
+                    }
+                }
+            }
+        }
+
+        $submissions = $submissions->get()->filter(function ($submission) use ($application) {
+            return ($submission->form->application->id == $application->id);
+        });
+
+        return $this->returnSuccessMessage('submissions', $submissions->map(function ($submission) {
+            return $submission->id;
+        }));
     }
 
 	/**
