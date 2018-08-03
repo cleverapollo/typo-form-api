@@ -810,7 +810,7 @@ class ApplicationController extends Controller
                 }
             }
 
-            $submissions = $submissions->get();
+            $submissions = $submissions->all();
             foreach ($submissions as $submission) {
                 $result[] = $submission->id;
             }
