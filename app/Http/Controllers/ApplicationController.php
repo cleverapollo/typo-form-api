@@ -754,7 +754,8 @@ class ApplicationController extends Controller
         $this->validate($request, [
             'filters' => 'array',
             'filters.*.source' => 'required',
-            'filters.*.query' => 'integer'
+            'filters.*.query' => 'filled|integer',
+            'filters.*.question_id' => 'filled|integer'
         ]);
 
         $user = Auth::user();
@@ -773,13 +774,22 @@ class ApplicationController extends Controller
 
         $filters = $request->input('filters');
         $comparisons = [];
+        $questions = [];
         foreach ($filters as $key => $filter) {
             if ($filter['query']) {
                 $query = Comparator::find($filter['query']);
                 if ($query) {
                     $comparison = $this->getComparator($query->comparator, $filter['value']);
                     $comparison['source'] = $filter['source'];
-                    $comparisons[] = $comparison;
+
+                    if ($comparison['source'] == 'question_id') {
+                        if ($filter['question_id']) {
+                            $comparison['question_id'] = $filter['question_id'];
+                            $questions[] = $comparison;
+                        }
+                    } else {
+                        $comparisons[] = $comparison;
+                    }
                 }
             }
         }
@@ -787,7 +797,7 @@ class ApplicationController extends Controller
         $forms = $application->forms()->get();
         $result = [];
         foreach ($forms as $form) {
-            $submissions = $form->submissions;
+            $submissions = $form->submissions();
 
             foreach ($comparisons as $comparison) {
                 switch ($comparison['query']) {
@@ -810,9 +820,40 @@ class ApplicationController extends Controller
                 }
             }
 
-            $submissions = $submissions->all();
+            $submissions = $submissions->get();
+
             foreach ($submissions as $submission) {
-                $result[] = $submission->id;
+                $invalid = false;
+
+                foreach ($questions as $question) {
+                    $responses = $submission->responses()->where('question_id', $question['question_id']);
+                    switch ($question['query']) {
+                        case 'is null':
+                            $responses = $responses->whereNull('response');
+                            break;
+                        case 'is not null':
+                            $responses = $responses->whereNotNull('response');
+                            break;
+                        case 'in list':
+                            $responses = $responses->whereIn('response', explode(',', $question['value']));
+                            break;
+                        case 'not in list':
+                            $responses = $responses->whereNotIn('response', explode(',', $question['value']));
+                            break;
+                        case '':
+                            break;
+                        default:
+                            $responses = $responses->where('response', $question['query'], $question['value']);
+                    }
+
+                    if (count($responses->all()) == 0) {
+                        $invalid = true;
+                    }
+                }
+
+                if (!$invalid) {
+                    $result[] = $submission->id;
+                }
             }
         }
 
