@@ -801,13 +801,15 @@ class ApplicationController extends Controller
             }
         }
 
-        $submissions = $submissions->get()->filter(function ($submission) use ($application) {
-            return ($submission->form->application->id == $application->id);
-        });
+        $submissions = $submissions->get();
+        $result = [];
+        foreach ($submissions as $submission) {
+            if ($submission->form->application->id == $application->id) {
+                $result[] = $submission->id;
+            }
+        }
 
-        return $this->returnSuccessMessage('submissions', $submissions->map(function ($submission) {
-            return $submission->id;
-        }));
+        return $this->returnSuccessMessage('submissions', $result);
     }
 
 	/**
