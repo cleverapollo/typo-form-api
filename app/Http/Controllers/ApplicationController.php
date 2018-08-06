@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\SubmissionIDResource;
 use Auth;
 use Exception;
 use App\Models\Role;
@@ -11,15 +10,15 @@ use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\ApplicationInvitation;
 use App\Models\Comparator;
-use App\Models\Submission;
 use App\Models\QuestionType;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
 use App\Http\Resources\ApplicationInvitationResource;
+use App\Http\Resources\SubmissionResource;
 use App\Jobs\UsersNotification;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ApplicationController extends Controller
@@ -795,10 +794,10 @@ class ApplicationController extends Controller
         }
 
         $forms = $application->forms()->get();
-        $result = [];
+        $submissionIds = [];
+        $submissionCollection = new Collection();
         foreach ($forms as $form) {
             $submissions = $form->submissions;
-
             foreach ($comparisons as $comparison) {
                 switch ($comparison['query']) {
                     case 'is null':
@@ -821,9 +820,9 @@ class ApplicationController extends Controller
             }
 
             $submissions = $submissions->all();
-
             foreach ($submissions as $submission) {
                 $invalid = false;
+                $responseCollection = new Collection();
 
                 foreach ($questions as $question) {
                     $responses = $submission->responses->where('question_id', $question['question_id']);
@@ -848,16 +847,24 @@ class ApplicationController extends Controller
 
                     if (count($responses->all()) == 0) {
                         $invalid = true;
+                    } else {
+                        $responseCollection = $responseCollection->merge($responses);
                     }
                 }
 
                 if (!$invalid) {
-                    $result[] = $submission->id;
+                    $submissionIds[] = $submission->id;
+
+                    $submission->responses = $responseCollection;
+                    $submissionCollection = $submissionCollection->push($submission);
                 }
             }
         }
 
-        return $this->returnSuccessMessage('submissions', $result);
+        return $this->returnSuccessMessage('submissions', [
+            "submission_ids" => $submissionIds,
+            "submissions" => SubmissionResource::collection($submissionCollection)
+        ]);
     }
 
 	/**
