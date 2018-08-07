@@ -757,114 +757,227 @@ class ApplicationController extends Controller
             'filters.*.question_id' => 'filled|integer'
         ]);
 
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
+        try {
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
 
-        // Send error if application does not exist
-        if (!$application) {
-            return $this->returnApplicationNameError();
-        }
+            // Send error if application does not exist
+            if (!$application) {
+                return $this->returnApplicationNameError();
+            }
 
-        // ToDo: check admin
+            // ToDo: check admin
 
-        $filters = $request->input('filters');
-        $comparisons = [];
-        $questions = [];
-        foreach ($filters as $key => $filter) {
-            if ($filter['query']) {
-                $query = Comparator::find($filter['query']);
-                if ($query) {
-                    $comparison = $this->getComparator($query->comparator, $filter['value']);
-                    $comparison['source'] = $filter['source'];
+            $filters = $request->input('filters');
+            $comparisons = [];
+            $questions = [];
+            foreach ($filters as $key => $filter) {
+                if ($filter['query']) {
+                    $query = Comparator::find($filter['query']);
+                    if ($query) {
+                        $comparison = $this->getComparator($query->comparator, $filter['value']);
+                        $comparison['source'] = $filter['source'];
 
-                    if ($comparison['source'] == 'question_id') {
-                        if ($filter['question_id']) {
-                            $comparison['question_id'] = $filter['question_id'];
-                            $questions[] = $comparison;
+                        if ($comparison['source'] == 'question_id') {
+                            if ($filter['question_id']) {
+                                $comparison['question_id'] = $filter['question_id'];
+                                $questions[] = $comparison;
+                            }
+                        } else {
+                            $comparisons[] = $comparison;
                         }
-                    } else {
-                        $comparisons[] = $comparison;
                     }
                 }
             }
-        }
 
-        $forms = $application->forms()->get();
-        $submissionIds = [];
-        $submissionCollection = new Collection();
-        foreach ($forms as $form) {
-            $submissions = $form->submissions;
-            foreach ($comparisons as $comparison) {
-                switch ($comparison['query']) {
-                    case 'is null':
-                        $submissions = $submissions->whereNull($comparison['source']);
-                        break;
-                    case 'is not null':
-                        $submissions = $submissions->whereNotNull($comparison['source']);
-                        break;
-                    case 'in list':
-                        $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
-                        break;
-                    case 'not in list':
-                        $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
-                        break;
-                    case '':
-                        break;
-                    default:
-                        $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
-                }
-            }
-
-            $submissions = $submissions->all();
-            foreach ($submissions as $submission) {
-                $invalid = false;
-                $responseCollection = new Collection();
-
-                foreach ($questions as $question) {
-                    $responses = $submission->responses->where('question_id', $question['question_id']);
-                    switch ($question['query']) {
+            $forms = $application->forms()->get();
+            $submissionIds = [];
+            $submissionCollection = new Collection();
+            foreach ($forms as $form) {
+                $submissions = $form->submissions;
+                foreach ($comparisons as $comparison) {
+                    switch ($comparison['query']) {
                         case 'is null':
-                            $responses = $responses->whereNull('response');
+                            $submissions = $submissions->whereNull($comparison['source']);
                             break;
                         case 'is not null':
-                            $responses = $responses->whereNotNull('response');
+                            $submissions = $submissions->whereNotNull($comparison['source']);
                             break;
                         case 'in list':
-                            $responses = $responses->whereIn('response', explode(',', $question['value']));
+                            $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
                             break;
                         case 'not in list':
-                            $responses = $responses->whereNotIn('response', explode(',', $question['value']));
+                            $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
                             break;
                         case '':
                             break;
                         default:
-                            $responses = $responses->where('response', $question['query'], $question['value']);
-                    }
-
-                    if (count($responses->all()) == 0) {
-                        $invalid = true;
-                    } else {
-                        $responseCollection = $responseCollection->merge($responses);
+                            $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
                     }
                 }
 
-                if (!$invalid) {
-                    $submissionIds[] = $submission->id;
+                $submissions = $submissions->all();
+                foreach ($submissions as $submission) {
+                    $invalid = false;
+                    $responseCollection = new Collection();
 
-                    $submission->responses = $responseCollection;
-                    $submissionCollection = $submissionCollection->push($submission);
+                    foreach ($questions as $question) {
+                        $responses = $submission->responses->where('question_id', $question['question_id']);
+                        switch ($question['query']) {
+                            case 'is null':
+                                $responses = $responses->whereNull('response');
+                                break;
+                            case 'is not null':
+                                $responses = $responses->whereNotNull('response');
+                                break;
+                            case 'in list':
+                                $responses = $responses->whereIn('response', explode(',', $question['value']));
+                                break;
+                            case 'not in list':
+                                $responses = $responses->whereNotIn('response', explode(',', $question['value']));
+                                break;
+                            case '':
+                                break;
+                            default:
+                                $responses = $responses->where('response', $question['query'], $question['value']);
+                        }
+
+                        if (count($responses->all()) == 0) {
+                            $invalid = true;
+                        } else {
+                            $responseCollection = $responseCollection->merge($responses);
+                        }
+                    }
+
+                    if (!$invalid) {
+                        $submissionIds[] = $submission->id;
+
+                        $submission->responses = $responseCollection;
+                        $submissionCollection = $submissionCollection->push($submission);
+                    }
                 }
             }
-        }
 
-        return $this->returnSuccessMessage('submissions', [
-            "submission_ids" => $submissionIds,
-            "submissions" => SubmissionResource::collection($submissionCollection)
+            return $this->returnSuccessMessage('submissions', [
+                "submission_ids" => $submissionIds,
+                "submissions" => SubmissionResource::collection($submissionCollection)
+            ]);
+        } catch (Exception $e) {
+            // Send error
+            return $this->returnErrorMessage(503, $e->getMessage());
+        }
+    }
+
+    /**
+     * Filter submission and export as CSV
+     *
+     * @param  $application_slug
+     * @param  Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function exportSubmission($application_slug, Request $request)
+    {
+        $this->validate($request, [
+            'filters' => 'array',
+            'filters.*.source' => 'required',
+            'filters.*.query' => 'filled|integer',
+            'filters.*.question_id' => 'filled|integer'
         ]);
+
+        try {
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
+
+            // Send error if application does not exist
+            if (!$application) {
+                return $this->returnApplicationNameError();
+            }
+
+            // ToDo: check admin
+
+            $filters = $request->input('filters');
+            $comparisons = [];
+            $questions = [];
+            foreach ($filters as $key => $filter) {
+                if ($filter['query']) {
+                    $query = Comparator::find($filter['query']);
+                    if ($query) {
+                        $comparison = $this->getComparator($query->comparator, $filter['value']);
+                        $comparison['source'] = $filter['source'];
+
+                        if ($comparison['source'] == 'question_id') {
+                            if ($filter['question_id']) {
+                                $comparison['question_id'] = $filter['question_id'];
+                                $questions[] = $comparison;
+                            }
+                        } else {
+                            $comparisons[] = $comparison;
+                        }
+                    }
+                }
+            }
+
+            $forms = $application->forms()->get();
+            $submissionsData = [];
+            foreach ($forms as $form) {
+                $submissions = $form->submissions;
+                foreach ($comparisons as $comparison) {
+                    switch ($comparison['query']) {
+                        case 'is null':
+                            $submissions = $submissions->whereNull($comparison['source']);
+                            break;
+                        case 'is not null':
+                            $submissions = $submissions->whereNotNull($comparison['source']);
+                            break;
+                        case 'in list':
+                            $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
+                            break;
+                        case 'not in list':
+                            $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
+                            break;
+                        case '':
+                            break;
+                        default:
+                            $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
+                    }
+                }
+
+                $submissions = $submissions->all();
+                foreach ($submissions as $submission) {
+                    // ToDo: Consider about the export response column
+
+                    $submissionsData[] = [
+                        'Submission ID' => $submission->id,
+                        'Form ID' => $submission->form_id,
+                        'User ID' => $submission->user_id,
+                        'Team ID' => $submission->team_id,
+                        'Progress' => $submission->progress,
+                        'Period Start' => $submission->period_start,
+                        'Period End' => $submission->period_end,
+                        'Status' => Status::find($submission->status_id)->status
+                    ];
+                }
+            }
+
+            return Excel::create($application->name, function ($excel) use ($submissionsData) {
+                $excel->sheet('Submissions', function ($sheet) use ($submissionsData) {
+                    $sheet->fromArray($submissionsData);
+                });
+            })->download('xlsx');
+        } catch (Exception $e) {
+            // Send error
+            return $this->returnErrorMessage(503, $e->getMessage());
+        }
     }
 
 	/**
