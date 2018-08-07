@@ -106,8 +106,10 @@ class Controller extends BaseController
 					$token = base64_encode(str_random(40));
 				}
 
+				$inviteeEmail = strtolower($invitation['email']);
+
 				// Check if user is already included in the Team or Application
-				$invitee = User::where('email', $invitation['email'])->first();
+				$invitee = User::where('email', $inviteeEmail)->first();
 				if ($invitee) {
 					$isIncluded = DB::table($type . '_users')->where([
 						'user_id' => $invitee->id,
@@ -139,7 +141,7 @@ class Controller extends BaseController
 
 				// Check if the user is already invited
 				$previousInvitation = DB::table($type . '_invitations')->where([
-					'invitee' => $invitation['email'],
+					'invitee' => $inviteeEmail,
 					$type . '_id' => $data->id,
 					'status' => 0
 				])->first();
@@ -150,7 +152,7 @@ class Controller extends BaseController
 					// Input to the invitations table
 					DB::table($type . '_invitations')->insert([
 						'inviter_id' => $user->id,
-						'invitee' => $invitation['email'],
+						'invitee' => $inviteeEmail,
 						$type . '_id' => $data->id,
 						'role_id' => $role->id,
 						'token' => $token,
@@ -164,7 +166,7 @@ class Controller extends BaseController
 						'user_name' => $user->first_name . ' ' . $user->last_name,
 						'role' => $role->name,
 						'token' => $token,
-						'email' => $invitation['email'],
+						'email' => $inviteeEmail,
 						'title' => "You have been invited to join the " . $type . " " . $data->name . " on Informed 365"
 					]));
 				}
@@ -185,7 +187,7 @@ class Controller extends BaseController
 		$user = Auth::user();
 
 		$invitation = DB::table($type . '_invitations')->where([
-			'invitee' => $user->email,
+			'invitee' => strtolower($user->email),
 			'token' => $token
 		])->first();
 

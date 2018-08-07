@@ -38,7 +38,7 @@ trait RegistersUsers
 			'password' => 'required|string|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
 		]);
 
-		$email = $request->input('email');
+		$email = strtolower($request->input('email'));
 		if (User::where('email', $email)->count() > 0) {
 			return response()->json([
 				'status' => 'fail',

@@ -36,7 +36,7 @@ trait AuthenticatesUsers
 		$this->validateLogin($request);
 
         $throttle = Throttle::where([
-            ["email", "=", $request->input("email")],
+            ["email", "=", strtolower($request->input("email"))],
             ["created_at", ">", Carbon::now()->subMinutes(5)]
         ])->get();
 
@@ -93,7 +93,7 @@ trait AuthenticatesUsers
 	 */
 	protected function attemptLogin(Request $request)
 	{
-		$user = User::where('email', $request->input('email'))->first();
+		$user = User::where('email', strtolower($request->input('email')))->first();
 		if ($user && Hash::check($request->input('password'), $user->password)) {
 			$api_token = base64_encode(str_random(40));
 			while (!is_null(User::where('api_token', $api_token)->first())) {

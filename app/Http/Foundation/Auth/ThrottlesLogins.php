@@ -39,7 +39,7 @@ trait ThrottlesLogins
 			$this->throttleKey($request), $this->decayMinutes()
 		);
 
-        $email = $request->input("email");
+        $email = strtolower($request->input("email"));
         $user = User::where("email", $email)->first();
 
         $throttle = Throttle::create([
