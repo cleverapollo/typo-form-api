@@ -954,18 +954,50 @@ class ApplicationController extends Controller
 
                 $submissions = $submissions->all();
                 foreach ($submissions as $submission) {
-                    // ToDo: Consider about the export response column
+                    $invalid = false;
+                    $responseCollection = new Collection();
 
-                    $submissionsData[] = [
-                        'Submission ID' => $submission->id,
-                        'Form ID' => $submission->form_id,
-                        'User ID' => $submission->user_id,
-                        'Team ID' => $submission->team_id,
-                        'Progress' => $submission->progress,
-                        'Period Start' => $submission->period_start,
-                        'Period End' => $submission->period_end,
-                        'Status' => Status::find($submission->status_id)->status
-                    ];
+                    foreach ($questions as $question) {
+                        $responses = $submission->responses->where('question_id', $question['question_id']);
+                        switch ($question['query']) {
+                            case 'is null':
+                                $responses = $responses->whereNull('response');
+                                break;
+                            case 'is not null':
+                                $responses = $responses->whereNotNull('response');
+                                break;
+                            case 'in list':
+                                $responses = $responses->whereIn('response', explode(',', $question['value']));
+                                break;
+                            case 'not in list':
+                                $responses = $responses->whereNotIn('response', explode(',', $question['value']));
+                                break;
+                            case '':
+                                break;
+                            default:
+                                $responses = $responses->where('response', $question['query'], $question['value']);
+                        }
+
+                        if (count($responses->all()) == 0) {
+                            $invalid = true;
+                        } else {
+                            $responseCollection = $responseCollection->merge($responses);
+                        }
+                    }
+
+                    if (!$invalid) {
+                        // ToDo: Consider about the export response column
+                        $submissionsData[] = [
+                            'Submission ID' => $submission->id,
+                            'Form ID' => $submission->form_id,
+                            'User ID' => $submission->user_id,
+                            'Team ID' => $submission->team_id,
+                            'Progress' => $submission->progress,
+                            'Period Start' => $submission->period_start,
+                            'Period End' => $submission->period_end,
+                            'Status' => Status::find($submission->status_id)->status
+                        ];
+                    }
                 }
             }
 
