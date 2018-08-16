@@ -6,6 +6,7 @@ use Auth;
 use Exception;
 use App\User;
 use App\Models\Application;
+use App\Models\ApplicationUser;
 use App\Models\Team;
 use App\Models\Form;
 use App\Models\Submission;
@@ -15,6 +16,7 @@ use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
 use App\Http\Resources\SubmissionResource;
 use App\Http\Resources\ResponseResource;
+use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -76,7 +78,7 @@ class SubmissionController extends Controller
 		foreach ($forms as $form) {
 			$form_submissions = $user->submissions()->where('form_id', $form->id)->get();
 
-			if ($user->role->name == 'Super Admin') {
+			if ($user->role->name == 'Super Admin' || $this->hasPermission($user, $application)) {
 				$form_submissions = Submission::where('form_id', $form->id)->get();
 			}
 
@@ -346,4 +348,30 @@ class SubmissionController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
+
+	/**
+	 * Check whether user has permission or not
+	 *
+	 * @param  $user
+	 * @param  $application
+	 *
+	 * @return bool
+	 */
+	protected function hasPermission($user, $application)
+	{
+		if ($user->role->name == 'Super Admin') {
+			return true;
+		}
+
+		$role = ApplicationUser::where([
+			'user_id' => $user->id,
+			'application_id' => $application->id
+		])->first()->role;
+
+		if ($role->name != 'Admin') {
+			return false;
+		}
+
+		return true;
+	}	
 }
