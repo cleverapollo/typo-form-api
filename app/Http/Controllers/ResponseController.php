@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Submission;
+use App\Models\Form;
 use App\Models\Section;
 use App\Models\Question;
 use App\Models\QuestionType;
@@ -78,9 +79,43 @@ class ResponseController extends Controller
 				}
 			}
 
+			$form = Form::find($submission->form_id);
+
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'create response');
+			}
+
 			// Get Question and Question Type
 			$question = Question::find($question_id);
 			$question_type = QuestionType::find($question->question_type_id);
+			$responses = $submission->responses->where('question_id',  $question_id);
+			$validations = $form->validations->where('question_id', $question_id);
+			$response_value = $request->input('response', null);
+
+			if ($question_type->type == 'Short answer' ||
+				$question_type->type == 'Paragraph' ||
+				$question_type->type == 'Multiple choice' ||
+				$question_type->type == 'Linear scale' ||
+				$question_type->type == 'Date' ||
+				$question_type->type == 'Time' ||
+				$question_type->type == 'ABN Lookup' ||
+				($question_type->type == 'Dropdown' && !count($validations))) {
+				if (count($responses)) {
+					return $this->returnErrorMessage(404, 'Response is not allowed to create multiply.');
+				}
+			} else if ($question_type->type == 'Checkboxes' ||
+				$question_type->type == 'Multiple choice grid' ||
+				($question_type->type == 'Dropdown' && count($validations))) {
+				if (count($responses->where('answer_id', $answer_id))) {
+					return $this->returnErrorMessage(404, 'Response is not allowed to create multiply.');
+				}
+			} else if ($question_type->type == 'Checkbox grid') {
+				if (count($responses->where('answer_id', $answer_id)
+					->where('response', (string)$response_value))) {
+					return $this->returnErrorMessage(404, 'Response is not allowed to create multiply.');
+				}
+			}
 
 			// Create response
 			if ($question_type->type == 'ABN Lookup') {
@@ -100,9 +135,8 @@ class ResponseController extends Controller
 				}
 
 				$response_value = substr($data, 9, -1);
-			} else {
-				$response_value = $request->input('response', null);
 			}
+
 			$response = $submission->responses()->create([
 				'question_id' => $question_id,
 				'response' => $response_value,
