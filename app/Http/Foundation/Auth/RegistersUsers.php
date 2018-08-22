@@ -35,7 +35,7 @@ trait RegistersUsers
 			'first_name' => 'required|string|max:191',
 			'last_name' => 'required|string|max:191',
 			'email' => 'required|email|max:191',
-			'password' => 'required|string|min:10|max:191|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\X])(?=.*[!$#%]).*$/'
+			'password' => 'required|string|min:10|regex:/^(?=.*?[a-z])(?=.*?[A-Z])(?=.*\d)(?=.*?[[:punct:] ]).*$/'
 		]);
 
 		$email = strtolower($request->input('email'));
