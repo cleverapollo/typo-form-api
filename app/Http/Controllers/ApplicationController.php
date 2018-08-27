@@ -774,6 +774,7 @@ class ApplicationController extends Controller
 
             $filters = $request->input('filters');
             $comparisons = [];
+            $names = [];
             $questions = [];
             foreach ($filters as $key => $filter) {
                 if ($filter['query']) {
@@ -782,13 +783,34 @@ class ApplicationController extends Controller
                         $comparison = $this->getComparator($query->comparator, $filter['value']);
                         $comparison['source'] = $filter['source'];
 
-                        if ($comparison['source'] == 'question_id') {
+                        if ($comparison['source'] == 'Question') {
                             if ($filter['question_id']) {
                                 $comparison['question_id'] = $filter['question_id'];
                                 $questions[] = $comparison;
                             }
+                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Team') {
+                            $names[] = $comparison;
                         } else {
-                            $comparisons[] = $comparison;
+                        	if ($comparison['source'] == 'ID') {
+                        		$comparison['source'] = 'id';
+                        	} else if ($comparison['source'] == 'Form ID') {
+                        		$comparison['source'] = 'form_id';
+                        	} else if ($comparison['source'] == 'User ID') {
+                        		$comparison['source'] = 'user_id';
+                        	} else if ($comparison['source'] == 'Team ID') {
+                        		$comparison['source'] = 'team_id';
+                        	} else if ($comparison['source'] == 'Progress') {
+                        		$comparison['source'] = 'progress';
+                        	} else if ($comparison['source'] == 'Period Start') {
+                        		$comparison['source'] = 'period_start';
+                        	} else if ($comparison['source'] == 'Period End') {
+                        		$comparison['source'] = 'period_end';
+                        	} else if ($comparison['source'] == 'Created Date') {
+                        		$comparison['source'] = 'created_at';
+                        	} else if ($comparison['source'] == 'Updated Date') {
+                        		$comparison['source'] = 'updated_at';
+                        	}
+                        	$comparisons[] = $comparison;
                         }
                     }
                 }
@@ -802,25 +824,62 @@ class ApplicationController extends Controller
                 foreach ($comparisons as $comparison) {
                     switch ($comparison['query']) {
                         case 'is null':
-                            $submissions = $submissions->whereNull($comparison['source']);
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] === null;
+							});
                             break;
                         case 'is not null':
-                            $submissions = $submissions->whereNotNull($comparison['source']);
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] !== null;
+							});
                             break;
                         case 'in list':
-                            $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return in_array($item[$comparison['source']], explode(',', $comparison['value']));
+							});
                             break;
                         case 'not in list':
-                            $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return !in_array($item[$comparison['source']], explode(',', $comparison['value']));
+							});
                             break;
-                        case '':
+                        case '=':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] == $comparison['value'];
+							});
+                            break;
+                        case '!=':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] != $comparison['value'];
+							});
+                            break;
+                        case '<':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] < $comparison['value'];
+							});
+                            break;
+                        case '>':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] > $comparison['value'];
+							});
+                            break;
+                        case '<=':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] <= $comparison['value'];
+							});
+                            break;
+                        case '>=':
+                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+								return $item[$comparison['source']] >= $comparison['value'];
+							});
                             break;
                         default:
-                            $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
+                            break;
                     }
                 }
 
                 $submissions = $submissions->all();
+
                 foreach ($submissions as $submission) {
                     $invalid = false;
                     $responseCollection = new Collection();

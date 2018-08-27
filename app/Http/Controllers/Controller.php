@@ -358,9 +358,6 @@ class Controller extends BaseController
                 $query = 'LIKE';
                 $value = '%' . $value;
                 break;
-            case 'is invalid':
-                $query = '';
-                break;
             default:
                 $query = $comparator;
         }

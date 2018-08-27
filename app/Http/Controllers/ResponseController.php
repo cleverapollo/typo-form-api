@@ -86,10 +86,12 @@ class ResponseController extends Controller
 				return $this->returnError('form', 404, 'create response');
 			}
 
+			$order = $request->input('order', null);
+
 			// Get Question and Question Type
 			$question = Question::find($question_id);
 			$question_type = QuestionType::find($question->question_type_id);
-			$responses = $submission->responses->where('question_id',  $question_id);
+			$responses = $submission->responses->where('question_id',  $question_id)->where('order', $order);
 			$validations = $form->validations->where('question_id', $question_id);
 			$response_value = $request->input('response', null);
 
@@ -141,7 +143,7 @@ class ResponseController extends Controller
 				'question_id' => $question_id,
 				'response' => $response_value,
 				'answer_id' => $answer_id,
-				'order' => $request->input('order', null)
+				'order' => $order
 			]);
 
 			if ($response) {
