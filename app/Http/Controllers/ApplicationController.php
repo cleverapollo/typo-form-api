@@ -788,7 +788,7 @@ class ApplicationController extends Controller
                                 $comparison['question_id'] = $filter['question_id'];
                                 $questions[] = $comparison;
                             }
-                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Team') {
+                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Team' || $comparison['source'] == 'Status') {
                             $names[] = $comparison;
                         } else {
                         	if ($comparison['source'] == 'ID') {
@@ -883,6 +883,61 @@ class ApplicationController extends Controller
                 foreach ($submissions as $submission) {
                     $invalid = false;
                     $responseCollection = new Collection();
+
+                    foreach ($names as $name) {
+                    	$name_str = '';
+
+                    	if ($name['source'] == 'Form') {
+                    		$name_str = $submission->form->name;
+                    	} else if ($name['source'] == 'Team') {
+                    		$name_str = $submission->team ? $submission->team->name : null;
+                    	} else if ($name['source'] == 'User') {
+                    		$name_str = $submission->user->first_name + ' ' + $submission->name->last_name;
+                    	} else if ($name['source'] == 'Status') {
+                    		$name_str = $usbmission->status->status;
+                    	}
+
+                    	$result = true;
+                    	switch ($name['query']) {
+                            case 'is null':
+                                $result = ($name_str == null);
+                                break;
+                            case 'is not null':
+                                $result = ($name_str != null);
+                                break;
+                            case 'in list':
+                            	$result = in_array($name_str, explode(',', $name['value']));
+                                break;
+                            case 'not in list':
+                                $result = !in_array($name_str, explode(',', $name['value']));
+                                break;
+                            case 'equals':
+                            	$result = ($name_str == $name['value']);
+                            	break;
+                            case 'not equal to':
+                            	$result = ($name_str != $name['value']);
+                            	break;
+                            case 'contains':
+                            	$result = strpos($name_str, $name['value']);
+                            	break;
+                            case 'does not contain':
+                            	$result = !strpos($name_str, $name['value']);
+                            	break;
+                            case 'starts with':
+                            	$result = (substr($name_str, 0, strlen($name['value'])) == $name['value']);
+                            	break;
+                            case 'ends with':
+                            	$result = (substr($name_str, -strlen($name['value'])) == $name['value']);
+                            	break;
+                            default:
+                                $result = true;
+                        }
+
+                        if (!$result) {
+                        	$invalid = true;
+                        }
+
+                    }
 
                     foreach ($questions as $question) {
                         $responses = $submission->responses->where('question_id', $question['question_id']);
