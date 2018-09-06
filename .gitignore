@@ -7,6 +7,7 @@
 
 # Upload folder
 public/uploads/*
+public/storage
 
 Homestead.json
 Homestead.yaml

@@ -30,7 +30,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('join/team/{token}', 'TeamController@join');
 	$router->post('join/application/{token}', 'ApplicationController@join');
 
-	$router->post('file', 'Controller@fileUpload');
+	$router->group(['prefix' => 'file'], function () use ($router) {
+		$router->post('/', 'FileController@store');
+		$router->delete('/', 'FileController@destroy');
+		$router->get('/{url}/', 'FileController@download');
+	});
 
 	$router->group(['prefix' => 'user'], function () use ($router) {
 		$router->get('/', 'UserController@show');

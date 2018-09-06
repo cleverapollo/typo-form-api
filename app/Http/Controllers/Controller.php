@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use Storage;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
@@ -367,21 +366,4 @@ class Controller extends BaseController
             'value' => $value
         ];
     }
-
-	/**
-	 * File Upload
-	 *
-	 * @param  Request $request
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function fileUpload(Request $request)
-	{
-		try {
-			$path = Storage::disk('s3')->putFile('uploads', $request->file('file'));
-			$url = Storage::disk('s3')->url($path);
-			return $this->returnSuccessMessage('path', $url);
-		} catch (Exception $e) {
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
-	}
 }
