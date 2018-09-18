@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use Storage;
 use App\Models\Role;
 use App\Models\Status;
 use App\Models\Application;
@@ -704,7 +705,7 @@ class ApplicationController extends Controller
                 'Responses' => $responseData
             ];
 
-            return Excel::create($application->name, function ($excel) use ($data) {
+            $file = Excel::create($application->name, function ($excel) use ($data) {
                 $excel->sheet('Users', function ($sheet) use ($data) {
                     $sheet->fromArray($data['Users']);
                 });
@@ -732,9 +733,19 @@ class ApplicationController extends Controller
                 $excel->sheet('Responses', function ($sheet) use ($data) {
                     $sheet->fromArray($data['Responses']);
                 });
-            })->download('xlsx');
+			})->string('xlsx');
+
+			$filename = $application->name . '.xlsx';
+			Storage::put('exports/' . $filename, $file);
+
+			$file = [];
+            $file['size'] = Storage::size('exports/' . $filename);
+            $file['name'] = $filename;
+            $file['url'] = Storage::url('exports/' . $filename);
+            $file['stored_name'] = $filename;
+
+			return $this->returnSuccessMessage('file', $file);
         } catch (Exception $e) {
-            // Send error
             return $this->returnErrorMessage(503, $e->getMessage());
         }
     }
