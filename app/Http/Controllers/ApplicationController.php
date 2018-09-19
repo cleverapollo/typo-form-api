@@ -606,133 +606,58 @@ class ApplicationController extends Controller
             // Check whether user has permission to delete
             if (!$this->hasPermission($user, $application)) {
                 return $this->returnError('application', 403, 'export');
-            }
+			}
 
-            // $application = Application::where('slug', $application_slug)->first();
+			//Application
+			$data = [];
+			$data['Applications'][$application->id] = $application->toArray();
 
-            $userData = [];
-            foreach ($application->users as $u) {
-                $userData[] = [
-                    'User ID' => $u->id,
-                    'First Name' => $u->first_name,
-                    'Last Name' => $u->last_name,
-                    'Email' => $u->email,
-                    'Application Role' => Role::find($u->pivot->role_id)->name
-                ];
-            }
+			//Users
+			foreach($application->users as $user) {
+				$user_details = array_intersect_key($user->toArray(), array_flip(['id', 'first_name', 'last_name', 'email']));
+				$application_user_details = array_intersect_key($user->pivot->toArray(), array_flip(['role_id', 'created_at', 'updated_at']));
+				$data['Users'][$user->id] = array_merge($user_details, $application_user_details);
+			}
 
-            $teamData = [];
-            foreach ($application->teams as $t) {
-                $teamData[] = [
-                    'Team ID' => $t->id,
-                    'Name' => $t->name,
-                    'Description' => $t->description,
-                    'Share Token' => $t->share_token
-                ];
-            }
+			//Teams
+			foreach($application->teams as $team) {
+				$data['Teams'][$team->id] = $team->toArray();
+			}
 
-            $formData = [];
-            $submissionsData = [];
-            $questionData = [];
-            $answerData = [];
-            $responseData = [];
-            foreach ($application->forms as $f) {
-                $formData[] = [
-                    'Form ID' => $f->id,
-                    'Name' => $f->name,
-                    'Application' => $f->application->name,
-                    'Show Progress' => (bool)($f->show_progress),
-                    'Auto' => (bool)($f->auto)
-                ];
+			//Forms
+			foreach($application->forms as $form) {
+				$data['Forms'][$form->id] = $form->toArray();
 
-                foreach ($f->submissions as $s) {
-                    $submissionsData[] = [
-                        'Submission ID' => $s->id,
-                        'Form ID' => $s->form_id,
-                        'User ID' => $s->user_id,
-                        'Team ID' => $s->team_id,
-                        'Progress' => $s->progress,
-                        'Period Start' => $s->period_start,
-                        'Period End' => $s->period_end,
-                        'Status' => Status::find($s->status_id)->status
-                    ];
-                }
+				//Sections
+				foreach($form->sections as $section) {
+					$data['Sections'][$section->id] = $section->toArray();
+				
+					//Questions
+					foreach($section->questions as $question) {
+						$data['Questions'][$question->id] = $question->toArray();
 
-                foreach ($f->sections as $s) {
-                    foreach ($s->questions as $q) {
-                        $questionData[] = [
-                            'Question ID' => $q->id,
-                            'Section ID' => $q->section_id,
-                            'Question' => $q->question,
-                            'Description' => $q->description,
-                            'Mandatory' => (bool)($q->mandatory),
-                            'Question Type' => QuestionType::find($q->question_type_id)->type,
-                            'Order' => $q->order,
-                            'Width' => $q->width
-                        ];
+						//Answers
+						foreach($question->answers as $answer) {
+							$data['Answers'][$answer->id] = $answer->toArray();
+						}
 
-                        foreach ($q->answers as $a) {
-                            $answerData[] = [
-                                'Answer ID' => $a->id,
-                                'Question ID' => $a->question_id,
-                                'Answer' => $a->answer,
-                                'Parameter' => $a->parameter,
-                                'Order' => $a->order
-                            ];
+						//Responses
+						foreach($question->responses as $response) {
+							$data['Responses'][$response->id] = $response->toArray();
+						}
+					}
+				}
+			}
 
-                            foreach ($a->responses as $r) {
-                                $responseData[] = [
-                                    'Response ID' => $r->id,
-                                    'Question ID' => $r->question_id,
-                                    'Answer ID' => $r->answer_id,
-                                    'Submission ID' => $r->submission_id,
-                                    'Response' => $r->response,
-                                    'Order' => $r->order
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-
-            $data = [
-                'Users' => $userData,
-                'Teams' => $teamData,
-                'Forms' => $formData,
-                'Submissions' => $submissionsData,
-                'Questions' => $questionData,
-                'Answers' => $answerData,
-                'Responses' => $responseData
-            ];
-
+			//Create excel document
             $file = Excel::create($application->name, function ($excel) use ($data) {
-                $excel->sheet('Users', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Users']);
-                });
-
-                $excel->sheet('Teams', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Teams']);
-                });
-
-                $excel->sheet('Forms', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Forms']);
-                });
-
-                $excel->sheet('Submissions', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Submissions']);
-                });
-
-                $excel->sheet('Questions', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Questions']);
-                });
-
-                $excel->sheet('Answers', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Answers']);
-                });
-
-                $excel->sheet('Responses', function ($sheet) use ($data) {
-                    $sheet->fromArray($data['Responses']);
-                });
+				
+				//Add each element from the data array
+				foreach($data as $key=>$val) {
+					$excel->sheet($key, function ($sheet) use ($data, $key) {
+						$sheet->fromArray($data[$key]);
+					});
+				}
 			})->string('xlsx');
 
 			$filename = $application->name . '.xlsx';
