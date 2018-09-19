@@ -628,6 +628,11 @@ class ApplicationController extends Controller
 			foreach($application->forms as $form) {
 				$data['Forms'][$form->id] = $form->toArray();
 
+				//Submissions
+				foreach($form->submissions as $submission) {
+					$data['Submissions'][$submission->id] = $submission->toArray();
+				}			
+
 				//Sections
 				foreach($form->sections as $section) {
 					$data['Sections'][$section->id] = $section->toArray();
@@ -644,6 +649,34 @@ class ApplicationController extends Controller
 						//Responses
 						foreach($question->responses as $response) {
 							$data['Responses'][$response->id] = $response->toArray();
+						}
+					}
+				}
+			}
+
+			foreach($data['Forms'] as $form) {
+				foreach($data['Submissions'] as $submission) {
+					if($submission['form_id'] === $form['id']) {
+						foreach($data['Responses'] as $response) {
+							if($response['submission_id'] === $submission['id']) {
+								$data[$form['name']][] = [
+									'form_id' => $form['id'],
+									'form' => $form['name'],
+									'submission_id' => $response['submission_id'],
+									'submission_created' => $submission['created_at'],
+									'submission_progress' => $submission['progress'],
+									'submission_status' => Status::find($submission['status_id'])->status,
+									'user_id' => $submission['user_id'],
+									'first_name' => $data['Users'][$submission['user_id']]['first_name'] ?? null,
+									'last_name' => $data['Users'][$submission['user_id']]['last_name'] ?? null,
+									'section' => $data['Sections'][$data['Questions'][$response['question_id']]['section_id']]['name'] ?? null,
+									'question_id' => $response['question_id'],
+									'question' => $data['Questions'][$response['question_id']]['question'] ?? null,
+									'answer' => $data['Answers'][$response['answer_id']]['answer'] ?? null,
+									'response' => $response['response'],
+									'response_created' => $response['created_at']
+								];
+							}
 						}
 					}
 				}
