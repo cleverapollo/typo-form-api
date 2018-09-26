@@ -92,7 +92,7 @@ class Controller extends BaseController
 	 * @param $data
 	 * @param $invitations
 	 */
-	protected function sendInvitation($type, $data, $invitations)
+	protected function sendInvitation($type, $data, $invitations, $host)
 	{
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
@@ -160,6 +160,7 @@ class Controller extends BaseController
 					]);
 
 					dispatch(new ProcessInvitationEmail([
+					    'host' => $host,
 						'type' => $type,
 						'name' => $data->name,
 						'user_name' => $user->first_name . ' ' . $user->last_name,

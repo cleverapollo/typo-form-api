@@ -445,9 +445,10 @@ class TeamController extends Controller
 		}
 
 		$invitations = $request->input('invitations', []);
+		$host = $request->header('Origin');
 
 		// Send invitation
-		$this->sendInvitation('team', $team, $invitations);
+		$this->sendInvitation('team', $team, $invitations, $host);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
 	}

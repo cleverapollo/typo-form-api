@@ -355,9 +355,10 @@ class ApplicationController extends Controller
 		}
 
 		$invitations = $request->input('invitations', []);
+		$host = $request->header('Origin');
 
 		// Send invitation
-		$this->sendInvitation('application', $application, $invitations);
+		$this->sendInvitation('application', $application, $invitations, $host);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
 	}
