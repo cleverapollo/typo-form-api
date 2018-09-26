@@ -26,7 +26,7 @@ class FileController extends Controller
             $file['stored_name'] = basename($path);
 			return $this->returnSuccessMessage('file', $file);
 		} catch (Exception $e) {
-			return $this->returnErrorMessage(503, "Error uploading file.");
+			return $this->returnErrorMessage(503, $e->getMessage());
 		}
     }
     
