@@ -654,12 +654,15 @@ class ApplicationController extends Controller
 				}
 			}
 
+			//Question Types
+			$question_types = QuestionType::all();
+
 			foreach($data['Forms'] as $form) {
 				foreach($data['Submissions'] as $submission) {
 					if($submission['form_id'] === $form['id']) {
 						foreach($data['Responses'] as $response) {
 							if($response['submission_id'] === $submission['id']) {
-								$data[$form['name']][] = [
+								$row = [
 									'form_id' => $form['id'],
 									'form' => $form['name'],
 									'submission_id' => $response['submission_id'],
@@ -673,9 +676,25 @@ class ApplicationController extends Controller
 									'question_id' => $response['question_id'],
 									'question' => $data['Questions'][$response['question_id']]['question'] ?? null,
 									'answer' => $data['Answers'][$response['answer_id']]['answer'] ?? null,
-									'response' => $response['response'],
 									'response_created' => $response['created_at']
 								];
+
+								//Get the question type
+								$question_type_id = $data['Questions'][$response['question_id']]['question_type_id'];
+								$question_type = $question_types->firstWhere('id', $question_type_id)->type;
+								
+								//Format the response
+								switch($question_type) {
+									case 'Multiple choice grid':
+										$row['response'] = $data['Answers'][$response['response']]['answer'];
+										break;
+
+									default:
+										$row['response'] = $response['response'];
+										break;
+								}
+
+								$data[$form['name']][] = $row;
 							}
 						}
 					}
