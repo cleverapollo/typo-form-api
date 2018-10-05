@@ -98,11 +98,6 @@ class Controller extends BaseController
 				$role = Role::find($invitation[$type . '_role_id']);
 				if (!$role) continue;
 
-				$token = base64_encode(str_random(40));
-				while (DB::table($type . '_invitations')->where('token', $token)->first()) {
-					$token = base64_encode(str_random(40));
-				}
-
 				$inviteeEmail = strtolower($invitation['email']);
 
 				// Check if user is already included in the Team or Application
@@ -115,26 +110,6 @@ class Controller extends BaseController
 
 					if ($isIncluded) continue;
 				}
-
-				// Check if user is included in the application for team invitation
-//				if ($type == 'team') {
-//					// Ignore unregistered emails for team registration
-//					if (!$invitee) continue;
-//
-//					$application_user = ApplicationUser::where([
-//						'user_id' => $invitee->id,
-//						'application_id' => $data->application_id
-//					])->first();
-//
-//					// Ignore if invitee is not the application member for team registration
-//					if (!$application_user) {
-//                        $application_user = ApplicationUser::create([
-//                            'user_id' => $invitee->id,
-//                            'application_id' => $data->application_id,
-//                            'role_id' => Role::where('name', 'User')->first()->id
-//                        ]);
-//                    }
-//				}
 
 				// Check if the user is already invited
 				$previousInvitation = DB::table($type . '_invitations')->where([
@@ -152,17 +127,23 @@ class Controller extends BaseController
 						'invitee' => $inviteeEmail,
 						$type . '_id' => $data->id,
 						'role_id' => $role->id,
-						'token' => $token,
 						'created_at' => Carbon::now(),
 						'updated_at' => Carbon::now()
 					]);
 
+					$link = '';
+					if ($type == 'application') {
+					    $link = $data->slug;
+                    }
+                    else {
+                        $application = Application::where('id', $data->application_id)->first();
+					    $link = $application->slug . '/teams/' . $data->id;
+                    }
+
 					dispatch(new ProcessInvitationEmail([
 						'type' => $type,
 						'name' => $data->name,
-						'user_name' => $user->first_name . ' ' . $user->last_name,
-						'role' => $role->name,
-						'token' => $token,
+						'link' => $link,
 						'email' => $inviteeEmail,
 						'title' => "You have been invited to join the " . $type . " " . $data->name . " on Informed 365"
 					]));
