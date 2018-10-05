@@ -45,6 +45,9 @@ class ApplicationController extends Controller
 		if ($user->role->name == 'Super Admin') {
 			$applications = Application::get();
 		} else {
+            $this->acceptInvitation('application');
+            $this->acceptInvitation('team');
+
             $applications = $user->applications()->get();
         }
 
@@ -255,18 +258,6 @@ class ApplicationController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
-	}
-
-	/**
-	 * Accept invitation request.
-	 *
-	 * @param  string $token
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function invitation($token)
-	{
-		return $this->acceptInvitation('application', $token);
 	}
 
 	/**

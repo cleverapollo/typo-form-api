@@ -317,18 +317,6 @@ class TeamController extends Controller
 	}
 
 	/**
-	 * Accept invitation request.
-	 *
-	 * @param  string $token
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function invitation($token)
-	{
-		return $this->acceptInvitation('team', $token);
-	}
-
-	/**
 	 * Join to the Team.
 	 *
 	 * @param  string $token
