@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\InvitationResource;
 use Auth;
 use Exception;
 use App\Models\Role;
+use App\Models\Type;
 use App\Models\Application;
 use App\Models\Team;
 use App\Models\TeamUser;
-use App\Models\TeamInvitation;
+use App\Models\Invitation;
 use App\Http\Resources\TeamResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\TeamUserResource;
-use App\Http\Resources\TeamInvitationResource;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -364,15 +365,17 @@ class TeamController extends Controller
 
 		if ($team) {
 			$currentUsers = $team->users()->get();
+			$type = Type::where('name', 'team')->first();
 
-			$invitedUsers = TeamInvitation::where([
-				'team_id' => $team->id,
-				'status' => 0
+			$invitedUsers = Invitation::where([
+				'reference_id' => $team->id,
+				'status' => 0,
+                'type_id' => $type->id
 			])->get();
 
 			return $this->returnSuccessMessage('users', [
 				'current' => UserResource::collection($currentUsers),
-				'unaccepted' => TeamInvitationResource::collection($invitedUsers)
+				'unaccepted' => InvitationResource::collection($invitedUsers)
 			]);
 		}
 
@@ -642,9 +645,11 @@ class TeamController extends Controller
 				return $this->returnError('team', 404, 'update user');
 			}
 
-			$team_invitation = TeamInvitation::where([
+			$type = Type::where('name', 'team')->first();
+			$team_invitation = Invitation::where([
 				'id' => $invited_id,
-				'team_id' => $team->id
+				'reference_id' => $team->id,
+                'type_id' => $type->id
 			])->first();
 
 			// Send error if invited user does not exist in the team
@@ -659,7 +664,7 @@ class TeamController extends Controller
 
 			// Update invited user role
 			if ($team_invitation->fill(['role_id' => $role->id])->save()) {
-				return $this->returnSuccessMessage('user', new TeamInvitationResource($team_invitation));
+				return $this->returnSuccessMessage('user', new InvitationResource($team_invitation));
 			}
 
 			// Send error if there is an error on update
@@ -712,10 +717,12 @@ class TeamController extends Controller
 				return $this->returnError('team', 404, 'delete user');
 			}
 
-			$team_invitation = TeamInvitation::where([
-				'id' => $invited_id,
-				'team_id' => $team->id
-			])->first();
+            $type = Type::where('name', 'team')->first();
+            $team_invitation = Invitation::where([
+                'id' => $invited_id,
+                'reference_id' => $team->id,
+                'type_id' => $type->id
+            ])->first();
 
 			// Send error if invited user does not exist in the team
 			if (!$team_invitation) {

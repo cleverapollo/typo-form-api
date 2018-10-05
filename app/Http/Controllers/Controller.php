@@ -9,6 +9,8 @@ use App\Models\Application;
 use App\Models\Team;
 use App\Models\ApplicationUser;
 use App\Models\Role;
+use App\Models\Type;
+use App\Models\Invitation;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use App\Jobs\ProcessInvitationEmail;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -90,12 +92,14 @@ class Controller extends BaseController
 	 * @param $data
 	 * @param $invitations
 	 */
-	protected function sendInvitation($type, $data, $invitations)
+	protected function sendInvitation($type_name, $data, $invitations)
 	{
+        $type = Type::where('name', $type_name)->first();
+        if (!$type) return;
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
 				// Check whether the role exists or not
-				$role = Role::find($invitation[$type . '_role_id']);
+				$role = Role::find($invitation[$type->name . '_role_id']);
 				if (!$role) continue;
 
 				$inviteeEmail = strtolower($invitation['email']);
@@ -103,36 +107,38 @@ class Controller extends BaseController
 				// Check if user is already included in the Team or Application
 				$invitee = User::where('email', $inviteeEmail)->first();
 				if ($invitee) {
-					$isIncluded = DB::table($type . '_users')->where([
+					$isIncluded = DB::table($type->name . '_users')->where([
 						'user_id' => $invitee->id,
-						$type . '_id' => $data->id
+						$type->name . '_id' => $data->id
 					])->first();
 
 					if ($isIncluded) continue;
 				}
 
 				// Check if the user is already invited
-				$previousInvitation = DB::table($type . '_invitations')->where([
+				$previousInvitation = Invitation::where([
 					'invitee' => $inviteeEmail,
-					$type . '_id' => $data->id,
-					'status' => 0
+					'reference_id' => $data->id,
+					'status' => 0,
+                    'type_id' => $type->id
 				])->first();
 
 				if (!$previousInvitation) {
 					$user = Auth::user();
 
 					// Input to the invitations table
-					DB::table($type . '_invitations')->insert([
+					Invitation::insert([
 						'inviter_id' => $user->id,
 						'invitee' => $inviteeEmail,
-						$type . '_id' => $data->id,
+						'reference_id' => $data->id,
 						'role_id' => $role->id,
 						'created_at' => Carbon::now(),
-						'updated_at' => Carbon::now()
+						'updated_at' => Carbon::now(),
+                        'type_id' => $type->id
 					]);
 
 					$link = '';
-					if ($type == 'application') {
+					if ($type->name == 'application') {
 					    $link = $data->slug;
                     }
                     else {
@@ -141,11 +147,11 @@ class Controller extends BaseController
                     }
 
 					dispatch(new ProcessInvitationEmail([
-						'type' => $type,
+						'type' => $type->name,
 						'name' => $data->name,
 						'link' => $link,
 						'email' => $inviteeEmail,
-						'title' => "You have been invited to join the " . $type . " " . $data->name . " on Informed 365"
+						'title' => "You have been invited to join the " . $type->name . " " . $data->name . " on Informed 365"
 					]));
 				}
 			}
@@ -160,37 +166,34 @@ class Controller extends BaseController
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	protected function acceptInvitation($type)
+	protected function acceptInvitation($type_name)
 	{
 		$user = Auth::user();
-
-		$invitations = DB::table($type . '_invitations')->where([
-			'invitee' => strtolower($user->email)
+        $type = Type::where('name', $type_name)->first();
+		$invitations = Invitation::where([
+			'invitee' => strtolower($user->email),
+            'type_id' => $type->id,
 		])->get();
 
         foreach ($invitations as $invitation) {
-            if ($type == 'team') {
-                $type_id = $invitation->team_id;
-            } else {
-                $type_id = $invitation->application_id;
-            }
+            $reference_id = $invitation->reference_id;
 
-            $user_list = DB::table($type . '_users')->where([
+            $user_list = DB::table($type->name . '_users')->where([
                 'user_id' => $user->id,
-                $type . '_id' => $type_id
+                $type->name . '_id' => $reference_id
             ])->first();
 
             // Check if user already exists in the Team or Application
             if (!$user_list) {
-                if ($user_list = DB::table($type . '_users')->insert([
+                if ($user_list = DB::table($type->name . '_users')->insert([
                     'user_id' => $user->id,
-                    $type . '_id' => $type_id,
+                    $type->name . '_id' => $reference_id,
                     'role_id' => $invitation->role_id,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
                 ])) {
                     // Remove token and update status at invitations table
-                    DB::table($type . '_invitations')->where('id', $invitation->id)->update([
+                    Invitation::where('id', $invitation->id)->update([
                         'status' => 1,
                         'updated_at' => Carbon::now()
                     ]);
@@ -198,8 +201,8 @@ class Controller extends BaseController
             }
 
             if ($user_list) {
-                if ($type == 'team') {
-                    $team = Team::find($type_id);
+                if ($type->name == 'team') {
+                    $team = Team::find($reference_id);
 
                     $application_user = ApplicationUser::where([
                         'user_id' => $user->id,

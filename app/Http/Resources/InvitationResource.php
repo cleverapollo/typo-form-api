@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Type;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TeamInvitationResource extends JsonResource
+class InvitationResource extends JsonResource
 {
 	/**
 	 * Transform the resource into an array.
@@ -14,12 +15,13 @@ class TeamInvitationResource extends JsonResource
 	 */
 	public function toArray($request)
 	{
+        $type = Type::find($this->type_id);
 		return [
 			'id' => $this->id,
 			'inviter_id' => $this->inviter_id,
 			'invitee' => $this->invitee,
-			'team_id' => $this->team_id,
-			'team_role_id' => $this->role_id,
+			$type->name . '_id' => $this->reference_id,
+            $type->name . '_role_id' => $this->role_id,
 			'created_at' => $this->created_at
 		];
 	}

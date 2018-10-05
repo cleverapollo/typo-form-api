@@ -40,14 +40,6 @@ class Team extends Model
 	}
 
 	/**
-	 * Get the invitations for the Team.
-	 */
-	public function invitations()
-	{
-		return $this->hasMany('App\Models\TeamInvitation');
-	}
-
-	/**
 	 * Get all of the Team's meta data
 	 */
 	public function meta()
