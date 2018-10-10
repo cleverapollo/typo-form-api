@@ -32,6 +32,7 @@ class ProcessInvitationEmail extends Job
 
 	    // Send email to the invitee
 	    Mail::send('emails.invitation', [
+	        'host' => $this->config['host'],
 		    'type' => $this->config['type'],
 		    'name' => $this->config['name'],
 		    'user_name' => $this->config['user_name'],

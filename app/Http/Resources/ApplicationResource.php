@@ -22,6 +22,10 @@ class ApplicationResource extends JsonResource
 			'slug' => $this->slug,
 			'css' => $this->css,
 			'icon' => $this->icon,
+			'logo' => $this->logo,
+			'background_image' => $this->background_image,
+			'primary_color' => $this->primary_color,
+			'secondary_color' => $this->secondary_color,
 			'application_role_id' => $this->whenPivotLoaded('application_users', function () {
 				return $this->pivot->role_id;
 			}),
