@@ -31,7 +31,7 @@ class ApplicationController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api');
+		$this->middleware('auth:api', ['except' => ['show']]);
 	}
 
 	/**
@@ -143,17 +143,7 @@ class ApplicationController extends Controller
 	 */
 	public function show($application_slug)
 	{
-		$user = Auth::user();
-		if ($user) {
-			if ($user->role->name == 'Super Admin') {
-				$application = Application::where('slug', $application_slug)->first();
-			} else {
-                $application = $user->applications()->where('slug', $application_slug)->first();
-            }
-		} else {
-            $application = Application::where('slug', $application_slug)->first();
-        }
-
+		$application = Application::where('slug', $application_slug)->first();
 		if ($application) {
 			return $this->returnSuccessMessage('application', new ApplicationResource($application));
 		}
