@@ -6,16 +6,17 @@ use Auth;
 use Exception;
 use Storage;
 use App\Models\Role;
+use App\Models\Type;
 use App\Models\Status;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\ApplicationInvitation;
+use App\Models\Invitation;
 use App\Models\Comparator;
 use App\Models\QuestionType;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
-use App\Http\Resources\ApplicationInvitationResource;
+use App\Http\Resources\InvitationResource;
 use App\Http\Resources\SubmissionResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Database\Eloquent\Collection;
@@ -45,6 +46,9 @@ class ApplicationController extends Controller
 		if ($user->role->name == 'Super Admin') {
 			$applications = Application::get();
 		} else {
+            $this->acceptInvitation('application');
+            $this->acceptInvitation('team');
+
             $applications = $user->applications()->get();
         }
 
@@ -248,18 +252,6 @@ class ApplicationController extends Controller
 	}
 
 	/**
-	 * Accept invitation request.
-	 *
-	 * @param  string $token
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function invitation($token)
-	{
-		return $this->acceptInvitation('application', $token);
-	}
-
-	/**
 	 * Join to the Application.
 	 *
 	 * @param  string $token
@@ -299,14 +291,16 @@ class ApplicationController extends Controller
 
 		$currentUsers = $application->users()->get();
 
-		$invitedUsers = ApplicationInvitation::where([
-			'application_id' => $application->id,
-			'status' => 0
+        $type = Type::where('name', 'application')->first();
+		$invitedUsers = Invitation::where([
+			'reference_id' => $application->id,
+			'status' => 0,
+            'type_id' => $type->id
 		])->get();
 
 		return $this->returnSuccessMessage('users', [
 			'current' => UserResource::collection($currentUsers),
-			'unaccepted' => ApplicationInvitationResource::collection($invitedUsers)
+			'unaccepted' => InvitationResource::collection($invitedUsers)
 		]);
 	}
 
@@ -506,9 +500,11 @@ class ApplicationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$application_invitation = ApplicationInvitation::where([
+            $type = Type::where('name', 'application')->first();
+			$application_invitation = Invitation::where([
 				'id' => $id,
-				'application_id' => $application->id
+				'reference_id' => $application->id,
+                'type_id' => $type->id
 			])->first();
 
 			// Send error if invited user does not exist in the application
@@ -523,7 +519,7 @@ class ApplicationController extends Controller
 
 			// Update user role
 			if ($application_invitation->fill(['role_id' => $role->id])->save()) {
-				return $this->returnSuccessMessage('user', new ApplicationInvitationResource(ApplicationInvitation::find($application_invitation->id)));
+				return $this->returnSuccessMessage('user', new InvitationResource(Invitation::find($application_invitation->id)));
 			}
 
 			// Send error if there is an error on update
@@ -557,9 +553,11 @@ class ApplicationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$application_invitation = ApplicationInvitation::where([
+            $type = Type::where('name', 'application')->first();
+			$application_invitation = Invitation::where([
 				'id' => $id,
-				'application_id' => $application->id
+				'reference_id' => $application->id,
+                'type_id' => $type->id
 			])->first();
 
 			// Send error if invited user does not exist in the application

@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use Exception;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
 use App\Models\Team;
 use App\Models\ApplicationUser;
 use App\Models\Role;
+use App\Models\Type;
+use App\Models\Invitation;
 use App\Http\Foundation\Auth\Access\AuthorizesRequests;
 use App\Jobs\ProcessInvitationEmail;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 
 class Controller extends BaseController
 {
@@ -92,82 +92,66 @@ class Controller extends BaseController
 	 * @param $data
 	 * @param $invitations
 	 */
-	protected function sendInvitation($type, $data, $invitations, $host)
+	protected function sendInvitation($type_name, $data, $invitations)
 	{
+        $type = Type::where('name', $type_name)->first();
+        if (!$type) return;
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
 				// Check whether the role exists or not
-				$role = Role::find($invitation[$type . '_role_id']);
+				$role = Role::find($invitation[$type->name . '_role_id']);
 				if (!$role) continue;
-
-				$token = base64_encode(str_random(40));
-				while (DB::table($type . '_invitations')->where('token', $token)->first()) {
-					$token = base64_encode(str_random(40));
-				}
 
 				$inviteeEmail = strtolower($invitation['email']);
 
 				// Check if user is already included in the Team or Application
 				$invitee = User::where('email', $inviteeEmail)->first();
 				if ($invitee) {
-					$isIncluded = DB::table($type . '_users')->where([
+					$isIncluded = DB::table($type->name . '_users')->where([
 						'user_id' => $invitee->id,
-						$type . '_id' => $data->id
+						$type->name . '_id' => $data->id
 					])->first();
 
 					if ($isIncluded) continue;
 				}
 
-				// Check if user is included in the application for team invitation
-//				if ($type == 'team') {
-//					// Ignore unregistered emails for team registration
-//					if (!$invitee) continue;
-//
-//					$application_user = ApplicationUser::where([
-//						'user_id' => $invitee->id,
-//						'application_id' => $data->application_id
-//					])->first();
-//
-//					// Ignore if invitee is not the application member for team registration
-//					if (!$application_user) {
-//                        $application_user = ApplicationUser::create([
-//                            'user_id' => $invitee->id,
-//                            'application_id' => $data->application_id,
-//                            'role_id' => Role::where('name', 'User')->first()->id
-//                        ]);
-//                    }
-//				}
-
 				// Check if the user is already invited
-				$previousInvitation = DB::table($type . '_invitations')->where([
+				$previousInvitation = Invitation::where([
 					'invitee' => $inviteeEmail,
-					$type . '_id' => $data->id,
-					'status' => 0
+					'reference_id' => $data->id,
+					'status' => 0,
+                    'type_id' => $type->id
 				])->first();
 
 				if (!$previousInvitation) {
 					$user = Auth::user();
 
 					// Input to the invitations table
-					DB::table($type . '_invitations')->insert([
+					Invitation::insert([
 						'inviter_id' => $user->id,
 						'invitee' => $inviteeEmail,
-						$type . '_id' => $data->id,
+						'reference_id' => $data->id,
 						'role_id' => $role->id,
-						'token' => $token,
 						'created_at' => Carbon::now(),
-						'updated_at' => Carbon::now()
+						'updated_at' => Carbon::now(),
+                        'type_id' => $type->id
 					]);
 
+					$link = '';
+					if ($type->name == 'application') {
+					    $link = $data->slug;
+                    }
+                    else {
+                        $application = Application::where('id', $data->application_id)->first();
+					    $link = $application->slug . '/teams/' . $data->id;
+                    }
+
 					dispatch(new ProcessInvitationEmail([
-					    'host' => $host,
-						'type' => $type,
+						'type' => $type->name,
 						'name' => $data->name,
-						'user_name' => $user->first_name . ' ' . $user->last_name,
-						'role' => $role->name,
-						'token' => $token,
+						'link' => $link,
 						'email' => $inviteeEmail,
-						'title' => "You have been invited to join the " . $type . " " . $data->name . " on Informed 365"
+						'title' => "You have been invited to join the " . $type->name . " " . $data->name . " on Informed 365"
 					]));
 				}
 			}
@@ -182,78 +166,59 @@ class Controller extends BaseController
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	protected function acceptInvitation($type, $token)
+	protected function acceptInvitation($type_name)
 	{
 		$user = Auth::user();
-
-		$invitation = DB::table($type . '_invitations')->where([
+        $type = Type::where('name', $type_name)->first();
+		$invitations = Invitation::where([
 			'invitee' => strtolower($user->email),
-			'token' => $token
-		])->first();
+            'type_id' => $type->id,
+		])->get();
 
-		// Invalid invitation
-		if (!$invitation) {
-			return $this->returnErrorMessage(403, 'Invalid invitation.');
-		} elseif($invitation->status === 1) {
-			return $this->returnErrorMessage(403, 'Invitation has previously been accepted.');
-		}
+        foreach ($invitations as $invitation) {
+            $reference_id = $invitation->reference_id;
 
-		if ($type == 'team') {
-			$type_id = $invitation->team_id;
-		} else {
-			$type_id = $invitation->application_id;
-		}
+            $user_list = DB::table($type->name . '_users')->where([
+                'user_id' => $user->id,
+                $type->name . '_id' => $reference_id
+            ])->first();
 
-		$user_list = DB::table($type . '_users')->where([
-			'user_id' => $user->id,
-			$type . '_id' => $type_id
-		])->first();
-
-		// Check if user already exists in the Team or Application
-		if (!$user_list) {
-			if ($user_list = DB::table($type . '_users')->insert([
-				'user_id' => $user->id,
-				$type . '_id' => $type_id,
-				'role_id' => $invitation->role_id,
-				'created_at' => Carbon::now(),
-				'updated_at' => Carbon::now()
-			])) {
-				// Remove token and update status at invitations table
-				DB::table($type . '_invitations')->where('id', $invitation->id)->update([
-					'status' => 1,
-					'updated_at' => Carbon::now()
-				]);
-			}
-		}
-
-		if ($user_list) {
-			if ($type == 'team') {
-				$team = Team::find($type_id);
-
-				$application_user = ApplicationUser::where([
-					'user_id' => $user->id,
-					'application_id' => $team->application_id
-				])->first();
-
-				if (!$application_user) {
-                    $application_user = ApplicationUser::create([
-                        'user_id' => $user->id,
-                        'application_id' => $team->application_id,
-                        'role_id' => Role::where('name', 'User')->first()->id
+            // Check if user already exists in the Team or Application
+            if (!$user_list) {
+                if ($user_list = DB::table($type->name . '_users')->insert([
+                    'user_id' => $user->id,
+                    $type->name . '_id' => $reference_id,
+                    'role_id' => $invitation->role_id,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ])) {
+                    // Remove token and update status at invitations table
+                    Invitation::where('id', $invitation->id)->update([
+                        'status' => 1,
+                        'updated_at' => Carbon::now()
                     ]);
-				}
-			}
+                }
+            }
 
-			return response()->json([
-				'status' => 'success',
-				'message' => 'Invitation has been successfully accepted.',
-				'data' => $type == 'team' ? Team::find($type_id) : Application::find($type_id),
-				'slug' => $type == 'team' ? Application::find(Team::find($type_id)->application_id)->slug : Application::find($type_id)->slug
-			], 200);
-		}
+            if ($user_list) {
+                if ($type->name == 'team') {
+                    $team = Team::find($reference_id);
 
-		// Send error
-		return $this->returnErrorMessage(503, 'You cannot accept the invitation right now. Please try again later.');
+                    $application_user = ApplicationUser::where([
+                        'user_id' => $user->id,
+                        'application_id' => $team->application_id
+                    ])->first();
+
+                    if (!$application_user) {
+                        ApplicationUser::create([
+                            'user_id' => $user->id,
+                            'application_id' => $team->application_id,
+                            'role_id' => Role::where('name', 'User')->first()->id
+                        ]);
+                    }
+                }
+            }
+        }
 	}
 
 	/**

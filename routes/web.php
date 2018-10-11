@@ -25,8 +25,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
 
-	$router->post('invitation/team/{token}', 'TeamController@invitation');
-	$router->post('invitation/application/{token}', 'ApplicationController@invitation');
 	$router->post('join/team/{token}', 'TeamController@join');
 	$router->post('join/application/{token}', 'ApplicationController@join');
 

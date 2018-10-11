@@ -35,9 +35,7 @@ class ProcessInvitationEmail extends Job
 	        'host' => $this->config['host'],
 		    'type' => $this->config['type'],
 		    'name' => $this->config['name'],
-		    'user_name' => $this->config['user_name'],
-		    'role' => $this->config['role'],
-			'token' => $this->config['token']
+		    'link' => $this->config['link'],
 	    ], function ($message) use ($email) {
 		    $message->from('info@informed365.com', 'Informed 365');
 			$message->to($email);
