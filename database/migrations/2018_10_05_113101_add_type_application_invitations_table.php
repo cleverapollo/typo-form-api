@@ -14,9 +14,9 @@ class AddTypeApplicationInvitationsTable extends Migration
     public function up()
     {
         Schema::table('invitations', function (Blueprint $table) {
-            $table->unsignedInteger('type_id');
+            $table->unsignedInteger('type_id')->default(1);
             $table->foreign('type_id')->references('id')->on('types')->onDelete('cascade');
-            $table->unsignedInteger('reference_id');
+            $table->unsignedInteger('reference_id')->default(0);
         });
     }
 
