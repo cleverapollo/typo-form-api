@@ -139,11 +139,11 @@ class Controller extends BaseController
 
 					$link = '';
 					if ($type->name == 'application') {
-					    $link = $data->slug;
+					    $link = $data->slug . config('mail.fronturl');
                     }
                     else {
                         $application = Application::where('id', $data->application_id)->first();
-					    $link = $application->slug . '/teams/' . $data->id;
+					    $link = $application->slug . config('mail.fronturl') . '/teams/' . $data->id;
                     }
 
 					dispatch(new ProcessInvitationEmail([
