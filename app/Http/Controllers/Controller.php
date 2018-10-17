@@ -172,7 +172,8 @@ class Controller extends BaseController
         $type = Type::where('name', $type_name)->first();
 		$invitations = Invitation::where([
 			'invitee' => strtolower($user->email),
-            'type_id' => $type->id,
+			'type_id' => $type->id,
+			'status' => 0
 		])->get();
 
         foreach ($invitations as $invitation) {
