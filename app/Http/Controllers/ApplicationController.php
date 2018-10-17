@@ -147,7 +147,13 @@ class ApplicationController extends Controller
 	 */
 	public function show($application_slug)
 	{
-		$application = Application::where('slug', $application_slug)->first();
+		$user = Auth::user();
+		if (!$user || $user->role->name == 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		} else {
+			$application = $user->applications()->where('slug', $application_slug)->first();
+		}
+
 		if ($application) {
 			return $this->returnSuccessMessage('application', new ApplicationResource($application));
 		}
