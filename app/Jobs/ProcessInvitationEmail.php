@@ -34,7 +34,8 @@ class ProcessInvitationEmail extends Job
 	    Mail::send('emails.invitation', [
 		    'type' => $this->config['type'],
 		    'name' => $this->config['name'],
-		    'link' => $this->config['link'],
+			'link' => $this->config['link'],
+			'email' => $this->config['email']
 	    ], function ($message) use ($email) {
 		    $message->from('info@informed365.com', 'Informed 365');
 			$message->to($email);
