@@ -210,7 +210,7 @@ class ApplicationController extends Controller
 				$application->slug = $slug;
 			}
 
-			if ($application->fill($request->only('name', 'css', 'icon'))->save()) {
+			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
