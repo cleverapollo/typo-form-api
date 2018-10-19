@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Http\Request;
 
 class ResetPasswordRequest extends Notification
 {
@@ -54,10 +55,10 @@ class ResetPasswordRequest extends Notification
 		if (static::$toMailCallback) {
 			return call_user_func(static::$toMailCallback, $notifiable, $this->token);
 		}
-
+		$slug = explode('.', parse_url($_SERVER['HTTP_REFERER'])['host'])[0];
 		return (new MailMessage)
 			->line('You are receiving this email because we received a password reset request for your account.')
-			->action('Reset Password', url('http://' . config('mail.fronturl') . '/password/reset/' . $this->token))
+			->action('Reset Password', url('http://' . $slug . '.' . config('mail.fronturl') . '/password/reset/' . $this->token))
 			->line('If you did not request a password reset, no further action is required.');
 	}
 
