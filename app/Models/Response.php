@@ -52,7 +52,7 @@ class Response extends Model
 	/**
 	 * Get all of the Responses's meta data
 	 */
-	public function meta()
+	public function metas()
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}

@@ -64,7 +64,7 @@ class Application extends Model
 	/**
 	 * Get all of the Application's meta data
 	 */
-	public function meta()
+	public function metas()
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}

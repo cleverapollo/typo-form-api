@@ -23,7 +23,8 @@ class QuestionResource extends JsonResource
 			'order' => $this->order,
 			'width' => $this->width,
 			'sort_id' => $this->sort_id,
-			'answers' => AnswerResource::collection($this->answers)
+			'answers' => AnswerResource::collection($this->answers),
+            'metas' => $this->metas
 		];
 	}
 }

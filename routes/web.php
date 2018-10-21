@@ -240,6 +240,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
+	$router->group(['prefix' => 'meta'], function () use ($router) {
+        $router->get('/', 'MetaController@index');
+        $router->post('/', 'MetaController@store');
+
+        $router->group(['prefix' => '{id}'], function () use ($router) {
+            $router->get('/', 'MetaController@show');
+            $router->put('/', 'MetaController@update');
+            $router->delete('/', 'MetaController@destroy');
+        });
+    });
+
 	$router->group(['prefix' => 'validation-type'], function () use ($router) {
 		$router->get('/', 'ValidationTypeController@index');
 		$router->post('/', 'ValidationTypeController@store');

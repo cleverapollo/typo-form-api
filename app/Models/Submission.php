@@ -82,7 +82,7 @@ class Submission extends Model
 	/**
 	 * Get all of the Submission's meta data
 	 */
-	public function meta()
+	public function metas()
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}
