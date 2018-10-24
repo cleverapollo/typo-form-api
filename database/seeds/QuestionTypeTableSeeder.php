@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class QuestionTypeTableSeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class QuestionTypeTableSeeder extends Seeder
 	 */
 	public function run()
 	{
-
+        Eloquent::unguard();
         Schema::disableForeignKeyConstraints();
         DB::table('question_types')->truncate();
 
