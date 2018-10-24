@@ -13,8 +13,9 @@ class TriggerTypeTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('trigger_types')->delete();
+		// Delete all record and reset auto_increments
+		DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('trigger_types')->truncate();
 
 	    $question_type_id = DB::table('question_types')->where('type', 'Short answer')->first()->id;
 
@@ -1052,6 +1053,9 @@ class TriggerTypeTableSeeder extends Seeder
 		    'value' => true,
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
-	    ]);
+		]);
+		
+		// Enable foreign key checks
+		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }
