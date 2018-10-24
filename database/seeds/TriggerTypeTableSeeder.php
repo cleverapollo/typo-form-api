@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 class TriggerTypeTableSeeder extends Seeder
@@ -13,7 +14,8 @@ class TriggerTypeTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('trigger_types')->delete();
+        Schema::disableForeignKeyConstraints();
+        DB::table('trigger_types')->truncate();
 
 	    $question_type_id = DB::table('question_types')->where('type', 'Short answer')->first()->id;
 
@@ -1052,5 +1054,7 @@ class TriggerTypeTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 		]);
+
+        Schema::enableForeignKeyConstraints();
     }
 }
