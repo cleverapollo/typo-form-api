@@ -13,9 +13,7 @@ class QuestionTypeTableSeeder extends Seeder
 	 */
 	public function run()
 	{
-		// Delete all record and reset auto_increments
-		DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('question_types')->truncate();
+        DB::table('question_types')->delete();
 
 		DB::table('question_types')->insert([
 			'type' => 'Short answer',
@@ -118,6 +116,5 @@ class QuestionTypeTableSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
 		]);
-		DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 	}
 }
