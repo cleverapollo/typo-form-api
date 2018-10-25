@@ -63,5 +63,29 @@ class ValidationTypeTableSeeder extends Seeder
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);
+
+        DB::table('validation_types')->insert([
+            'type' => 'Date after',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        DB::table('validation_types')->insert([
+            'type' => 'Date before',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        DB::table('validation_types')->insert([
+            'type' => 'Date between',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        DB::table('validation_types')->insert([
+            'type' => 'Future date',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
     }
 }
