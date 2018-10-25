@@ -2,7 +2,9 @@
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class QuestionTypeTableSeeder extends Seeder
 {
@@ -13,7 +15,9 @@ class QuestionTypeTableSeeder extends Seeder
 	 */
 	public function run()
 	{
-        DB::table('question_types')->delete();
+        Eloquent::unguard();
+        Schema::disableForeignKeyConstraints();
+        DB::table('question_types')->truncate();
 
 		DB::table('question_types')->insert([
 			'type' => 'Short answer',
@@ -116,5 +120,7 @@ class QuestionTypeTableSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
 		]);
+
+        Schema::enableForeignKeyConstraints();
 	}
 }
