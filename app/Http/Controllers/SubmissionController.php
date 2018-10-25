@@ -159,6 +159,63 @@ class SubmissionController extends Controller
 		}
 	}
 
+    /**
+     * Duplicate a resource in storage.
+     *
+     * @param  int $form_id
+     * @param  int $id
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function duplicate($form_id, $id)
+    {
+        try {
+            $form = Form::find($form_id);
+
+            // Send error if section does not exist
+            if (!$form) {
+                return $this->returnError('form', 404, 'create submission');
+            }
+
+            $submission = $form->submissions()->find($id);
+
+            // Send error if question does not exist
+            if (!$submission) {
+                return $this->returnError('submission', 404, 'duplicate');
+            }
+
+            // Duplicate submission
+            $newSubmission = $form->submissions()->create([
+                'user_id' => $submission->user_id,
+                'team_id' => $submission->team_id,
+                'progress' => $submission->progress,
+                'period_start' => $submission->period_start,
+                'period_end' => $submission->period_end,
+                'status_id' => $submission->status_id
+            ]);
+
+            if ($newSubmission) {
+                // Duplicate children responses
+                $submission->responses()->get()->each(function ($response) use ($newSubmission) {
+                    $newSubmission->responses()->create([
+                        'question_id' => $response->question_id,
+                        'response' => $response->response,
+                        'answer_id' => $response->answer_id,
+                        'order' => $response->order
+                    ]);
+                });
+
+                return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($newSubmission->id)));
+            }
+
+            // Send error if question is not created
+            return $this->returnError('submission', 503, 'duplicate');
+        } catch (Exception $e) {
+            // Send error
+            return $this->returnErrorMessage(503, $e->getMessage());
+        }
+    }
+
 	/**
 	 * Display the specified resource.
 	 *

@@ -126,6 +126,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->group(['prefix' => '{id}'], function () use ($router) {
 				$router->get('/', 'SubmissionController@show');
 				$router->put('/', 'SubmissionController@update');
+                $router->post('/', 'SubmissionController@duplicate');
 				$router->delete('/', 'SubmissionController@destroy');
 				$router->get('data', 'SubmissionController@getData');
 			});
