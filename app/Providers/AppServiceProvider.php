@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         Relation::morphMap([
             'questions' => 'App\Models\Question',
+            'forms' => 'App\Models\Form',
         ]);
     }
 }
