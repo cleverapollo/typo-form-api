@@ -22,4 +22,12 @@ class ApplicationUser extends Model
 	{
 		return $this->belongsTo('App\Models\Role');
 	}
+
+    /**
+     * Get all of the ApplicationUser's logs.
+     */
+    public function logs()
+    {
+        return $this->morphMany('App\Models\Log', 'resourcable');
+    }
 }

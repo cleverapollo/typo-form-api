@@ -90,4 +90,12 @@ class Section extends Model
 	{
 		return $this->hasMany('App\Models\QuestionTrigger', 'question_id');
 	}
+
+    /**
+     * Get all of the Section's logs.
+     */
+    public function logs()
+    {
+        return $this->morphMany('App\Models\Log', 'resourcable');
+    }
 }

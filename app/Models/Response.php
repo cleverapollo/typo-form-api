@@ -56,4 +56,12 @@ class Response extends Model
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}
+
+    /**
+     * Get all of the Response's logs.
+     */
+    public function logs()
+    {
+        return $this->morphMany('App\Models\Log', 'resourcable');
+    }
 }

@@ -76,6 +76,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 		return $this->belongsTo('App\Models\Role');
 	}
 
+    /**
+     * Get the logs for the User.
+     */
+    public function logs()
+    {
+        return $this->hasMany('App\Models\Log');
+    }
+
 	/**
 	 * Send the password reset notification.
 	 *

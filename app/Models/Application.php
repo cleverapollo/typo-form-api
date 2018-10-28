@@ -68,4 +68,12 @@ class Application extends Model
 	{
 		return $this->morphMany('App\Models\Meta', 'metable');
 	}
+
+    /**
+     * Get the logs for the Application.
+     */
+    public function logs()
+    {
+        return $this->hasMany('App\Models\Log');
+    }
 }

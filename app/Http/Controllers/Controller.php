@@ -88,7 +88,7 @@ class Controller extends BaseController
 	/**
 	 * Send invitation.
 	 *
-	 * @param $type
+	 * @param $type_name
 	 * @param $data
 	 * @param $invitations
 	 */
@@ -161,10 +161,8 @@ class Controller extends BaseController
 	/**
 	 * Accept invitation request.
 	 *
-	 * @param $type
-	 * @param $token
+	 * @param $type_name
 	 *
-	 * @return \Illuminate\Http\JsonResponse
 	 */
 	protected function acceptInvitation($type_name)
 	{
@@ -267,7 +265,7 @@ class Controller extends BaseController
 				])->first();
 
 				if (!$application_user) {
-                    $application_user = ApplicationUser::create([
+                    ApplicationUser::create([
                         'user_id' => $user->id,
                         'application_id' => $data->application_id,
                         'role_id' => Role::where('name', 'User')->first()->id
