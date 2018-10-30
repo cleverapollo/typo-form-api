@@ -52,10 +52,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->delete('/', 'ApplicationController@destroy');
             $router->get('export', 'ApplicationController@exportCSV');
 
-			$router->get('submission', 'SubmissionController@all');
-            $router->post('submission/filter', 'ApplicationController@filterSubmission');
-            $router->post('submission/filter/export', 'ApplicationController@exportSubmission');
-
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');
 				$router->put('{id}', 'ApplicationController@updateUser');
@@ -104,6 +100,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->get('export', 'FormController@exportCSV');
 				});
 			});
+
+            $router->group(['prefix' => 'submission'], function () use ($router) {
+                $router->get('/', 'SubmissionController@all');
+                $router->post('/filter', 'ApplicationController@filterSubmission');
+                $router->post('/filter/export', 'ApplicationController@exportSubmission');
+                $router->get('{id}', 'SubmissionController@one');
+            });
 
 			$router->group(['prefix' => 'application-email'], function () use ($router) {
 				$router->get('/', 'ApplicationEmailController@index');

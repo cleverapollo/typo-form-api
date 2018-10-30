@@ -15,6 +15,7 @@ use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
 use App\Http\Resources\SubmissionResource;
+use App\Http\Resources\SubmissionAllResource;
 use App\Http\Resources\ResponseResource;
 use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
@@ -89,8 +90,51 @@ class SubmissionController extends Controller
 			}
 		}
 
-		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionResource::collection($submissions) : []);
+		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionAllResource::collection($submissions) : []);
 	}
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  string $application_slug
+     * @param  integer $id
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function one($application_slug, $id)
+    {
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
+
+        // Send error if application does not exist
+        if (!$application) {
+            return $this->returnApplicationNameError();
+        }
+
+        $submission = Submission::find($id);
+
+        // Send error if submission does not exist
+        if (!$submission) {
+            return $this->returnError('submission', 404, 'get submission');
+        }
+
+        $form = $submission->form;
+
+        // Send error if form does not exist
+        if (!$form) {
+            return $this->returnError('form', 404, 'get submission');
+        }
+
+        if ($form->application->slug !== $application_slug) {
+            return $this->returnError('application', 404, 'get submission');
+        }
+
+        return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
+    }
 
 	/**
 	 * Store a newly created resource in storage.
