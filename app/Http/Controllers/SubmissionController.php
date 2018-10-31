@@ -80,7 +80,7 @@ class SubmissionController extends Controller
 			$form_submissions = $user->submissions()->where('form_id', $form->id)->get();
 
 			if ($this->hasPermission($user, $application->id)) {
-				$form_submissions = Submission::where('form_id', $form->id)->get();
+				$form_submissions = Submission::with(['form','responses'])->get()->where('form_id', $form->id);
 			}
 
 			if ($submissions) {
@@ -90,7 +90,7 @@ class SubmissionController extends Controller
 			}
 		}
 
-		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionAllResource::collection($submissions) : []);
+		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionResource::collection($submissions) : []);
 	}
 
     /**
@@ -133,7 +133,7 @@ class SubmissionController extends Controller
             return $this->returnError('application', 404, 'get submission');
         }
 
-        return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
+        return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::with(['form', 'responses'])->find($submission->id)));
     }
 
 	/**
