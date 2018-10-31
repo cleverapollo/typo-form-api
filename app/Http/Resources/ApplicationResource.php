@@ -22,6 +22,7 @@ class ApplicationResource extends JsonResource
 			'slug' => $this->slug,
 			'css' => $this->css,
             'support_text' => $this->support_text,
+            'join_flag' => $this->join_flag,
 			'icon' => $this->icon,
 			'logo' => $this->logo,
 			'background_image' => $this->background_image,

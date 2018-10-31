@@ -38,9 +38,10 @@ class ApplicationController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
+     * @param  \Illuminate\Http\Request $request
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index()
+	public function index(Request $request)
 	{
 		$user = Auth::user();
 		if ($user->role->name == 'Super Admin') {
@@ -48,6 +49,19 @@ class ApplicationController extends Controller
 		} else {
             $this->acceptInvitation('application');
             $this->acceptInvitation('team');
+
+            $origin = $request->header('Origin');
+            if (strlen($origin)) {
+                $request_slug = explode('.', explode('://', $origin)[1])[0];
+                $request_application = Application::where('slug', $request_slug)->first();
+                if ($request_application && $request_application->join_flag) {
+                    ApplicationUser::firstOrCreate([
+                        'user_id' => $user->id,
+                        'application_id' => $request_application->id,
+                        'role_id' => Role::where('name', 'User')->first()->id
+                    ]);
+                }
+            }
 
             $applications = $user->applications()->get();
         }
@@ -210,7 +224,7 @@ class ApplicationController extends Controller
 				$application->slug = $slug;
 			}
 
-			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text'))->save()) {
+			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text', 'join_flag'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 
