@@ -33,19 +33,21 @@ class FormController extends Controller
 	 */
 	public function index($application_slug)
 	{
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::with('forms.metas')->where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
+		$user = Auth::user();
 
-		// Send error if application does not exist
+		if($user->role->name === 'Super Admin') {
+			$application = Application::with('forms.metas')->where('slug', $application_slug)->first();
+		} else {
+			$user->load('applications.forms.metas');
+			$application = $user->applications()->where('slug', $application_slug)->first();
+		}
+
+		// No Application
 		if (!$application) {
 			return $this->returnApplicationNameError();
 		}
 
-		return $this->returnSuccessMessage('forms', FormResource::collection($application->forms()->get()));
+		return $this->returnSuccessMessage('forms', FormResource::collection($application->forms));
 	}
 
 	/**

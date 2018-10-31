@@ -61,36 +61,30 @@ class SubmissionController extends Controller
 	 */
 	public function all($application_slug)
 	{
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
+		$user = Auth::user();
 
-		// Send error if application does not exist
-		if (!$application) {
+		// Check Application
+		if($user->role->name === 'Super Admin') {
+			$application = Application::where('slug', $application_slug)->first();
+		} else {
+			$application = $user->applications()->where('slug', $application_slug)->first();
+		}
+
+		// No Application
+		if(!$application) {
 			return $this->returnApplicationNameError();
 		}
 
-		$forms = $application->forms()->get();
-		$submissions = null;
-
-		foreach ($forms as $form) {
-			$form_submissions = $user->submissions()->where('form_id', $form->id)->get();
-
-			if ($this->hasPermission($user, $application->id)) {
-				$form_submissions = Submission::with(['form','responses'])->get()->where('form_id', $form->id);
-			}
-
-			if ($submissions) {
-				$submissions = $submissions->merge($form_submissions);
-			} else {
-				$submissions = $form_submissions;
-			}
+		// Get Submissions
+		$forms = $application->forms->pluck('id');
+		if($this->hasPermission($user, $application->id)) {
+			$submissions = Submission::with(['form', 'user', 'team', 'responses'])->get()->whereIn('form_id', $forms);
+		} else {
+			$user->load(['submissions.form', 'submissions.user', 'submissions.team', 'submissions.responses']);
+			$submissions = $user->submissions()->whereIn('form_id', $forms)->get();
 		}
 
-		return $this->returnSuccessMessage('submissions', $submissions ? SubmissionResource::collection($submissions) : []);
+		return $this->returnSuccessMessage('submissions', SubmissionResource::collection($submissions));
 	}
 
     /**
