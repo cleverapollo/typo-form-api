@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use DB;
+use Log;
 use App\Models\Answer;
 use App\Models\ApplicationUser;
 use App\Models\Form;
@@ -66,5 +68,16 @@ class AppServiceProvider extends ServiceProvider
         foreach ($this->modelList as $model => $observer) {
             $model::observe($observer);
         }
+
+        // Log Database Queries
+        /*
+        DB::listen(function($query) {
+            Log::info(
+                $query->sql,
+                $query->bindings,
+                $query->time
+            );
+        });
+        */
     }
 }
