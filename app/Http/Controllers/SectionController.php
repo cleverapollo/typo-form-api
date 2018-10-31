@@ -30,8 +30,7 @@ class SectionController extends Controller
 	 */
 	public function index($form_id)
 	{
-		$sections = Form::find($form_id)->sections()->get();
-
+		$sections = Form::with('sections.questions.answers')->find($form_id)->sections()->get();
 		return $this->returnSuccessMessage('sections', SectionResource::collection($sections));
 	}
 

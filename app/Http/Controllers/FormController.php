@@ -35,7 +35,7 @@ class FormController extends Controller
 	{
         $user = Auth::user();
         if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
+            $application = Application::with('forms.metas')->where('slug', $application_slug)->first();
         } else {
             $application = $user->applications()->where('slug', $application_slug)->first();
         }
