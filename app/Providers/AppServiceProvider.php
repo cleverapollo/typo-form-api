@@ -69,6 +69,8 @@ class AppServiceProvider extends ServiceProvider
             $model::observe($observer);
         }
 
+        // Log Database Queries
+        /*
         DB::listen(function($query) {
             Log::info(
                 $query->sql,
@@ -76,5 +78,6 @@ class AppServiceProvider extends ServiceProvider
                 $query->time
             );
         });
+        */
     }
 }
