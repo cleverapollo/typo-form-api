@@ -712,6 +712,8 @@ class ApplicationController extends Controller
 				}
 			}
 
+            return $this->returnSuccessMessage('file', json_encode($data));
+
 			//Create excel document
             $file = Excel::create($application->name, function ($excel) use ($data) {
 				
