@@ -618,7 +618,9 @@ class ApplicationController extends Controller
 			}
 
 			//Application
+			ini_set('max_execution_time', 0);
 			$data = [];
+			$application->load(['users', 'teams', 'forms.submissions.status', 'forms.sections.questions.answers', 'forms.sections.questions.responses']);
 			$data['Applications'][$application->id] = $application->toArray();
 
 			//Users
