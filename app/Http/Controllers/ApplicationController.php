@@ -679,12 +679,12 @@ class ApplicationController extends Controller
 									'submission_progress' => $submission['progress'],
 									'submission_status' => Status::find($submission['status_id'])->status,
 									'user_id' => $submission['user_id'],
-									'first_name' => $data['Users'][$submission['user_id']]['first_name'] ?? null,
-									'last_name' => $data['Users'][$submission['user_id']]['last_name'] ?? null,
-									'section' => $data['Sections'][$data['Questions'][$response['question_id']]['section_id']]['name'] ?? null,
+									'first_name' => $data['Users'][$submission['user_id']]['first_name'] ?? '',
+									'last_name' => $data['Users'][$submission['user_id']]['last_name'] ?? '',
+									'section' => $data['Sections'][$data['Questions'][$response['question_id']]['section_id']]['name'] ?? '',
 									'question_id' => $response['question_id'],
-									'question' => $data['Questions'][$response['question_id']]['question'] ?? null,
-									'answer' => $data['Answers'][$response['answer_id']]['answer'] ?? null,
+									'question' => $data['Questions'][$response['question_id']]['question'] ?? '',
+									'answer' => $data['Answers'][$response['answer_id']]['answer'] ?? '',
 									'response_created' => $response['created_at']
 								];
 
