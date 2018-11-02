@@ -621,7 +621,7 @@ class ApplicationController extends Controller
 			ini_set('max_execution_time', 0);
 			$data = [];
 			$application->load(['users', 'teams', 'forms.submissions.status', 'forms.sections.questions.answers', 'forms.sections.questions.responses']);
-			$data['Applications'][$application->id] = $application->toArray();
+			$data['Applications'][$application->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $application->toArray());
 
 			//Users
 			foreach($application->users as $user) {
@@ -632,34 +632,34 @@ class ApplicationController extends Controller
 
 			//Teams
 			foreach($application->teams as $team) {
-				$data['Teams'][$team->id] = $team->toArray();
+				$data['Teams'][$team->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $team->toArray());
 			}
 
 			//Forms
 			foreach($application->forms as $form) {
-				$data['Forms'][$form->id] = $form->toArray();
+				$data['Forms'][$form->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form->toArray());
 
 				//Submissions
 				foreach($form->submissions as $submission) {
-					$data['Submissions'][$submission->id] = $submission->toArray();
+					$data['Submissions'][$submission->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $submission->toArray());
 				}			
 
 				//Sections
 				foreach($form->sections as $section) {
-					$data['Sections'][$section->id] = $section->toArray();
+					$data['Sections'][$section->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $section->toArray());
 				
 					//Questions
 					foreach($section->questions as $question) {
-						$data['Questions'][$question->id] = $question->toArray();
+						$data['Questions'][$question->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $question->toArray());
 
 						//Answers
 						foreach($question->answers as $answer) {
-							$data['Answers'][$answer->id] = $answer->toArray();
+							$data['Answers'][$answer->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $answer->toArray());
 						}
 
 						//Responses
 						foreach($question->responses as $response) {
-							$data['Responses'][$response->id] = $response->toArray();
+							$data['Responses'][$response->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $response->toArray());
 						}
 					}
 				}
@@ -711,8 +711,6 @@ class ApplicationController extends Controller
 					}
 				}
 			}
-
-            return $this->returnSuccessMessage('file', $data);
 
 			//Create excel document
             $file = Excel::create($application->name, function ($excel) use ($data) {
