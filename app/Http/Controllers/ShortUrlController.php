@@ -73,9 +73,9 @@ class ShortUrlController extends Controller
 
             if (empty($short_url)) {
                 // Create ShortUrl
-                $short = base64_encode(str_random(40));
+                $short = base64_encode(str_random(6));
                 while (!is_null(ShortUrl::where('short_url', $short)->first())) {
-                    $short = base64_encode(str_random(40));
+                    $short = base64_encode(str_random(6));
                 }
                 $short_url = ShortUrl::create([
                     'url' => $url,
