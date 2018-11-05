@@ -320,4 +320,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			// $router->delete('/', 'AnswerSortController@destroy');
 		});
 	});
+
+    $router->group(['prefix' => 'short-url'], function () use ($router) {
+        $router->get('/', 'ShortURLController@index');
+        $router->post('/', 'ShortURLController@store');
+        $router->get('{short_url}', 'ShortURLController@show');
+    });
 });
