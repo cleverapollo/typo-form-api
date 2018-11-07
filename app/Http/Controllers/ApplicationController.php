@@ -55,11 +55,18 @@ class ApplicationController extends Controller
                 $request_slug = explode('.', explode('://', $origin)[1])[0];
                 $request_application = Application::where('slug', $request_slug)->first();
                 if ($request_application && $request_application->join_flag) {
-                    ApplicationUser::firstOrCreate([
+                    $application_user = ApplicationUser::where([
                         'user_id' => $user->id,
-                        'application_id' => $request_application->id,
-                        'role_id' => Role::where('name', 'User')->first()->id
-                    ]);
+                        'application_id' => $request_application->id
+                    ])->first();
+
+                    if (!$application_user) {
+                        ApplicationUser::create([
+                            'user_id' => $user->id,
+                            'application_id' => $request_application->id,
+                            'role_id' => Role::where('name', 'User')->first()->id
+                        ]);
+                    }
                 }
             }
 

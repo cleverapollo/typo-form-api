@@ -68,6 +68,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->group(['prefix' => 'team'], function () use ($router) {
 				$router->get('/', 'TeamController@index');
 				$router->post('/', 'TeamController@store');
+                $router->get('/user', 'TeamController@allUsers');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'TeamController@show');

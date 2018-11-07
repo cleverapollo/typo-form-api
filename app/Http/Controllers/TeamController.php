@@ -329,6 +329,59 @@ class TeamController extends Controller
 		return $this->acceptJoin('team', $token);
 	}
 
+    /**
+     * Get users for the Team.
+     *
+     * @param  string $application_slug
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function allUsers($application_slug)
+    {
+        $user = Auth::user();
+        if ($user->role->name == 'Super Admin') {
+            $application = Application::where('slug', $application_slug)->first();
+        } else {
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
+
+        // Send error if application does not exist
+        if (!$application) {
+            return $this->returnApplicationNameError();
+        }
+
+        $teams = $user->teams()->where([
+            'application_id' => $application->id
+        ])->get();
+
+        if ($user->role->name == 'Super Admin') {
+            $teams = Team::where([
+                'application_id' => $application->id
+            ])->get();
+        }
+
+        $users = [];
+        foreach ($teams as $team) {
+            if ($team) {
+                $currentUsers = $team->users()->get();
+                $type = Type::where('name', 'team')->first();
+
+                $invitedUsers = Invitation::where([
+                    'reference_id' => $team->id,
+                    'status' => 0,
+                    'type_id' => $type->id
+                ])->get();
+
+                $users[] = [
+                    'current' => UserResource::collection($currentUsers),
+                    'unaccepted' => InvitationResource::collection($invitedUsers),
+                    'team_id' => $team->id
+                ];
+            }
+        }
+        return $this->returnSuccessMessage('users', $users);
+    }
+
 	/**
 	 * Get users for the Team.
 	 *
