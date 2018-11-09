@@ -7,7 +7,7 @@ use Exception;
 use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\Team;
+use App\Models\Organisation;
 use App\Models\Form;
 use App\Models\Submission;
 use App\Models\Status;
@@ -78,9 +78,9 @@ class SubmissionController extends Controller
 		// Get Submissions
 		$forms = $application->forms->pluck('id');
 		if($this->hasPermission($user, $application->id)) {
-			$submissions = Submission::with(['form', 'user', 'team', 'responses'])->get()->whereIn('form_id', $forms);
+			$submissions = Submission::with(['form', 'user', 'organisation', 'responses'])->get()->whereIn('form_id', $forms);
 		} else {
-			$user->load(['submissions.form', 'submissions.user', 'submissions.team', 'submissions.responses']);
+			$user->load(['submissions.form', 'submissions.user', 'submissions.organisation', 'submissions.responses']);
 			$submissions = $user->submissions()->whereIn('form_id', $forms)->get();
 		}
 
@@ -143,7 +143,7 @@ class SubmissionController extends Controller
 	{
 		$this->validate($request, [
 			'user_id' => 'nullable|integer|min:1',
-			'team_id' => 'nullable|integer|min:1',
+			'organisation_id' => 'nullable|integer|min:1',
 			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date'
@@ -159,7 +159,7 @@ class SubmissionController extends Controller
 
 			$user_id = $request->input('user_id', null);
 			if ($user_id) {
-				// Send error if team does not exist
+				// Send error if organisation does not exist
 				if (!User::find($user_id)) {
 					return $this->returnError('user', 404, 'create submission');
 				}
@@ -167,18 +167,18 @@ class SubmissionController extends Controller
 				$user_id = Auth::user()->id;
 			}
 
-			$team_id = $request->input('team_id', null);
-			if ($team_id) {
-				// Send error if team does not exist
-				if (!Team::find($team_id)) {
-					return $this->returnError('team', 404, 'create submission');
+			$organisation_id = $request->input('organisation_id', null);
+			if ($organisation_id) {
+				// Send error if organisation does not exist
+				if (!Organisation::find($organisation_id)) {
+					return $this->returnError('organisation', 404, 'create submission');
 				}
 			}
 
 			// Create submission
 			$submission = $form->submissions()->create([
 				'user_id' => $user_id,
-				'team_id' => $team_id,
+				'organisation_id' => $organisation_id,
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', $form->period_start),
 				'period_end' => $request->input('period_end', $form->period_end),
@@ -225,7 +225,7 @@ class SubmissionController extends Controller
             // Duplicate submission
             $newSubmission = $form->submissions()->create([
                 'user_id' => $submission->user_id,
-                'team_id' => $submission->team_id,
+                'organisation_id' => $submission->organisation_id,
                 'progress' => $submission->progress,
                 'period_start' => $submission->period_start,
                 'period_end' => $submission->period_end,
@@ -343,7 +343,7 @@ class SubmissionController extends Controller
 	{
 		$this->validate($request, [
 			'user_id' => 'nullable|integer|min:1',
-			'team_id' => 'nullable|integer|min:1',
+			'organisation_id' => 'nullable|integer|min:1',
 			'progress' => 'filled|integer|min:0',
 			'period_start' => 'nullable|date',
 			'period_end' => 'nullable|date',
@@ -383,7 +383,7 @@ class SubmissionController extends Controller
 			}
 
 			// Update submission
-			if ($submission->fill($request->only('user_id', 'team_id', 'progress', 'period_start', 'period_end', 'status_id'))->save()) {
+			if ($submission->fill($request->only('user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id'))->save()) {
 				$submission->touch();
 				return $this->returnSuccessMessage('submission', new SubmissionResource(Submission::find($submission->id)));
 			}

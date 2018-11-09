@@ -23,7 +23,7 @@ class TypesTableSeeder extends Seeder
 	    ]);
 
 	    DB::table('types')->insert([
-		    'name' => 'team',
+		    'name' => 'organisation',
 		    'created_at' => Carbon::now(),
 		    'updated_at' => Carbon::now()
 	    ]);

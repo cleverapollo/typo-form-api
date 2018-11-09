@@ -36,7 +36,7 @@ class Submission extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'user_id', 'team_id', 'progress', 'period_start', 'period_end', 'status_id'
+		'form_id', 'user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id'
 	];
 
 	/**
@@ -56,11 +56,11 @@ class Submission extends Model
 	}
 
 	/**
-	 * Get the team that owns the Submission.
+	 * Get the Organisation that owns the Submission.
 	 */
-	public function team()
+	public function organisation()
 	{
-		return $this->belongsTo('App\Models\Team');
+		return $this->belongsTo('App\Models\Organisation');
 	}
 
 	/**

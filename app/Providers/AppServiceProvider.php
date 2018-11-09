@@ -12,8 +12,8 @@ use App\Models\QuestionTrigger;
 use App\Models\Response;
 use App\Models\Section;
 use App\Models\Submission;
-use App\Models\Team;
-use App\Models\TeamUser;
+use App\Models\Organisation;
+use App\Models\OrganisationUser;
 use App\Models\Validation;
 
 use App\Observers\Observer;
@@ -33,8 +33,8 @@ class AppServiceProvider extends ServiceProvider
         Response::class         => Observer::class,
         Section::class          => Observer::class,
         Submission::class       => Observer::class,
-        Team::class             => Observer::class,
-        TeamUser::class         => Observer::class,
+        Organisation::class     => Observer::class,
+        OrganisationUser::class => Observer::class,
         Validation::class       => Observer::class,
     ];
 
@@ -60,8 +60,8 @@ class AppServiceProvider extends ServiceProvider
             'responses' => 'App\Models\Response',
             'sections' => 'App\Models\Section',
             'submissions' => 'App\Models\Submission',
-            'teams' => 'App\Models\Team',
-            'team_users' => 'App\Models\TeamUser',
+            'organisations' => 'App\Models\Organisation',
+            'organisation_users' => 'App\Models\OrganisationUser',
             'validations' => 'App\Models\Validation',
         ]);
 

@@ -46,11 +46,11 @@ class Application extends Model
 	}
 
 	/**
-	 * Get the teams for the Application.
+	 * Get the Organisations for the Application.
 	 */
-	public function teams()
+	public function organisations()
 	{
-		return $this->hasMany('App\Models\Team');
+		return $this->hasMany('App\Models\Organisation');
 	}
 
 	/**

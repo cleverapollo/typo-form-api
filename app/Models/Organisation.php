@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Team extends Model
+class Organisation extends Model
 {
 	/**
 	 * The attributes that are mass assignable.
@@ -16,15 +16,15 @@ class Team extends Model
 	];
 
 	/**
-	 * Get the users that belongs to the Team.
+	 * Get the users that belongs to the Organisation.
 	 */
 	public function users()
 	{
-		return $this->belongsToMany('App\User', 'team_users')->withPivot('role_id')->withTimestamps();
+		return $this->belongsToMany('App\User', 'organisation_users')->withPivot('role_id')->withTimestamps();
 	}
 
 	/**
-	 * Get the submissions for the Team.
+	 * Get the submissions for the Organisation.
 	 */
 	public function submissions()
 	{
@@ -32,7 +32,7 @@ class Team extends Model
 	}
 
 	/**
-	 * Get the application that owns the Team.
+	 * Get the application that owns the Organisation.
 	 */
 	public function application()
 	{
@@ -40,7 +40,7 @@ class Team extends Model
 	}
 
 	/**
-	 * Get all of the Team's meta data
+	 * Get all of the Organisation's meta data
 	 */
 	public function metas()
 	{
@@ -48,7 +48,7 @@ class Team extends Model
 	}
 
     /**
-     * Get all of the Team's logs.
+     * Get all of the Organisation's logs.
      */
     public function logs()
     {

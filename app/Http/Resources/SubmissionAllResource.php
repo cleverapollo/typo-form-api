@@ -22,10 +22,10 @@ class SubmissionAllResource extends JsonResource
 				'last_name' => $this->user->last_name,
 				'email' => $this->user->email
 			],
-			'team' => $this->team ? [
-				'id' => $this->team->id,
-				'name' => $this->team->name,
-				'description' => $this->team->description
+			'organisation' => $this->organisation ? [
+				'id' => $this->organisation->id,
+				'name' => $this->organisation->name,
+				'description' => $this->organisation->description
 			] : null,
 			'form' => [
 				'id' => $this->form_id,

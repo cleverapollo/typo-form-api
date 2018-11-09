@@ -45,11 +45,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	];
 
 	/**
-	 * Get the teams for the User.
+	 * Get the organisations for the User.
 	 */
-	public function teams()
+	public function organisations()
 	{
-		return $this->belongsToMany('App\Models\Team', 'team_users')->withPivot('role_id')->withTimestamps();
+		return $this->belongsToMany('App\Models\Organisation', 'organisation_users')->withPivot('role_id')->withTimestamps();
 	}
 
 	/**

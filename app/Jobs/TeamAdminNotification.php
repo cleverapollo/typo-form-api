@@ -4,10 +4,10 @@ namespace App\Jobs;
 
 use App\User;
 use App\Models\Role;
-use App\Models\TeamUser;
+use App\Models\OrganisationUser;
 use App\Notifications\InformedNotification;
 
-class TeamAdminNotification extends Job
+class OrganisationAdminNotification extends Job
 {
 	protected $config;
 
@@ -30,7 +30,7 @@ class TeamAdminNotification extends Job
      */
     public function handle()
     {
-	    $admin_users = $this->teamAdmins($this->config['team_id']);
+	    $admin_users = $this->organisationAdmins($this->config['organisation_id']);
 	    foreach ($admin_users as $admin_user) {
 		    if ($admin_user->email) {
 			    $admin_user->notify(new InformedNotification($this->config['message']));
@@ -39,16 +39,16 @@ class TeamAdminNotification extends Job
     }
 
 	/**
-	 * Get team admins
+	 * Get Organisation admins
 	 *
-	 * @param  $team_id
+	 * @param  $organisation_id
 	 *
 	 * @return array
 	 */
-	protected function teamAdmins($team_id)
+	protected function organisationAdmins($organisation_id)
 	{
-		$admins = TeamUser::where([
-			'team_id' => $team_id,
+		$admins = OrganisationUser::where([
+			'organisation_id' => $organisation_id,
 			'role_id' => Role::where('name', 'Admin')->first()->id
 		])->get();
 

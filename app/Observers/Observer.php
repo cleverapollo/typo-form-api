@@ -25,7 +25,7 @@ class Observer
 
         switch ($resourcable_type) {
             case 'Form':
-            case 'Team':
+            case 'Organisation':
             case 'ApplicationUser':
                 $application_id = $model->application_id;
                 break;
@@ -42,8 +42,8 @@ class Observer
             case 'Response':
                 $application_id = $model->question->section->form->application_id;
                 break;
-            case 'TeamUser':
-                $application_id = $model->team->application_id;
+            case 'OrganisationUser':
+                $application_id = $model->organisation->application_id;
                 break;
             default:
                 $application_id = $model->id;

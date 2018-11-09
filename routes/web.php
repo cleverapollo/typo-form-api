@@ -25,7 +25,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
 
-	$router->post('join/team/{token}', 'TeamController@join');
+	$router->post('join/organisation/{token}', 'OrganisationController@join');
 	$router->post('join/application/{token}', 'ApplicationController@join');
 
 	$router->group(['prefix' => 'file'], function () use ($router) {
@@ -65,26 +65,26 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			$router->post('invite', 'ApplicationController@inviteUsers');
 
-			$router->group(['prefix' => 'team'], function () use ($router) {
-				$router->get('/', 'TeamController@index');
-				$router->post('/', 'TeamController@store');
-                $router->get('/user', 'TeamController@allUsers');
+			$router->group(['prefix' => 'organisation'], function () use ($router) {
+				$router->get('/', 'OrganisationController@index');
+				$router->post('/', 'OrganisationController@store');
+                $router->get('/user', 'OrganisationController@allUsers');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
-					$router->get('/', 'TeamController@show');
-					$router->put('/', 'TeamController@update');
-					$router->delete('/', 'TeamController@destroy');
-					$router->post('invite', 'TeamController@inviteUsers');
+					$router->get('/', 'OrganisationController@show');
+					$router->put('/', 'OrganisationController@update');
+					$router->delete('/', 'OrganisationController@destroy');
+					$router->post('invite', 'OrganisationController@inviteUsers');
 
 					$router->group(['prefix' => 'user'], function () use ($router) {
-						$router->get('/', 'TeamController@getUsers');
-						$router->put('{user_id}', 'TeamController@updateUser');
-						$router->delete('{user_id}', 'TeamController@deleteUser');
+						$router->get('/', 'OrganisationController@getUsers');
+						$router->put('{user_id}', 'OrganisationController@updateUser');
+						$router->delete('{user_id}', 'OrganisationController@deleteUser');
 					});
 
 					$router->group(['prefix' => 'invited'], function () use ($router) {
-						$router->put('{invited_id}', 'TeamController@updateInvitedUser');
-						$router->delete('{invited_id}', 'TeamController@deleteInvitedUser');
+						$router->put('{invited_id}', 'OrganisationController@updateInvitedUser');
+						$router->delete('{invited_id}', 'OrganisationController@deleteInvitedUser');
 					});
 				});
 			});

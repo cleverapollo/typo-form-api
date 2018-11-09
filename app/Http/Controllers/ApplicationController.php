@@ -48,7 +48,7 @@ class ApplicationController extends Controller
 			$applications = Application::get();
 		} else {
             $this->acceptInvitation('application');
-            $this->acceptInvitation('team');
+            $this->acceptInvitation('organisation');
 
             $origin = $request->header('Origin');
             if (strlen($origin)) {
@@ -627,7 +627,7 @@ class ApplicationController extends Controller
 			//Application
 			ini_set('max_execution_time', 0);
 			$data = [];
-			$application->load(['users', 'teams', 'forms.submissions.status', 'forms.sections.questions.answers', 'forms.sections.questions.responses']);
+			$application->load(['users', 'organisations', 'forms.submissions.status', 'forms.sections.questions.answers', 'forms.sections.questions.responses']);
 			$data['Applications'][$application->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $application->toArray());
 
 			//Users
@@ -637,9 +637,9 @@ class ApplicationController extends Controller
 				$data['Users'][$user->id] = array_merge($user_details, $application_user_details);
 			}
 
-			//Teams
-			foreach($application->teams as $team) {
-				$data['Teams'][$team->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $team->toArray());
+			//Organisations
+			foreach($application->organisations as $organisation) {
+				$data['Organisations'][$organisation->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $organisation->toArray());
 			}
 
 			//Forms
@@ -794,7 +794,7 @@ class ApplicationController extends Controller
                                 $comparison['question_id'] = $filter['question_id'];
                                 $questions[] = $comparison;
                             }
-                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Team' || $comparison['source'] == 'Status') {
+                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Organisation' || $comparison['source'] == 'Status') {
                             $names[] = $comparison;
                         } else {
                         	if ($comparison['source'] == 'ID') {
@@ -803,8 +803,8 @@ class ApplicationController extends Controller
                         		$comparison['source'] = 'form_id';
                         	} else if ($comparison['source'] == 'User ID') {
                         		$comparison['source'] = 'user_id';
-                        	} else if ($comparison['source'] == 'Team ID') {
-                        		$comparison['source'] = 'team_id';
+                        	} else if ($comparison['source'] == 'Organisation ID') {
+                        		$comparison['source'] = 'organisation_id';
                         	} else if ($comparison['source'] == 'Progress') {
                         		$comparison['source'] = 'progress';
                         	} else if ($comparison['source'] == 'Period Start') {
@@ -895,12 +895,12 @@ class ApplicationController extends Controller
 
                     	if ($name['source'] == 'Form') {
                     		$name_str = $submission->form->name;
-                    	} else if ($name['source'] == 'Team') {
-                    		$name_str = $submission->team ? $submission->team->name : null;
+                    	} else if ($name['source'] == 'Organisation') {
+                    		$name_str = $submission->organisation ? $submission->organisation->name : null;
                     	} else if ($name['source'] == 'User') {
                     		$name_str = $submission->user->first_name + ' ' + $submission->name->last_name;
                     	} else if ($name['source'] == 'Status') {
-                    		$name_str = $usbmission->status->status;
+                    		$name_str = $submission->status->status;
                     	}
 
                     	$result = true;
@@ -1111,7 +1111,7 @@ class ApplicationController extends Controller
                             'Submission ID' => $submission->id,
                             'Form ID' => $submission->form_id,
                             'User ID' => $submission->user_id,
-                            'Team ID' => $submission->team_id,
+                            'Organisation ID' => $submission->organisation_id,
                             'Progress' => $submission->progress,
                             'Period Start' => $submission->period_start,
                             'Period End' => $submission->period_end,

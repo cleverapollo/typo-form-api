@@ -6,7 +6,7 @@ use Auth;
 use Carbon\Carbon;
 use App\User;
 use App\Models\Application;
-use App\Models\Team;
+use App\Models\Organisation;
 use App\Models\ApplicationUser;
 use App\Models\Role;
 use App\Models\Type;
@@ -104,7 +104,7 @@ class Controller extends BaseController
 
 				$inviteeEmail = strtolower($invitation['email']);
 
-				// Check if user is already included in the Team or Application
+				// Check if user is already included in the Organisation or Application
 				$invitee = User::where('email', $inviteeEmail)->first();
 				if ($invitee) {
 					$isIncluded = DB::table($type->name . '_users')->where([
@@ -143,7 +143,7 @@ class Controller extends BaseController
                     }
                     else {
                         $application = Application::where('id', $data->application_id)->first();
-					    $link = $application->slug . '.' . config('mail.fronturl') . '/teams/' . $data->id;
+					    $link = $application->slug . '.' . config('mail.fronturl') . '/organisations/' . $data->id;
                     }
 
 					dispatch(new ProcessInvitationEmail([
@@ -182,7 +182,7 @@ class Controller extends BaseController
                 $type->name . '_id' => $reference_id
             ])->first();
 
-            // Check if user already exists in the Team or Application
+            // Check if user already exists in the Organisation or Application
             if (!$user_list) {
                 if ($user_list = DB::table($type->name . '_users')->insert([
                     'user_id' => $user->id,
@@ -200,18 +200,18 @@ class Controller extends BaseController
             }
 
             if ($user_list) {
-                if ($type->name == 'team') {
-                    $team = Team::find($reference_id);
+                if ($type->name == 'organisation') {
+                    $organisation = Organisation::find($reference_id);
 
                     $application_user = ApplicationUser::where([
                         'user_id' => $user->id,
-                        'application_id' => $team->application_id
+                        'application_id' => $organisation->application_id
                     ])->first();
 
                     if (!$application_user) {
                         ApplicationUser::create([
                             'user_id' => $user->id,
-                            'application_id' => $team->application_id,
+                            'application_id' => $organisation->application_id,
                             'role_id' => Role::where('name', 'User')->first()->id
                         ]);
                     }
@@ -246,7 +246,7 @@ class Controller extends BaseController
 			$type . '_id' => $data->id
 		])->first();
 
-		// Check if user already exists in the Team or Application
+		// Check if user already exists in the Organisation or Application
 		if (!$user_list) {
 			$user_list = DB::table($type . '_users')->insert([
 				'user_id' => $user->id,
@@ -258,7 +258,7 @@ class Controller extends BaseController
 		}
 
 		if ($user_list) {
-			if ($type == 'team') {
+			if ($type == 'organisation') {
 				$application_user = ApplicationUser::where([
 					'user_id' => $user->id,
 					'application_id' => $data->application_id
@@ -277,7 +277,7 @@ class Controller extends BaseController
 				'status' => 'success',
 				'message' => 'You have joined the ' . $type . ' successfully.',
 				'data' => $data,
-				'slug' => $type == 'team' ? Application::find($data->application_id)->slug : Application::find($data->id)->slug
+				'slug' => $type == 'organisation' ? Application::find($data->application_id)->slug : Application::find($data->id)->slug
 			], 200);
 		}
 

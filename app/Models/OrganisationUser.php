@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TeamUser extends Model
+class OrganisationUser extends Model
 {
 	/**
 	 * The attributes that are mass assignable.
@@ -12,11 +12,11 @@ class TeamUser extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'user_id', 'team_id', 'role_id'
+		'user_id', 'organisation_id', 'role_id'
 	];
 
 	/**
-	 * Get the role of the User in Team
+	 * Get the role of the User in Organisation
 	 */
 	public function role()
 	{
@@ -24,7 +24,7 @@ class TeamUser extends Model
 	}
 
     /**
-     * Get all of the TeamUser's logs.
+     * Get all of the OrganisationUser's logs.
      */
     public function logs()
     {
