@@ -70,7 +70,8 @@ class OrganisationController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191'
+			'name' => 'required|max:191',
+            'description' => 'required|max:191'
 		]);
 
 		try {
@@ -94,6 +95,7 @@ class OrganisationController extends Controller
 			// Create organisation
 			$organisation = $user->organisations()->create([
 				'name' => $request->input('name'),
+                'description' => $request->input('description'),
 				'application_id' => $application->id,
 				'share_token' => $share_token
 			], [
@@ -602,17 +604,17 @@ class OrganisationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$organisation = $user->organisations()->where([
-				'organisation_id' => $id,
-				'application_id' => $application->id
-			])->first();
-
 			if ($user->role->name == 'Super Admin') {
 				$organisation = Organisation::where([
 					'id' => $id,
 					'application_id' => $application->id
 				])->first();
-			}
+			} else {
+                $organisation = $user->organisations()->where([
+                    'organisation_id' => $id,
+                    'application_id' => $application->id
+                ])->first();
+            }
 
 			// Send error if organisation does not exist
 			if (!$organisation) {

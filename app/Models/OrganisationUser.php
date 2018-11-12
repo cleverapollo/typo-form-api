@@ -15,6 +15,14 @@ class OrganisationUser extends Model
 		'user_id', 'organisation_id', 'role_id'
 	];
 
+    /**
+     * Get the organisation that owns the OrganisationUser.
+     */
+    public function organisation()
+    {
+        return $this->belongsTo('App\Models\Organisation');
+    }
+
 	/**
 	 * Get the role of the User in Organisation
 	 */
