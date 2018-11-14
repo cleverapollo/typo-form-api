@@ -269,10 +269,6 @@ class FormController extends Controller
 				$data = Excel::load($path, function ($reader) {})->get();
 
 				if (!empty($data) && $data->count()) {
-					// If there is multiple sheets
-					/* if (!array_key_exists('section_name', $data[0])) {
-						$data = $data[0];
-					} */
 
 					foreach ($data as $dt) {
 						// Handling Section
@@ -299,8 +295,8 @@ class FormController extends Controller
 							$section = $form->sections()->create([
 								'name' => $dt->section_name,
 								'parent_section_id' => $parent_section_id,
-								'order' => ($dt->section_order ? $dt->section_order : 1),
-								'repeatable' => ($dt->section_repeatable ? $dt->section_repeatable : 0),
+								'order' => $dt->section_order ?? 1,
+								'repeatable' => $dt->section_repeatable ?? 0,
 								'max_rows' => $dt->section_repeatable_rows_max_count,
 								'min_rows' => $dt->section_repeatable_rows_min_count
 							]);
@@ -327,10 +323,10 @@ class FormController extends Controller
 
 								$question = $section->questions()->create([
 									'question' => $dt->question,
-									'description' => ($dt->question_description ? $dt->question_description : ''),
-									'mandatory' => $dt->question_mandatory,
-									'question_type_id' => $question_type_id,
-									'order' => ($dt->question_order ? $dt->question_order : 1)
+									'description' => $dt->question_description ?? '',
+									'mandatory' => $dt->question_mandatory ?? 1,
+									'question_type_id' => $question_type_id ?? 1,
+									'order' => $dt->question_order ?? 1
 								]);
 							}
 
@@ -348,17 +344,18 @@ class FormController extends Controller
 								if (!$created) {
 									$question->answers()->create([
 										'answer' => $dt->answer,
-										'parameter' => ($dt->answer_parameter ? $dt->answer_parameter : true),
-										'order' => ($dt->answer_order ? $dt->answer_order : 1)
+										'parameter' => $dt->answer_parameter ?? true,
+										'order' => $dt->answer_order ?? 1
 									]);
 								}
 							}
 						}
 					}
 				}
+			} else {
+				return $this->returnErrorMessage(503, 'Invalid CSV file.');
 			}
 		} catch (Exception $e) {
-			// Send error
 			return $this->returnErrorMessage(503, 'Invalid CSV file.');
 		}
 	}
