@@ -40,15 +40,15 @@ class Section extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'form_id', 'parent_section_id', 'order', 'repeatable', 'max_rows', 'min_rows'
+		'name', 'form_template_id', 'parent_section_id', 'order', 'repeatable', 'max_rows', 'min_rows'
 	];
 
 	/**
-	 * Get the form that owns the Section.
+	 * Get the form_template that owns the Section.
 	 */
-	public function form()
+	public function form_template()
 	{
-		return $this->belongsTo('App\Models\Form');
+		return $this->belongsTo('App\Models\FormTemplate');
 	}
 
 	/**

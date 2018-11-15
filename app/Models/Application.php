@@ -14,8 +14,8 @@ class Application extends Model
 		parent::boot();
 
 		static::deleting(function ($application) {
-			$application->forms->each(function ($form) {
-				$form->delete();
+			$application->form_templates->each(function ($form_template) {
+				$form_template->delete();
 			});
 		});
 	}
@@ -38,11 +38,11 @@ class Application extends Model
 	}
 
 	/**
-	 * Get the forms for the Application.
+	 * Get the form_templates for the Application.
 	 */
-	public function forms()
+	public function form_templates()
 	{
-		return $this->hasMany('App\Models\Form');
+		return $this->hasMany('App\Models\FormTemplate');
 	}
 
 	/**

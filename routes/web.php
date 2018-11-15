@@ -89,24 +89,24 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				});
 			});
 
-			$router->group(['prefix' => 'form'], function () use ($router) {
-				$router->get('/', 'FormController@index');
-				$router->post('/', 'FormController@store');
-				$router->post('auto', 'FormController@setAuto');
+			$router->group(['prefix' => 'form-builder'], function () use ($router) {
+				$router->get('/', 'FormTemplateController@index');
+				$router->post('/', 'FormTemplateController@store');
+				$router->post('auto', 'FormTemplateController@setAuto');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
-					$router->get('/', 'FormController@show');
-					$router->post('/', 'FormController@update');
-					$router->delete('/', 'FormController@destroy');
-					$router->get('export', 'FormController@exportCSV');
+					$router->get('/', 'FormTemplateController@show');
+					$router->post('/', 'FormTemplateController@update');
+					$router->delete('/', 'FormTemplateController@destroy');
+					$router->get('export', 'FormTemplateController@exportCSV');
 				});
 			});
 
-            $router->group(['prefix' => 'submission'], function () use ($router) {
-                $router->get('/', 'SubmissionController@all');
-                $router->post('/filter', 'ApplicationController@filterSubmission');
-                $router->post('/filter/export', 'ApplicationController@exportSubmission');
-                $router->get('{id}', 'SubmissionController@one');
+            $router->group(['prefix' => 'form'], function () use ($router) {
+                $router->get('/', 'FormController@all');
+                $router->post('/filter', 'ApplicationController@filterForm');
+                $router->post('/filter/export', 'ApplicationController@exportForm');
+                $router->get('{id}', 'FormController@one');
             });
 
 			$router->group(['prefix' => 'application-email'], function () use ($router) {
@@ -122,17 +122,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'form/{form_id}'], function () use ($router) {
-		$router->group(['prefix' => 'submission'], function () use ($router) {
-			$router->get('/', 'SubmissionController@index');
-			$router->post('/', 'SubmissionController@store');
+	$router->group(['prefix' => 'form-builder/{form_template_id}'], function () use ($router) {
+		$router->group(['prefix' => 'form'], function () use ($router) {
+			$router->get('/', 'FormController@index');
+			$router->post('/', 'FormController@store');
 
 			$router->group(['prefix' => '{id}'], function () use ($router) {
-				$router->get('/', 'SubmissionController@show');
-				$router->put('/', 'SubmissionController@update');
-                $router->post('/', 'SubmissionController@duplicate');
-				$router->delete('/', 'SubmissionController@destroy');
-				$router->get('data', 'SubmissionController@getData');
+				$router->get('/', 'FormController@show');
+				$router->put('/', 'FormController@update');
+                $router->post('/', 'FormController@duplicate');
+				$router->delete('/', 'FormController@destroy');
+				$router->get('data', 'FormController@getData');
 			});
 		});
 
@@ -200,7 +200,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'submission/{submission_id}/response'], function () use ($router) {
+	$router->group(['prefix' => 'form/{form_id}/response'], function () use ($router) {
 		$router->get('/', 'ResponseController@index');
 		$router->post('/', 'ResponseController@store');
 		$router->delete('/section/{section_id}/{order}', 'ResponseController@deleteSectionResponse');

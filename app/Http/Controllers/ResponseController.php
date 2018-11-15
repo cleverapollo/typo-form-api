@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use App\Models\Submission;
 use App\Models\Form;
+use App\Models\FormTemplate;
 use App\Models\Section;
 use App\Models\Question;
 use App\Models\QuestionType;
@@ -28,13 +28,13 @@ class ResponseController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($submission_id)
+	public function index($form_id)
 	{
-		$responses = Submission::find($submission_id)->responses()->get();
+		$responses = Form::find($form_id)->responses()->get();
 
 		return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
 	}
@@ -42,13 +42,13 @@ class ResponseController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function store($submission_id, Request $request)
+	public function store($form_id, Request $request)
 	{
 		$this->validate($request, [
 			'question_id' => 'required|integer|min:1',
@@ -57,11 +57,11 @@ class ResponseController extends Controller
 		]);
 
 		try {
-			$submission = Submission::find($submission_id);
+			$form = Form::find($form_id);
 
-			// Send error if submission does not exist
-			if (!$submission) {
-				return $this->returnError('submission', 404, 'create response');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'create response');
 			}
 
 			$question_id = $request->input('question_id');
@@ -79,11 +79,11 @@ class ResponseController extends Controller
 				}
 			}
 
-			$form = Form::find($submission->form_id);
+			$form_template = FormTemplate::find($form->form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'create response');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'create response');
 			}
 
 			$order = $request->input('order', null);
@@ -91,8 +91,8 @@ class ResponseController extends Controller
 			// Get Question and Question Type
 			$question = Question::find($question_id);
 			$question_type = QuestionType::find($question->question_type_id);
-			$responses = $submission->responses->where('question_id',  $question_id)->where('order', $order);
-			$validations = $form->validations->where('question_id', $question_id);
+			$responses = $form->responses->where('question_id',  $question_id)->where('order', $order);
+			$validations = $form_template->validations->where('question_id', $question_id);
 			$response_value = $request->input('response', null);
 
 			if ($question_type->type == 'Short answer' ||
@@ -139,7 +139,7 @@ class ResponseController extends Controller
 				$response_value = substr($data, 9, -1);
 			}
 
-			$response = $submission->responses()->create([
+			$response = $form->responses()->create([
 				'question_id' => $question_id,
 				'response' => $response_value,
 				'answer_id' => $answer_id,
@@ -161,21 +161,21 @@ class ResponseController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($submission_id, $id)
+	public function show($form_id, $id)
 	{
-		$submission = Submission::find($submission_id);
+        $form = Form::find($form_id);
 
-		// Send error if submission does not exist
-		if (!$submission) {
-			return $this->returnError('submission', 404, 'show response');
+		// Send error if form does not exist
+		if (!$form) {
+			return $this->returnError('form', 404, 'show response');
 		}
 
-		$response = $submission->responses()->find($id);
+		$response = $form->responses()->find($id);
 		if ($response) {
 			return $this->returnSuccessMessage('response', new ResponseResource($response));
 		}
@@ -187,14 +187,14 @@ class ResponseController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($submission_id, $id, Request $request)
+	public function update($form_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'question_id' => 'filled|integer|min:1',
@@ -203,14 +203,14 @@ class ResponseController extends Controller
 		]);
 
 		try {
-			$submission = Submission::find($submission_id);
+			$form = Form::find($form_id);
 
-			// Send error if submission does not exist
-			if (!$submission) {
-				return $this->returnError('submission', 404, 'update response');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'update response');
 			}
 
-			$response = $submission->responses()->find($id);
+			$response = $form->responses()->find($id);
 
 			// Send error if response does not exist
 			if (!$response) {
@@ -233,7 +233,7 @@ class ResponseController extends Controller
 
 			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id', 'order'));
 
-			if ($submission->responses()->where('id', $id)->delete()) {
+			if ($form->responses()->where('id', $id)->delete()) {
 				$question = Question::find($question_id);
 				$question_type = QuestionType::find($question->question_type_id);
 
@@ -258,7 +258,7 @@ class ResponseController extends Controller
 				} else {
 					$response_value = $newResponse->response;
 				}
-				$new = $submission->responses()->create([
+				$new = $form->responses()->create([
 					'question_id' => $newResponse->question_id,
 					'response' => $response_value,
 					'answer_id' => $newResponse->answer_id,
@@ -281,22 +281,22 @@ class ResponseController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($submission_id, $id)
+	public function destroy($form_id, $id)
 	{
 		try {
-			$submission = Submission::find($submission_id);
+            $form = Form::find($form_id);
 
-			// Send error if submission does not exist
-			if (!$submission) {
-				return $this->returnError('submission', 404, 'show response');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'show response');
 			}
 
-			$response = $submission->responses()->find($id);
+			$response = $form->responses()->find($id);
 
 			// Send error if response does not exist
 			if (!$response) {
@@ -318,20 +318,20 @@ class ResponseController extends Controller
 	/**
 	 * Remove the section resource with order from storage.
 	 *
-	 * @param  int $submission_id
+	 * @param  int $form_id
 	 * @param  int $section_id
 	 * @param  int $order
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function deleteSectionResponse($submission_id, $section_id, $order)
+	public function deleteSectionResponse($form_id, $section_id, $order)
 	{
 		try {
-			$submission = Submission::find($submission_id);
+			$form = Form::find($form_id);
 
-			// Send error if submission does not exist
-			if (!$submission) {
-				return $this->returnError('submission', 404, 'show response');
+			// Send error if form does not exist
+			if (!$form) {
+				return $this->returnError('form', 404, 'show response');
 			}
 
 			$section = Section::find($section_id);
@@ -352,7 +352,7 @@ class ResponseController extends Controller
 				});
 			});
 
-			$responses = Submission::find($submission_id)->responses()->get();
+			$responses = Form::find($form_id)->responses()->get();
 
 			return $this->returnSuccessMessage('responses', ResponseResource::collection($responses));
 		} catch (Exception $e) {

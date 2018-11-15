@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\Form;
+use App\Models\FormTemplate;
 use App\Models\Question;
 use App\Models\ValidationType;
 use App\Http\Resources\ValidationResource;
@@ -25,20 +25,20 @@ class ValidationController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($form_id)
+	public function index($form_template_id)
 	{
-		$form = Form::find($form_id);
+        $form_template = FormTemplate::find($form_template_id);
 
-		// Send error if form does not exist
-		if (!$form) {
-			return $this->returnError('form', 404, 'show validations');
+		// Send error if form template does not exist
+		if (!$form_template) {
+			return $this->returnError('form_template', 404, 'show validations');
 		}
 
-		$validations = $form->validations()->get();
+		$validations = $form_template->validations()->get();
 
 		return $this->returnSuccessMessage('validations', ValidationResource::collection($validations));
 	}
@@ -46,13 +46,13 @@ class ValidationController extends Controller
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function store($form_id, Request $request)
+	public function store($form_template_id, Request $request)
 	{
 		$this->validate($request, [
 			'question_id' => 'required|integer|min:1',
@@ -60,11 +60,11 @@ class ValidationController extends Controller
 		]);
 
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'create validation');
+			// Send error if form template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'create validation');
 			}
 
 			$question_id = $request->input('question_id');
@@ -82,7 +82,7 @@ class ValidationController extends Controller
 			}
 
 			// Create validation
-			$validation = $form->validations()->create([
+			$validation = $form_template->validations()->create([
 				'question_id' => $question_id,
 				'validation_type_id' => $validation_type_id,
 				'validation_data' => $request->input('validation_data', null)
@@ -103,21 +103,21 @@ class ValidationController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($form_id, $id)
+	public function show($form_template_id, $id)
 	{
-		$form = Form::find($form_id);
+        $form_template = FormTemplate::find($form_template_id);
 
-		// Send error if form does not exist
-		if (!$form) {
-			return $this->returnError('form', 404, 'show validation');
+		// Send error if form template does not exist
+		if (!$form_template) {
+			return $this->returnError('form template', 404, 'show validation');
 		}
 
-		$validation = $form->validations()->find($id);
+		$validation = $form_template->validations()->find($id);
 		if ($validation) {
 			return $this->returnSuccessMessage('validation', new ValidationResource($validation));
 		}
@@ -129,28 +129,28 @@ class ValidationController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($form_id, $id, Request $request)
+	public function update($form_template_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'validation_type_id' => 'filled|integer|min:1'
 		]);
 
 		try {
-			$form = Form::find($form_id);
+            $form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'update validation');
+			// Send error if form template does not exist
+			if (!$form_template) {
+				return $this->returnError('form template', 404, 'update validation');
 			}
 
-			$validation = $form->validations()->find($id);
+			$validation = $form_template->validations()->find($id);
 
 			// Send error if validation does not exist
 			if (!$validation) {
@@ -180,22 +180,22 @@ class ValidationController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($form_id, $id)
+	public function destroy($form_template_id, $id)
 	{
 		try {
-			$form = Form::find($form_id);
+            $form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'delete validation');
+			// Send error if form template does not exist
+			if (!$form_template) {
+				return $this->returnError('form template', 404, 'delete validation');
 			}
 
-			$validation = $form->validations()->find($id);
+			$validation = $form_template->validations()->find($id);
 
 			// Send error if validation does not exist
 			if (!$validation) {

@@ -24,23 +24,23 @@ class Observer
         $resourcable_id = $model->id;
 
         switch ($resourcable_type) {
-            case 'Form':
+            case 'FormTemplate':
             case 'Organisation':
             case 'ApplicationUser':
                 $application_id = $model->application_id;
                 break;
             case 'Section':
-            case 'Submission':
+            case 'Form':
             case 'QuestionTrigger':
             case 'Validation':
-                $application_id = $model->form->application_id;
+                $application_id = $model->form_template->application_id;
                 break;
             case 'Question':
-                $application_id = $model->section->form->application_id;
+                $application_id = $model->section->form_template->application_id;
                 break;
             case 'Answer':
             case 'Response':
-                $application_id = $model->question->section->form->application_id;
+                $application_id = $model->question->section->form_template->application_id;
                 break;
             case 'OrganisationUser':
                 $application_id = $model->organisation->application_id;

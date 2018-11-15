@@ -6,12 +6,12 @@ use DB;
 use Log;
 use App\Models\Answer;
 use App\Models\ApplicationUser;
-use App\Models\Form;
+use App\Models\FormTemplate;
 use App\Models\Question;
 use App\Models\QuestionTrigger;
 use App\Models\Response;
 use App\Models\Section;
-use App\Models\Submission;
+use App\Models\Form;
 use App\Models\Organisation;
 use App\Models\OrganisationUser;
 use App\Models\Validation;
@@ -27,12 +27,12 @@ class AppServiceProvider extends ServiceProvider
     private $modelList = [
         Answer::class           => Observer::class,
         ApplicationUser::class  => Observer::class,
-        Form::class             => Observer::class,
+        FormTemplate::class     => Observer::class,
         Question::class         => Observer::class,
         QuestionTrigger::class  => Observer::class,
         Response::class         => Observer::class,
         Section::class          => Observer::class,
-        Submission::class       => Observer::class,
+        Form::class             => Observer::class,
         Organisation::class     => Observer::class,
         OrganisationUser::class => Observer::class,
         Validation::class       => Observer::class,
@@ -54,12 +54,12 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'answers' => 'App\Models\Answer',
             'application_users' => 'App\Models\ApplicationUser',
-            'forms' => 'App\Models\Form',
+            'form_templates' => 'App\Models\FormTemplate',
             'questions' => 'App\Models\Question',
             'question_triggers' => 'App\Models\QuestionTrigger',
             'responses' => 'App\Models\Response',
             'sections' => 'App\Models\Section',
-            'submissions' => 'App\Models\Submission',
+            'forms' => 'App\Models\Form',
             'organisations' => 'App\Models\Organisation',
             'organisation_users' => 'App\Models\OrganisationUser',
             'validations' => 'App\Models\Validation',

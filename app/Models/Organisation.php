@@ -24,11 +24,11 @@ class Organisation extends Model
 	}
 
 	/**
-	 * Get the submissions for the Organisation.
+	 * Get the forms for the Organisation.
 	 */
-	public function submissions()
+	public function forms()
 	{
-		return $this->hasMany('App\Models\Submission');
+		return $this->hasMany('App\Models\Form');
 	}
 
 	/**

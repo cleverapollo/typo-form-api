@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\Models\Form;
+use App\Models\FormTemplate;
 use App\Models\Section;
 use App\Http\Resources\SectionResource;
 use Illuminate\Http\Request;
@@ -24,26 +24,26 @@ class SectionController extends Controller
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index($form_id)
+	public function index($form_template_id)
 	{
-		$form = Form::with(['sections.questions.answers', 'sections.questions.metas'])->find($form_id);
-		return $this->returnSuccessMessage('sections', SectionResource::collection($form->sections));
+		$form_template = FormTemplate::with(['sections.questions.answers', 'sections.questions.metas'])->find($form_template_id);
+		return $this->returnSuccessMessage('sections', SectionResource::collection($form_template->sections));
 	}
 
 	/**
 	 * Store a newly created resource in storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function store($form_id, Request $request)
+	public function store($form_template_id, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'required|max:191',
@@ -51,22 +51,22 @@ class SectionController extends Controller
 		]);
 
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'create section');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'create section');
 			}
 
 			// Count order
 			$order = 1;
 			$parent_section_id = $request->input('parent_section_id', null);
 			if (!$parent_section_id) {
-				if (count($form->sections) > 0) {
-					$order = $form->sections()->where('parent_section_id', null)->max('order') + 1;
+				if (count($form_template->sections) > 0) {
+					$order = $form_template->sections()->where('parent_section_id', null)->max('order') + 1;
 				}
 			} else {
-				$parent_section = $form->sections()->find($parent_section_id);
+				$parent_section = $form_template->sections()->find($parent_section_id);
 
 				// Send error if parent section does not exist
 				if (!$parent_section) {
@@ -83,7 +83,7 @@ class SectionController extends Controller
 			}
 
 			// Create section
-			$section = $form->sections()->create([
+			$section = $form_template->sections()->create([
 				'name' => $request->input('name'),
 				'parent_section_id' => $parent_section_id,
 				'order' => $order,
@@ -105,22 +105,22 @@ class SectionController extends Controller
 	/**
 	 * Duplicate a resource in storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function duplicate($form_id, $id)
+	public function duplicate($form_template_id, $id)
 	{
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'duplicate section');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'duplicate section');
 			}
 
-			$section = $form->sections()->find($id);
+			$section = $form_template->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {
@@ -128,7 +128,7 @@ class SectionController extends Controller
 			}
 
 			// Duplicate section
-			$newSection = $form->sections()->create([
+			$newSection = $form_template->sections()->create([
 				'name' => $section->name,
 				'parent_section_id' => $section->parent_section_id,
 				'order' => ($section->order + 1),
@@ -139,7 +139,7 @@ class SectionController extends Controller
 
 			if ($newSection) {
 				// Update other sections order
-				$form->sections()->where([
+				$form_template->sections()->where([
 					['id', '<>', $newSection->id],
 					['parent_section_id', '=', $newSection->parent_section_id],
 					['order', '>=', $newSection->order]
@@ -170,21 +170,21 @@ class SectionController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function show($form_id, $id)
+	public function show($form_template_id, $id)
 	{
-		$form = Form::find($form_id);
+		$form_template = FormTemplate::find($form_template_id);
 
-		// Send error if form does not exist
-		if (!$form) {
-			return $this->returnError('form', 404, 'show section');
+		// Send error if form_template does not exist
+		if (!$form_template) {
+			return $this->returnError('form_template', 404, 'show section');
 		}
 
-		$section = $form->sections()->find($id);
+		$section = $form_template->sections()->find($id);
 		if ($section) {
 			return $this->returnSuccessMessage('section', new SectionResource($section));
 		}
@@ -196,14 +196,14 @@ class SectionController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($form_id, $id, Request $request)
+	public function update($form_template_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'name' => 'filled|max:191',
@@ -213,14 +213,14 @@ class SectionController extends Controller
 		]);
 
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'update section');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'update section');
 			}
 
-			$section = $form->sections()->find($id);
+			$section = $form_template->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {
@@ -243,22 +243,22 @@ class SectionController extends Controller
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $form_id
+	 * @param  int $form_template_id
 	 * @param  int $id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function destroy($form_id, $id)
+	public function destroy($form_template_id, $id)
 	{
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'delete section');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'delete section');
 			}
 
-			$section = $form->sections()->find($id);
+			$section = $form_template->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {
@@ -280,14 +280,14 @@ class SectionController extends Controller
 	/**
 	 * Move the specified resource from storage.
 	 *
-	 * @param $form_id
+	 * @param $form_template_id
 	 * @param $id
 	 * @param Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function move($form_id, $id, Request $request)
+	public function move($form_template_id, $id, Request $request)
 	{
 		$this->validate($request, [
 			'parent_section_id' => 'nullable|integer|min:1',
@@ -295,14 +295,14 @@ class SectionController extends Controller
 		]);
 
 		try {
-			$form = Form::find($form_id);
+			$form_template = FormTemplate::find($form_template_id);
 
-			// Send error if form does not exist
-			if (!$form) {
-				return $this->returnError('form', 404, 'move section');
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'move section');
 			}
 
-			$section = $form->sections()->find($id);
+			$section = $form_template->sections()->find($id);
 
 			// Send error if section does not exist
 			if (!$section) {
@@ -311,7 +311,7 @@ class SectionController extends Controller
 
 			$parent_section_id = $request->input('parent_section_id', null);
 			if ($parent_section_id) {
-				$parent_section = $form->sections()->find($parent_section_id);
+				$parent_section = $form_template->sections()->find($parent_section_id);
 
 				// Send error if parent section does not exist
 				if (!$parent_section) {
@@ -325,7 +325,7 @@ class SectionController extends Controller
 			$section->save();
 
 			// Update other sections order
-			$form->sections()->where([
+			$form_template->sections()->where([
 				['id', '<>', $section->id],
 				['parent_section_id', '=', $parent_section_id],
 				['order', '>=', $section->order]

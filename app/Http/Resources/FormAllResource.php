@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SubmissionAllResource extends JsonResource
+class FormAllResource extends JsonResource
 {
 	/**
 	 * Transform the resource into an array.
@@ -27,9 +27,9 @@ class SubmissionAllResource extends JsonResource
 				'name' => $this->organisation->name,
 				'description' => $this->organisation->description
 			] : null,
-			'form' => [
-				'id' => $this->form_id,
-				'name' => $this->form->name
+			'form_template' => [
+				'id' => $this->form_template_id,
+				'name' => $this->form_template->name
 			],
 			'progress' => $this->progress,
 			'period_start' => $this->period_start,

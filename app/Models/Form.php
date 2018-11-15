@@ -24,16 +24,8 @@ class Form extends Model
 		parent::boot();
 
 		static::deleting(function ($form) {
-			$form->sections->each(function ($section) {
-				$section->delete();
-			});
-
-			$form->submissions->each(function ($submission) {
-				$submission->delete();
-			});
-
-			$form->validations->each(function ($validation) {
-				$validation->delete();
+            $form->responses->each(function ($response) {
+				$response->delete();
 			});
 		});
 	}
@@ -44,47 +36,47 @@ class Form extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'application_id', 'show_progress', 'auto'
+		'form_template_id', 'user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id'
 	];
 
 	/**
-	 * Get the application that owns the Form.
+	 * Get the form_template that owns the Form.
 	 */
-	public function application()
+	public function form_template()
 	{
-		return $this->belongsTo('App\Models\Application');
+		return $this->belongsTo('App\Models\FormTemplate');
 	}
 
 	/**
-	 * Get the sections for the Form.
+	 * Get the user that owns the Form.
 	 */
-	public function sections()
+	public function user()
 	{
-		return $this->hasMany('App\Models\Section');
+		return $this->belongsTo('App\User');
 	}
 
 	/**
-	 * Get the submissions for the Form.
+	 * Get the Organisation that owns the Form.
 	 */
-	public function submissions()
+	public function organisation()
 	{
-		return $this->hasMany('App\Models\Submission');
+		return $this->belongsTo('App\Models\Organisation');
 	}
 
 	/**
-	 * Get the validations for the Form.
+	 * Get the status that owns the Form.
 	 */
-	public function validations()
+	public function status()
 	{
-		return $this->hasMany('App\Models\Validation');
+		return $this->belongsTo('App\Models\Status');
 	}
 
 	/**
-	 * Get the question triggers for the Form.
+	 * Get the responses for the Form.
 	 */
-	public function triggers()
+	public function responses()
 	{
-		return $this->hasMany('App\Models\QuestionTrigger');
+		return $this->hasMany('App\Models\Response');
 	}
 
 	/**

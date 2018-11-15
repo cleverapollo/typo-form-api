@@ -61,11 +61,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	}
 
 	/**
-	 * Get the submissions for the User.
+	 * Get the forms for the User.
 	 */
-	public function submissions()
+	public function forms()
 	{
-		return $this->hasMany('App\Models\Submission');
+		return $this->hasMany('App\Models\Form');
 	}
 
 	/**
