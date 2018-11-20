@@ -144,9 +144,7 @@ class FormController extends Controller
 		$this->validate($request, [
 			'user_id' => 'nullable|integer|min:1',
 			'organisation_id' => 'nullable|integer|min:1',
-			'progress' => 'filled|integer|min:0',
-			'period_start' => 'nullable|date',
-			'period_end' => 'nullable|date'
+			'progress' => 'filled|integer|min:0'
 		]);
 
 		try {
@@ -180,8 +178,8 @@ class FormController extends Controller
 				'user_id' => $user_id,
 				'organisation_id' => $organisation_id,
 				'progress' => $request->input('progress', 0),
-				'period_start' => $request->input('period_start', $form_template->period_start),
-				'period_end' => $request->input('period_end', $form_template->period_end),
+				'period_start' => $request->input('period_start', null),
+				'period_end' => $request->input('period_end', null),
 				'status_id' => Status::where('status', 'Open')->first()->id
 			]);
 

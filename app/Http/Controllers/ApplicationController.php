@@ -17,7 +17,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
 use App\Http\Resources\InvitationResource;
-use App\Http\Resources\SubmissionResource;
+use App\Http\Resources\FormResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -146,8 +146,8 @@ class ApplicationController extends Controller
 			// Create application email
 			$application_email = $application->emails()->create([
 				'recipients' => $email,
-				'subject' => 'Create submission',
-				'body' => 'Submission is created successfully. Please fill out the form and send submission.',
+				'subject' => 'Create form',
+				'body' => 'Form is created successfully. Please fill out the form template and send form.',
 			]);
 
 			if (!$application_email) {
@@ -214,21 +214,6 @@ class ApplicationController extends Controller
 			// Check whether user has permission to update
 			if (!$this->hasPermission($user, $application)) {
 				return $this->returnError('application', 403, 'update');
-			}
-
-			// Update application
-			$name = $request->input('name');
-			if ($name) {
-                // $patterns = ['/ /', '/\$/', '/&/', '/\+/', '/,/', '/\//', '/:/', '/;/', '/\?/', '/=/', '/@/', '/>/', '/</', '/#/', '/%/', '/{/', '/}/', '/\|/', '/\^/', '/~/', '/\[/', '/\]/', '/\`/'];
-                // $replacements = [];
-                // $slug = strtolower(preg_replace($patterns, $replacements, stripslashes($name)));
-                $slug = strtolower(preg_replace('/\s|\$|&|\+|,|\/|:|;|\?|=|@|>|<|#|%|{|}|\||\^|~|\[|\]|\`/', '', stripslashes($name)));
-				if (Application::where('slug', $slug)->count() > 0) {
-					return response()->json([
-						'slug' => ['The slug has already been taken.']
-					], 422);
-				}
-				$application->slug = $slug;
 			}
 
 			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text', 'join_flag'))->save()) {
@@ -627,7 +612,7 @@ class ApplicationController extends Controller
 			//Application
 			ini_set('max_execution_time', 0);
 			$data = [];
-			$application->load(['users', 'organisations', 'forms.submissions.status', 'forms.sections.questions.answers', 'forms.sections.questions.responses']);
+			$application->load(['users', 'organisations', 'form_templates.forms.status', 'form_templates.sections.questions.answers', 'form_templates.sections.questions.responses']);
 			$data['Applications'][$application->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $application->toArray());
 
 			//Users
@@ -642,17 +627,17 @@ class ApplicationController extends Controller
 				$data['Organisations'][$organisation->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $organisation->toArray());
 			}
 
-			//Forms
-			foreach($application->forms as $form) {
-				$data['Forms'][$form->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form->toArray());
+			//Form Templates
+			foreach($application->form_templates as $form_template) {
+				$data['Form Templates'][$form_template->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form_template->toArray());
 
-				//Submissions
-				foreach($form->submissions as $submission) {
-					$data['Submissions'][$submission->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $submission->toArray());
+				//
+				foreach($form_template->forms as $form) {
+					$data['Forms'][$form->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form->toArray());
 				}			
 
 				//Sections
-				foreach($form->sections as $section) {
+				foreach($form_template->sections as $section) {
 					$data['Sections'][$section->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $section->toArray());
 				
 					//Questions
@@ -675,21 +660,21 @@ class ApplicationController extends Controller
 			//Question Types
 			$question_types = QuestionType::all();
 
-			foreach($data['Forms'] as $form) {
-				foreach($data['Submissions'] as $submission) {
-					if($submission['form_id'] === $form['id']) {
+			foreach($data['Form Templates'] as $form_template) {
+				foreach($data['Forms'] as $form) {
+					if($form['form_template_id'] === $form_template['id']) {
 						foreach($data['Responses'] as $response) {
-							if($response['submission_id'] === $submission['id']) {
+							if($response['form_id'] === $form['id']) {
 								$row = [
-									'form_id' => $form['id'],
-									'form' => $form['name'],
-									'submission_id' => $response['submission_id'],
-									'submission_created' => $submission['created_at'],
-									'submission_progress' => $submission['progress'],
-									'submission_status' => Status::find($submission['status_id'])->status,
-									'user_id' => $submission['user_id'],
-									'first_name' => $data['Users'][$submission['user_id']]['first_name'] ?? '',
-									'last_name' => $data['Users'][$submission['user_id']]['last_name'] ?? '',
+									'form_template_id' => $form_template['id'],
+									'form_template' => $form_template['name'],
+									'form_id' => $response['form_id'],
+									'form_created' => $form['created_at'],
+									'form_progress' => $form['progress'],
+									'form_status' => Status::find($form['status_id'])->status,
+									'user_id' => $form['user_id'],
+									'first_name' => $data['Users'][$form['user_id']]['first_name'] ?? '',
+									'last_name' => $data['Users'][$form['user_id']]['last_name'] ?? '',
 									'section' => $data['Sections'][$data['Questions'][$response['question_id']]['section_id']]['name'] ?? '',
 									'question_id' => $response['question_id'],
 									'question' => $data['Questions'][$response['question_id']]['question'] ?? '',
@@ -712,7 +697,7 @@ class ApplicationController extends Controller
 										break;
 								}
 
-								$data[$form['name']][] = $row;
+								$data[$form_template['name']][] = $row;
 							}
 						}
 					}
@@ -746,7 +731,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Filter submissions
+     * Filter forms
      *
      * @param  $application_slug
      * @param  Request $request
@@ -754,7 +739,7 @@ class ApplicationController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function filterSubmission($application_slug, Request $request)
+    public function filterForm($application_slug, Request $request)
     {
         $this->validate($request, [
             'filters' => 'array',
@@ -794,13 +779,13 @@ class ApplicationController extends Controller
                                 $comparison['question_id'] = $filter['question_id'];
                                 $questions[] = $comparison;
                             }
-                        } else if ($comparison['source'] == 'Form' || $comparison['source'] == 'User' || $comparison['source'] == 'Organisation' || $comparison['source'] == 'Status') {
+                        } else if ($comparison['source'] == 'Form Template' || $comparison['source'] == 'User' || $comparison['source'] == 'Organisation' || $comparison['source'] == 'Status') {
                             $names[] = $comparison;
                         } else {
                         	if ($comparison['source'] == 'ID') {
                         		$comparison['source'] = 'id';
-                        	} else if ($comparison['source'] == 'Form ID') {
-                        		$comparison['source'] = 'form_id';
+                        	} else if ($comparison['source'] == 'Form Template ID') {
+                        		$comparison['source'] = 'form_template_id';
                         	} else if ($comparison['source'] == 'User ID') {
                         		$comparison['source'] = 'user_id';
                         	} else if ($comparison['source'] == 'Organisation ID') {
@@ -822,60 +807,60 @@ class ApplicationController extends Controller
                 }
             }
 
-            $forms = $application->forms()->get();
-            $submissionIds = [];
-            $submissionCollection = new Collection();
-            foreach ($forms as $form) {
-                $submissions = $form->submissions;
+            $form_templates = $application->form_templates()->get();
+            $formIds = [];
+            $formCollection = new Collection();
+            foreach ($form_templates as $form_template) {
+                $forms = $form_template->forms;
                 foreach ($comparisons as $comparison) {
                     switch ($comparison['query']) {
                         case 'is null':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] === null;
 							});
                             break;
                         case 'is not null':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] !== null;
 							});
                             break;
                         case 'in list':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return in_array($item[$comparison['source']], explode(',', $comparison['value']));
 							});
                             break;
                         case 'not in list':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return !in_array($item[$comparison['source']], explode(',', $comparison['value']));
 							});
                             break;
                         case '=':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] == $comparison['value'];
 							});
                             break;
                         case '!=':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] != $comparison['value'];
 							});
                             break;
                         case '<':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] < $comparison['value'];
 							});
                             break;
                         case '>':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] > $comparison['value'];
 							});
                             break;
                         case '<=':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] <= $comparison['value'];
 							});
                             break;
                         case '>=':
-                            $submissions = $submissions->filter(function ($item) use ($comparison) {
+                            $forms = $forms->filter(function ($item) use ($comparison) {
 								return $item[$comparison['source']] >= $comparison['value'];
 							});
                             break;
@@ -884,23 +869,23 @@ class ApplicationController extends Controller
                     }
                 }
 
-                $submissions = $submissions->all();
+                $forms = $forms->all();
 
-                foreach ($submissions as $submission) {
+                foreach ($forms as $form) {
                     $invalid = false;
                     $responseCollection = new Collection();
 
                     foreach ($names as $name) {
                     	$name_str = '';
 
-                    	if ($name['source'] == 'Form') {
-                    		$name_str = $submission->form->name;
+                    	if ($name['source'] == 'Form Template') {
+                    		$name_str = $form->form_template->name;
                     	} else if ($name['source'] == 'Organisation') {
-                    		$name_str = $submission->organisation ? $submission->organisation->name : null;
+                    		$name_str = $form->organisation ? $form->organisation->name : null;
                     	} else if ($name['source'] == 'User') {
-                    		$name_str = $submission->user->first_name + ' ' + $submission->name->last_name;
+                    		$name_str = $form->user->first_name + ' ' + $form->name->last_name;
                     	} else if ($name['source'] == 'Status') {
-                    		$name_str = $submission->status->status;
+                    		$name_str = $form->status->status;
                     	}
 
                     	$result = true;
@@ -946,7 +931,7 @@ class ApplicationController extends Controller
                     }
 
                     foreach ($questions as $question) {
-                        $responses = $submission->responses->where('question_id', $question['question_id']);
+                        $responses = $form->responses->where('question_id', $question['question_id']);
                         switch ($question['query']) {
                             case 'is null':
                                 $responses = $responses->whereNull('response');
@@ -974,17 +959,17 @@ class ApplicationController extends Controller
                     }
 
                     if (!$invalid) {
-                        $submissionIds[] = $submission->id;
+                        $formIds[] = $form->id;
 
-                        $submission->responses = $responseCollection;
-                        $submissionCollection = $submissionCollection->push($submission);
+                        $form->responses = $responseCollection;
+                        $formCollection = $formCollection->push($form);
                     }
                 }
             }
 
-            return $this->returnSuccessMessage('submissions', [
-                "submission_ids" => $submissionIds,
-                "submissions" => SubmissionResource::collection($submissionCollection)
+            return $this->returnSuccessMessage('forms', [
+                "form_ids" => $formIds,
+                "forms" => FormResource::collection($formCollection)
             ]);
         } catch (Exception $e) {
             // Send error
@@ -993,7 +978,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Filter submission and export as CSV
+     * Filter forms and export as CSV
      *
      * @param  $application_slug
      * @param  Request $request
@@ -1001,7 +986,7 @@ class ApplicationController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function exportSubmission($application_slug, Request $request)
+    public function exportForm($application_slug, Request $request)
     {
         $this->validate($request, [
             'filters' => 'array',
@@ -1047,38 +1032,38 @@ class ApplicationController extends Controller
                 }
             }
 
-            $forms = $application->forms()->get();
-            $submissionsData = [];
-            foreach ($forms as $form) {
-                $submissions = $form->submissions;
+            $form_templates = $application->form_templates()->get();
+            $formsData = [];
+            foreach ($form_templates as $form_template) {
+                $forms = $form_template->forms;
                 foreach ($comparisons as $comparison) {
                     switch ($comparison['query']) {
                         case 'is null':
-                            $submissions = $submissions->whereNull($comparison['source']);
+                            $forms = $forms->whereNull($comparison['source']);
                             break;
                         case 'is not null':
-                            $submissions = $submissions->whereNotNull($comparison['source']);
+                            $forms = $forms->whereNotNull($comparison['source']);
                             break;
                         case 'in list':
-                            $submissions = $submissions->whereIn($comparison['source'], explode(',', $comparison['value']));
+                            $forms = $forms->whereIn($comparison['source'], explode(',', $comparison['value']));
                             break;
                         case 'not in list':
-                            $submissions = $submissions->whereNotIn($comparison['source'], explode(',', $comparison['value']));
+                            $forms = $forms->whereNotIn($comparison['source'], explode(',', $comparison['value']));
                             break;
                         case '':
                             break;
                         default:
-                            $submissions = $submissions->where($comparison['source'], $comparison['query'], $comparison['value']);
+                            $forms = $forms->where($comparison['source'], $comparison['query'], $comparison['value']);
                     }
                 }
 
-                $submissions = $submissions->all();
-                foreach ($submissions as $submission) {
+                $forms = $forms->all();
+                foreach ($forms as $form) {
                     $invalid = false;
                     $responseCollection = new Collection();
 
                     foreach ($questions as $question) {
-                        $responses = $submission->responses->where('question_id', $question['question_id']);
+                        $responses = $form->responses->where('question_id', $question['question_id']);
                         switch ($question['query']) {
                             case 'is null':
                                 $responses = $responses->whereNull('response');
@@ -1107,23 +1092,23 @@ class ApplicationController extends Controller
 
                     if (!$invalid) {
                         // ToDo: Consider about the export response column
-                        $submissionsData[] = [
-                            'Submission ID' => $submission->id,
-                            'Form ID' => $submission->form_id,
-                            'User ID' => $submission->user_id,
-                            'Organisation ID' => $submission->organisation_id,
-                            'Progress' => $submission->progress,
-                            'Period Start' => $submission->period_start,
-                            'Period End' => $submission->period_end,
-                            'Status' => Status::find($submission->status_id)->status
+                        $formsData[] = [
+                            'Form ID' => $form->id,
+                            'Form Template ID' => $form->form_template_id,
+                            'User ID' => $form->user_id,
+                            'Organisation ID' => $form->organisation_id,
+                            'Progress' => $form->progress,
+                            'Period Start' => $form->period_start,
+                            'Period End' => $form->period_end,
+                            'Status' => Status::find($form->status_id)->status
                         ];
                     }
                 }
             }
 
-            return Excel::create($application->name, function ($excel) use ($submissionsData) {
-                $excel->sheet('Submissions', function ($sheet) use ($submissionsData) {
-                    $sheet->fromArray($submissionsData);
+            return Excel::create($application->name, function ($excel) use ($formsData) {
+                $excel->sheet('Forms', function ($sheet) use ($formsData) {
+                    $sheet->fromArray($formsData);
                 });
             })->download('xlsx');
         } catch (Exception $e) {
