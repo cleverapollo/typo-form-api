@@ -44,7 +44,7 @@ class FormTemplate extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'application_id', 'show_progress', 'auto'
+		'name', 'user_id', 'organisation_id', 'application_id', 'show_progress', 'auto'
 	];
 
 	/**
@@ -54,6 +54,22 @@ class FormTemplate extends Model
 	{
 		return $this->belongsTo('App\Models\Application');
 	}
+
+    /**
+     * Get the user that owns the FormTemplate.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
+
+    /**
+     * Get the Organisation that owns the FormTemplate.
+     */
+    public function organisation()
+    {
+        return $this->belongsTo('App\Models\Organisation');
+    }
 
 	/**
 	 * Get the sections for the FormTemplate.

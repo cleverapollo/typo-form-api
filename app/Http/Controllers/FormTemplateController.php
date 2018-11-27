@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
+use App\Models\Organisation;
 use App\Models\FormTemplate;
 use App\Models\QuestionType;
 use App\Http\Resources\FormTemplateResource;
@@ -62,6 +64,8 @@ class FormTemplateController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
+            'user_id' => 'nullable|integer|min:1',
+            'organisation_id' => 'nullable|integer|min:1',
 			'name' => 'required|max:191'
 		]);
 
@@ -83,8 +87,30 @@ class FormTemplateController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
+            $user_id = $request->input('user_id', null);
+            if ($user_id) {
+                // Send error if organisation does not exist
+                if (!User::find($user_id)) {
+                    return $this->returnError('user', 404, 'create form');
+                }
+            } else {
+                $user_id = Auth::user()->id;
+            }
+
+            $organisation_id = $request->input('organisation_id', null);
+            if ($organisation_id) {
+                // Send error if organisation does not exist
+                if (!Organisation::find($organisation_id)) {
+                    return $this->returnError('organisation', 404, 'create form');
+                }
+            }
+
 			// Create form_template
-			$form_template = $application->form_templates()->create($request->only('name'));
+            $form_template = $application->form_templates()->create([
+                'user_id' => $user_id,
+                'organisation_id' => $organisation_id,
+                'name' => $request->input('name')
+            ]);
 
 			if ($form_template) {
 				return $this->returnSuccessMessage('form_template', new FormTemplateResource(FormTemplate::find($form_template->id)));
@@ -147,6 +173,8 @@ class FormTemplateController extends Controller
 	public function update($application_slug, $id, Request $request)
 	{
 		$this->validate($request, [
+            'user_id' => 'nullable|integer|min:1',
+            'organisation_id' => 'nullable|integer|min:1',
 			'name' => 'filled|max:191',
 			'show_progress' => 'filled|boolean',
 			'csv' => 'file'
@@ -178,7 +206,7 @@ class FormTemplateController extends Controller
 			}
 
 			// Update form_template
-			if ($form_template->fill($request->only('name', 'show_progress'))->save()) {
+			if ($form_template->fill($request->only('user_id', 'organisation_id', 'name', 'show_progress'))->save()) {
 				// Analyze CSV
 				$this->analyzeCSV($form_template, $request);
 

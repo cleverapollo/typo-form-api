@@ -31,6 +31,14 @@ class Organisation extends Model
 		return $this->hasMany('App\Models\Form');
 	}
 
+    /**
+     * Get the form_templates for the Organisation.
+     */
+    public function form_templates()
+    {
+        return $this->hasMany('App\Models\FormTemplate');
+    }
+
 	/**
 	 * Get the application that owns the Organisation.
 	 */

@@ -16,6 +16,17 @@ class FormTemplateResource extends JsonResource
 	{
 		return [
 			'id' => $this->id,
+            'user' => $this->user ? [
+                'id' => $this->user->id,
+                'first_name' => $this->user->first_name,
+                'last_name' => $this->user->last_name,
+                'email' => $this->user->email
+            ] : null,
+            'organisation' => $this->organisation ? [
+                'id' => $this->organisation->id,
+                'name' => $this->organisation->name,
+                'description' => $this->organisation->description
+            ] : null,
 			'name' => $this->name,
 			'application_id' => $this->application_id,
 			'show_progress' => $this->show_progress,
