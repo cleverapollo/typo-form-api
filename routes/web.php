@@ -234,6 +234,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
+    $router->group(['prefix' => 'type'], function () use ($router) {
+        $router->get('/', 'TypeController@index');
+        $router->post('/', 'TypeController@store');
+
+        $router->group(['prefix' => '{id}'], function () use ($router) {
+            $router->get('/', 'TypeController@show');
+            // $router->put('/', 'TypeController@update');
+            // $router->delete('/', 'TypeController@destroy');
+        });
+    });
+
 	$router->group(['prefix' => 'period'], function () use ($router) {
 		$router->get('/', 'PeriodController@index');
 		$router->post('/', 'PeriodController@store');

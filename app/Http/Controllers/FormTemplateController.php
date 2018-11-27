@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\Organisation;
 use App\Models\FormTemplate;
 use App\Models\QuestionType;
+use App\Models\Type;
 use App\Http\Resources\FormTemplateResource;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -64,8 +63,7 @@ class FormTemplateController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-            'user_id' => 'nullable|integer|min:1',
-            'organisation_id' => 'nullable|integer|min:1',
+            'type_id' => 'nullable|integer|min:1',
 			'name' => 'required|max:191'
 		]);
 
@@ -87,28 +85,19 @@ class FormTemplateController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-            $user_id = $request->input('user_id', null);
-            if ($user_id) {
+            $type_id = $request->input('type_id', null);
+            if ($type_id) {
                 // Send error if organisation does not exist
-                if (!User::find($user_id)) {
-                    return $this->returnError('user', 404, 'create form');
+                if (!Type::find($type_id)) {
+                    return $this->returnError('type', 404, 'create form template');
                 }
             } else {
-                $user_id = Auth::user()->id;
-            }
-
-            $organisation_id = $request->input('organisation_id', null);
-            if ($organisation_id) {
-                // Send error if organisation does not exist
-                if (!Organisation::find($organisation_id)) {
-                    return $this->returnError('organisation', 404, 'create form');
-                }
+                $type_id = Type::where('name', 'organisation')->first()->id;
             }
 
 			// Create form_template
             $form_template = $application->form_templates()->create([
-                'user_id' => $user_id,
-                'organisation_id' => $organisation_id,
+                'type_id' => $type_id,
                 'name' => $request->input('name')
             ]);
 
@@ -173,8 +162,7 @@ class FormTemplateController extends Controller
 	public function update($application_slug, $id, Request $request)
 	{
 		$this->validate($request, [
-            'user_id' => 'nullable|integer|min:1',
-            'organisation_id' => 'nullable|integer|min:1',
+            'type_id' => 'nullable|integer|min:1',
 			'name' => 'filled|max:191',
 			'show_progress' => 'filled|boolean',
 			'csv' => 'file'
@@ -206,7 +194,7 @@ class FormTemplateController extends Controller
 			}
 
 			// Update form_template
-			if ($form_template->fill($request->only('user_id', 'organisation_id', 'name', 'show_progress'))->save()) {
+			if ($form_template->fill($request->only('type_id', 'name', 'show_progress'))->save()) {
 				// Analyze CSV
 				$this->analyzeCSV($form_template, $request);
 

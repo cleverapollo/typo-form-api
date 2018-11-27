@@ -68,14 +68,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 		return $this->hasMany('App\Models\Form');
 	}
 
-    /**
-     * Get the form_templates for the User.
-     */
-    public function form_templates()
-    {
-        return $this->hasMany('App\Models\FormTemplate');
-    }
-
 	/**
 	 * Get user role
 	 */
