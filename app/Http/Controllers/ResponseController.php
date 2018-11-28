@@ -102,6 +102,8 @@ class ResponseController extends Controller
 				$question_type->type == 'Date' ||
 				$question_type->type == 'Time' ||
 				$question_type->type == 'ABN Lookup' ||
+                $question_type->type == 'Address' ||
+                $question_type->type == 'URL' ||
 				($question_type->type == 'Dropdown' && !count($validations))) {
 				if (count($responses)) {
 					return $this->returnErrorMessage(404, 'Response is not allowed to create multiply.');
