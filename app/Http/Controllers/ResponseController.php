@@ -101,8 +101,6 @@ class ResponseController extends Controller
 				$question_type->type == 'Linear scale' ||
 				$question_type->type == 'Date' ||
 				$question_type->type == 'Time' ||
-				$question_type->type == 'ABN Lookup' ||
-                $question_type->type == 'Address' ||
                 $question_type->type == 'URL' ||
 				($question_type->type == 'Dropdown' && !count($validations))) {
 				if (count($responses)) {
@@ -138,15 +136,43 @@ class ResponseController extends Controller
 					return response()->json(curl_error($handle), 500);
 				}
 
-				$response_value = substr($data, 9, -1);
-			}
-
-			$response = $form->responses()->create([
-				'question_id' => $question_id,
-				'response' => $response_value,
-				'answer_id' => $answer_id,
-				'order' => $order
-			]);
+				$response_value = json_decode(substr($data, 9, -1));
+                $answerTypes = array(
+                    'Abn',
+                    'BusinessName',
+                    'EntityName',
+                    'EntityTypeName',
+                    'Message'
+                );
+                $form->responses()->where('question_id', $question_id)->delete();
+                foreach ($answerTypes as $answerType) {
+                    $answer = Answer::where('answer', $answerType)->first();
+                    if ($answer) {
+                        $response = $response_value->{$answerType};
+                        if (is_array($response)) {
+                            if (count($response)) {
+                                $response = $response[0];
+                            }
+                            else {
+                                $response = '';
+                            }
+                        }
+                        $response = $form->responses()->create([
+                            'question_id' => $question_id,
+                            'response' => $response,
+                            'answer_id' => $answer->id,
+                            'order' => 1
+                        ]);
+                    }
+                }
+			} else {
+                $response = $form->responses()->create([
+                    'question_id' => $question_id,
+                    'response' => $response_value,
+                    'answer_id' => $answer_id,
+                    'order' => $order
+                ]);
+            }
 
 			if ($response) {
 				return $this->returnSuccessMessage('response', new ResponseResource(Response::find($response->id)));
@@ -241,25 +267,10 @@ class ResponseController extends Controller
 
 				// Create response
 				if ($question_type->type == 'ABN Lookup') {
-					$query = urlencode(str_replace(' ', '', $newResponse->response));
-					$handle = curl_init();
-					curl_setopt_array($handle, [
-						CURLOPT_RETURNTRANSFER => 1,
-						CURLOPT_URL => 'https://abr.business.gov.au/json/AbnDetails.aspx?abn='. $query .'&callback=callback&guid=9c1fe65f-650b-4ea8-838c-aa03d946db12',
-						CURLOPT_HTTPHEADER => [
-							'Content-Type: application/x-www-form-urlencoded'
-						]
-					]);
-					$data = curl_exec($handle);
+                    return $this->returnError('question', 404, 'update response');
+                }
 
-					if (curl_error($handle)) {
-						return response()->json(curl_error($handle), 500);
-					}
-
-					$response_value = substr($data, 9, -1);
-				} else {
-					$response_value = $newResponse->response;
-				}
+                $response_value = $newResponse->response;
 				$new = $form->responses()->create([
 					'question_id' => $newResponse->question_id,
 					'response' => $response_value,
