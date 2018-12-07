@@ -16,12 +16,28 @@ class FormResource extends JsonResource
 	{
 		return [
 			'id' => $this->id,
-			'name' => $this->name,
-			'application_id' => $this->application_id,
-			'show_progress' => $this->show_progress,
-			'allow_submit' => $this->allow_submit,
-			'auto' => $this->auto,
-            'metas' => $this->metas
+			'user' => [
+				'id' => $this->user->id,
+				'first_name' => $this->user->first_name,
+				'last_name' => $this->user->last_name,
+				'email' => $this->user->email
+			],
+			'organisation' => $this->organisation ? [
+				'id' => $this->organisation->id,
+				'name' => $this->organisation->name,
+				'description' => $this->organisation->description
+			] : null,
+			'form_template' => [
+				'id' => $this->form_template_id,
+				'name' => $this->form_template->name
+			],
+			'progress' => $this->progress,
+			'period_start' => $this->period_start,
+			'period_end' => $this->period_end,
+			'status_id' => $this->status_id,
+			'created_at' => $this->created_at,
+			'updated_at' => $this->updated_at,
+			'responses' => ResponseResource::collection($this->responses)
 		];
 	}
 }

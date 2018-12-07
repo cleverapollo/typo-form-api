@@ -12,15 +12,15 @@ class QuestionTrigger extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator', 'type'
+		'form_template_id', 'question_id', 'parent_question_id', 'parent_answer_id', 'value', 'comparator_id', 'order', 'operator', 'type'
 	];
 
 	/**
-	 * Get the Form that owns the Validation.
+	 * Get the FormTemplate that owns the Validation.
 	 */
-	public function form()
+	public function form_template()
 	{
-		return $this->belongsTo('App\Models\Form');
+		return $this->belongsTo('App\Models\FormTemplate');
 	}
 
 	/**

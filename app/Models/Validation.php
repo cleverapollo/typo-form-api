@@ -12,15 +12,15 @@ class Validation extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_id', 'question_id', 'validation_type_id', 'validation_data'
+		'form_template_id', 'question_id', 'validation_type_id', 'validation_data'
 	];
 
 	/**
-	 * Get the Form that owns the Validation.
+	 * Get the Form Template that owns the Validation.
 	 */
-	public function form()
+	public function form_template()
 	{
-		return $this->belongsTo('App\Models\Form');
+		return $this->belongsTo('App\Models\FormTemplate');
 	}
 
 	/**

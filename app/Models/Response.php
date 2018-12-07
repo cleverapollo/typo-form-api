@@ -22,7 +22,7 @@ class Response extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'question_id', 'response', 'answer_id', 'submission_id', 'order'
+		'question_id', 'response', 'answer_id', 'form_id', 'order'
 	];
 
 	/**
@@ -42,11 +42,11 @@ class Response extends Model
 	}
 
 	/**
-	 * Get the submission that owns the Response.
+	 * Get the form that owns the Response.
 	 */
-	public function submission()
+	public function form()
 	{
-		return $this->belongsTo('App\Models\Submission');
+		return $this->belongsTo('App\Models\Form');
 	}
 
 	/**

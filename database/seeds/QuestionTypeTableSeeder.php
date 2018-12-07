@@ -124,5 +124,17 @@ class QuestionTypeTableSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ]);
+
+        DB::table('question_types')->insert([
+            'type' => 'Address',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        DB::table('question_types')->insert([
+            'type' => 'URL',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
 	}
 }

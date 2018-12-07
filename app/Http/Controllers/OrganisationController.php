@@ -70,8 +70,7 @@ class OrganisationController extends Controller
 	public function store($application_slug, Request $request)
 	{
 		$this->validate($request, [
-			'name' => 'required|max:191',
-            'description' => 'required|max:191'
+			'name' => 'required|max:191'
 		]);
 
 		try {
@@ -95,7 +94,7 @@ class OrganisationController extends Controller
 			// Create organisation
 			$organisation = $user->organisations()->create([
 				'name' => $request->input('name'),
-                'description' => $request->input('description'),
+                'description' => $request->input('description', null),
 				'application_id' => $application->id,
 				'share_token' => $share_token
 			], [

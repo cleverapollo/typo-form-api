@@ -16,10 +16,10 @@ class Status extends Model
 	];
 
 	/**
-	 * Get the submissions for the Status.
+	 * Get the forms for the Status.
 	 */
-	public function submissions()
+	public function forms()
 	{
-		return $this->hasMany('App\Models\Submission');
+		return $this->hasMany('App\Models\Form');
 	}
 }
