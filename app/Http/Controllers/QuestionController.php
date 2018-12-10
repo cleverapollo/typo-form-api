@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Question;
 use App\Models\QuestionType;
 use App\Models\AnswerSort;
+use App\Models\Country;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\SectionResource;
 use Illuminate\Http\Request;
@@ -90,6 +91,18 @@ class QuestionController extends Controller
 				'width' => $request->input('width', null),
 				'sort_id' => $sort_id
 			]);
+
+			$question_type = QuestionType::find($question_type_id);
+			if ($question_type->type === 'Country') {
+			    $countries = Country::all();
+                foreach ($countries as $country) {
+                    $question->answers()->create([
+                        'answer' => $country->name,
+                        'parameter' => 1,
+                        'order' => $country->id
+                    ]);
+                }
+            }
 
 			if ($question) {
 				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($question->id)));
@@ -242,6 +255,21 @@ class QuestionController extends Controller
 				if (!$question_type) {
 					return $this->returnError('question type', 404, 'update question');
 				}
+                $old_question_type = QuestionType::find($question->question_type_id);
+                if ($question_type->type === 'Country' && $old_question_type->type !== 'Country') {
+                    $question->answers()->delete();
+                    $countries = Country::all();
+                    foreach ($countries as $country) {
+                        $question->answers()->create([
+                            'answer' => $country->name,
+                            'parameter' => 1,
+                            'order' => $country->id
+                        ]);
+                    }
+                }
+                if ($question_type->type !== 'Country' && $old_question_type->type === 'Country') {
+                    $question->answers()->delete();
+                }
 			}
 
 			if ($sort_id = $request->input('sort_id', null)) {

@@ -89,7 +89,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				});
 			});
 
-			$router->group(['prefix' => 'form-builder'], function () use ($router) {
+			$router->group(['prefix' => 'form-templates'], function () use ($router) {
 				$router->get('/', 'FormTemplateController@index');
 				$router->post('/', 'FormTemplateController@store');
 				$router->post('auto', 'FormTemplateController@setAuto');
@@ -122,7 +122,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 		});
 	});
 
-	$router->group(['prefix' => 'form-builder/{form_template_id}'], function () use ($router) {
+	$router->group(['prefix' => 'form-templates/{form_template_id}'], function () use ($router) {
 		$router->group(['prefix' => 'form'], function () use ($router) {
 			$router->get('/', 'FormController@index');
 			$router->post('/', 'FormController@store');
@@ -242,6 +242,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->get('/', 'TypeController@show');
             // $router->put('/', 'TypeController@update');
             // $router->delete('/', 'TypeController@destroy');
+        });
+    });
+
+    $router->group(['prefix' => 'country'], function () use ($router) {
+        $router->get('/', 'CountryController@index');
+        $router->post('/', 'CountryController@store');
+
+        $router->group(['prefix' => '{id}'], function () use ($router) {
+            $router->get('/', 'CountryController@show');
+            // $router->put('/', 'CountryController@update');
+            // $router->delete('/', 'CountryController@destroy');
         });
     });
 
