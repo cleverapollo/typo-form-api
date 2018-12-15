@@ -21,7 +21,7 @@ class CreateLogsTable extends Migration
             $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
             $table->string('action');
             $table->morphs('resourcable');
-            $table->ipAddress('ip_address');
+            $table->ipAddress('ip_address')->nullable();
             $table->timestamps();
         });
     }

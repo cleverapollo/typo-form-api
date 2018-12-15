@@ -25,14 +25,6 @@ class ABNTableSeeder extends Seeder
         );
         $questions = Question::where('question_type_id', 13)->get();
         foreach ($questions as $question) {
-            foreach ($answerTypes as $answerType) {
-                $question->answers()->create([
-                    'answer' => $answerType,
-                    'parameter' => 1,
-                    'order' => 1
-                ]);
-            }
-
             $responses = $question->responses()->get();
             foreach ($responses as $response) {
                 try {
@@ -71,7 +63,7 @@ class ABNTableSeeder extends Seeder
                         }
                     }
                 } catch (Exception $e) {
-
+                    error_log($e->getMessage());
                 }
             }
         }
