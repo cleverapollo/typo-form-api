@@ -144,7 +144,7 @@ class ResponseController extends Controller
                     'EntityTypeName',
                     'Message'
                 );
-                $form->responses()->where('question_id', $question_id)->delete();
+                $form->responses()->where('question_id', $question_id)->where('order', $order)->delete();
                 foreach ($answerTypes as $answerType) {
                     $answer = $question->answers()->where('answer', $answerType)->first();
                     if ($answer) {
