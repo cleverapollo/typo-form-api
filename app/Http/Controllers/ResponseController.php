@@ -161,7 +161,7 @@ class ResponseController extends Controller
                             'question_id' => $question_id,
                             'response' => $response,
                             'answer_id' => $answer->id,
-                            'order' => 1
+                            'order' => $order
                         ]);
                     }
                 }
