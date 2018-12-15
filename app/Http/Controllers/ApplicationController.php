@@ -697,7 +697,8 @@ class ApplicationController extends Controller
 										break;
 								}
 
-								$data[$form_template['name']][] = $row;
+								$name = substr($form_template['name'], 28);
+								$data[$name][] = $row;
 							}
 						}
 					}
