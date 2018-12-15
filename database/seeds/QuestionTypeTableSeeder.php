@@ -142,5 +142,11 @@ class QuestionTypeTableSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ]);
+
+        DB::table('question_types')->insert([
+            'type' => 'Lookup',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
 	}
 }

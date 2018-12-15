@@ -146,7 +146,7 @@ class ResponseController extends Controller
                 );
                 $form->responses()->where('question_id', $question_id)->delete();
                 foreach ($answerTypes as $answerType) {
-                    $answer = Answer::where('answer', $answerType)->first();
+                    $answer = $question->answers()->where('answer', $answerType)->first();
                     if ($answer) {
                         $response = $response_value->{$answerType};
                         if (is_array($response)) {
