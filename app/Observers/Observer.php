@@ -18,7 +18,7 @@ class Observer
     private function createLog($model, $method) {
         $request = app('Illuminate\Http\Request');
         $ip_address = $request->ip();
-        $user_id = Auth::user()->id;
+        $user_id = Auth::user() ? Auth::user()->id : null;
         $action = $this->getEventType($method);
         $resourcable_type = class_basename($model);
         $resourcable_id = $model->id;
