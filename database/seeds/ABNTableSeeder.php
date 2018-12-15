@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Question;
 use App\Models\Response;
+use App\Models\Form;
 
 class ABNTableSeeder extends Seeder
 {
@@ -40,7 +41,7 @@ class ABNTableSeeder extends Seeder
                     ]);
                     $data = curl_exec($handle);
                     $response_value = json_decode(substr($data, 9, -1));
-                    $form = $response->form()->get();
+                    $form = Form::find($response->form_id);
                     $question_id = $question->id;
                     $form->responses()->where('question_id', $question_id)->delete();
                     foreach ($answerTypes as $answerType) {
