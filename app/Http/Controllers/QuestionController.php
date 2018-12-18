@@ -256,8 +256,13 @@ class QuestionController extends Controller
 					return $this->returnError('question type', 404, 'update question');
 				}
                 $old_question_type = QuestionType::find($question->question_type_id);
-                if ($question_type->type === 'Country' && $old_question_type->type !== 'Country') {
+                if ($question_type->type !== $old_question_type->type) {
                     $question->answers()->delete();
+                    $question->responses()->delete();
+                    $question->triggers()->delete();
+                    $question->validations()->delete();
+                }
+                if ($question_type->type === 'Country' && $old_question_type->type !== 'Country') {
                     $countries = Country::all();
                     foreach ($countries as $country) {
                         $question->answers()->create([
@@ -266,9 +271,6 @@ class QuestionController extends Controller
                             'order' => $country->id
                         ]);
                     }
-                }
-                if ($question_type->type !== 'Country' && $old_question_type->type === 'Country') {
-                    $question->answers()->delete();
                 }
 			}
 

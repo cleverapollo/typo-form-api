@@ -216,7 +216,7 @@ class ApplicationController extends Controller
 				return $this->returnError('application', 403, 'update');
 			}
 
-			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text', 'join_flag'))->save()) {
+			if ($application->fill($request->only('name', 'css', 'icon', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text', 'join_flag', 'default_route'))->save()) {
 				return $this->returnSuccessMessage('application', new ApplicationResource(Application::find($application->id)));
 			}
 

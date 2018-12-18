@@ -261,6 +261,20 @@ class ResponseController extends Controller
 
 			$newResponse = $response->fill($request->only('question_id', 'response', 'answer_id', 'order'));
 
+            $parent_question = $response->question;
+            $parent_form_template = $parent_question->section->form_template;
+
+            $children_answers = Answer::where('answer', '{"formTemplateId":' . $parent_form_template->id . ',"questionId":' . $parent_question->id . '}')->get();
+            $children_responses = [];
+
+            foreach($children_answers as $children_answer) {
+                $children_question = $children_answer->question;
+                $children_response = $children_question->responses()->first();
+                if ($children_response->response == $response->id) {
+                    array_push($children_responses, $children_response);
+                }
+            }
+
 			if ($form->responses()->where('id', $id)->delete()) {
 				$question = Question::find($question_id);
 				$question_type = QuestionType::find($question->question_type_id);
@@ -279,6 +293,10 @@ class ResponseController extends Controller
 				]);
 
 				if ($new) {
+                    foreach($children_responses as $children_response) {
+                        $children_response->update(['response' => $new->id]);
+                    }
+
 					return $this->returnSuccessMessage('response', new ResponseResource(Response::find($new->id)));
 				}
 			}
@@ -316,7 +334,24 @@ class ResponseController extends Controller
 				return $this->returnError('response', 404, 'delete');
 			}
 
+            $parent_question = $response->question;
+            $parent_form_template = $parent_question->section->form_template;
+
+            $children_answers = Answer::where('answer', '{"formTemplateId":' . $parent_form_template->id . ',"questionId":' . $parent_question->id . '}')->get();
+            $children_responses = [];
+
+            foreach($children_answers as $children_answer) {
+                $children_question = $children_answer->question;
+                $children_response = $children_question->responses()->first();
+                if ($children_response->response == $response->id) {
+                    array_push($children_responses, $children_response);
+                }
+            }
+
 			if ($response->delete()) {
+                foreach($children_responses as $children_response) {
+                    $children_response->delete();
+                }
 				return $this->returnSuccessMessage('message', 'Response has been deleted successfully.');
 			}
 

@@ -33,7 +33,8 @@ class ApplicationResource extends JsonResource
 			}),
 			'share_token' => Auth::user() && Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('application_users', function () {
 				return Role::find($this->pivot->role_id)->name == 'Admin' ? $this->share_token : null;
-			})
+			}),
+            'default_route' => $this->default_route
 		];
 	}
 }
