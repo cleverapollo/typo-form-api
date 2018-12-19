@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use DB;
 use Log;
+use App\Models\Application;
 use App\Models\Answer;
 use App\Models\ApplicationUser;
 use App\Models\FormTemplate;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 class AppServiceProvider extends ServiceProvider
 {
     private $modelList = [
+        Application::class      => Observer::class,
         Answer::class           => Observer::class,
         ApplicationUser::class  => Observer::class,
         FormTemplate::class     => Observer::class,
@@ -52,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         Relation::morphMap([
+            'applications' => 'App\Models\Application',
             'answers' => 'App\Models\Answer',
             'application_users' => 'App\Models\ApplicationUser',
             'form_templates' => 'App\Models\FormTemplate',
