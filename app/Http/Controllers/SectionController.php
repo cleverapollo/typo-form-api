@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use App\Models\Application;
 use App\Models\FormTemplate;
 use App\Models\Section;
 use App\Http\Resources\SectionResource;
+use App\Http\Resources\FormTemplateSectionResource;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -33,6 +35,36 @@ class SectionController extends Controller
 		$form_template = FormTemplate::with(['sections.questions.answers', 'sections.questions.metas'])->find($form_template_id);
 		return $this->returnSuccessMessage('sections', SectionResource::collection($form_template->sections));
 	}
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  string $application_slug
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all($application_slug)
+    {
+        $user = Auth::user();
+
+        if($user->role->name === 'Super Admin') {
+            $application = Application::with('form_templates.metas')->where('slug', $application_slug)->first();
+        } else {
+            $user->load('applications.form_templates.metas');
+            $application = $user->applications()->where('slug', $application_slug)->first();
+        }
+
+        // No Application
+        if (!$application) {
+            return $this->returnApplicationNameError();
+        }
+
+        $form_templates = $application->form_templates;
+//        return $this->returnSuccessMessage('sections', array_map(function ($form_template) {
+//            return SectionResource::collection($form_template->sections);
+//        }, $form_templates));
+        return $this->returnSuccessMessage('form_templates', FormTemplateSectionResource::collection($application->form_templates));
+    }
 
 	/**
 	 * Store a newly created resource in storage.

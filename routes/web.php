@@ -51,6 +51,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->put('/', 'ApplicationController@update');
 			$router->delete('/', 'ApplicationController@destroy');
             $router->get('export', 'ApplicationController@exportCSV');
+            $router->get('section', 'SectionController@all');
 
 			$router->group(['prefix' => 'user'], function () use ($router) {
 				$router->get('/', 'ApplicationController@getUsers');
