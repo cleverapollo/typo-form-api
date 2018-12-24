@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Auth;
 use App\Models\Role;
+use App\Models\Type;
+use App\Models\Invitation;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrganisationResource extends JsonResource
@@ -16,6 +18,7 @@ class OrganisationResource extends JsonResource
 	 */
 	public function toArray($request)
 	{
+        $type = Type::where('name', 'organisation')->first();
 		return [
 			'id' => $this->id,
 			'name' => $this->name,
@@ -26,7 +29,15 @@ class OrganisationResource extends JsonResource
 			}),
 			'share_token' => Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('organisation_users', function () {
 				return Role::find($this->pivot->role_id)->name == 'Admin' ? $this->share_token : null;
-			})
+			}),
+            'forms_length' => count($this->forms),
+            'active_users_length' => count($this->users),
+            'invited_users_length' => count(Invitation::where([
+                'reference_id' => $this->id,
+                'status' => 0,
+                'type_id' => $type->id
+            ])->get()),
+            'created_at' => $this->created_at
 		];
 	}
 }

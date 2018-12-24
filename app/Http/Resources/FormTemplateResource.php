@@ -22,7 +22,9 @@ class FormTemplateResource extends JsonResource
 			'show_progress' => $this->show_progress,
 			'allow_submit' => $this->allow_submit,
 			'auto' => $this->auto,
-            'metas' => $this->metas
+            'metas' => $this->metas,
+            'forms_length' => count($this->forms),
+            'created_at' => $this->created_at
 		];
 	}
 }

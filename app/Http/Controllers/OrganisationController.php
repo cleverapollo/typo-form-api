@@ -52,7 +52,7 @@ class OrganisationController extends Controller
 		$organisations = $user->organisations()->where('application_id', $application->id)->get();
 
 		if ($user->role->name == 'Super Admin') {
-			$organisations = Organisation::where('application_id', $application->id)->get();
+			$organisations = Organisation::with(['forms', 'users'])->where('application_id', $application->id)->get();
 		}
 
 		return $this->returnSuccessMessage('organisations', OrganisationResource::collection($organisations));
@@ -141,7 +141,7 @@ class OrganisationController extends Controller
 		])->first();
 
 		if ($user->role->name == 'Super Admin') {
-			$organisation = Organisation::where([
+			$organisation = Organisation::with(['forms', 'users'])->where([
 				'id' => $id,
 				'application_id' => $application->id
 			])->first();
@@ -190,7 +190,7 @@ class OrganisationController extends Controller
 			])->first();
 
 			if ($user->role->name == 'Super Admin') {
-				$organisation = Organisation::where([
+				$organisation = Organisation::with(['forms', 'users'])->where([
 					'id' => $id,
 					'application_id' => $application->id
 				])->first();
