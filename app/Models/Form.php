@@ -36,7 +36,7 @@ class Form extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'form_template_id', 'user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id'
+		'form_template_id', 'user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id', 'submitted_date'
 	];
 
 	/**

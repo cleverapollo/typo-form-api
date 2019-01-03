@@ -37,6 +37,7 @@ class FormResource extends JsonResource
 			'status_id' => $this->status_id,
 			'created_at' => $this->created_at,
 			'updated_at' => $this->updated_at,
+            'submitted_date' => $this->submitted_date,
 			'responses' => ResponseResource::collection($this->responses)
 		];
 	}

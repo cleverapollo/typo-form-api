@@ -19,6 +19,7 @@ use App\Http\Resources\FormAllResource;
 use App\Http\Resources\ResponseResource;
 use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class FormController extends Controller
 {
@@ -382,9 +383,17 @@ class FormController extends Controller
 				return $this->returnError('status', 404, 'update form');
 			}
 
+			$new_status = Status::find($status_id);
+
+            if ($form->status->status == 'Open' && $new_status->status == 'Closed') {
+                $submitted_date = Carbon::now();
+                $form->update(['submitted_date' => $submitted_date]);
+            }
+
 			// Update form
 			if ($form->fill($request->only('user_id', 'organisation_id', 'progress', 'period_start', 'period_end', 'status_id'))->save()) {
 				$form->touch();
+
 				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 			}
 
