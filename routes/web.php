@@ -98,6 +98,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'FormTemplateController@show');
 					$router->post('/', 'FormTemplateController@update');
+                    $router->post('/duplicate', 'FormTemplateController@duplicate');
 					$router->delete('/', 'FormTemplateController@destroy');
 					$router->get('export', 'FormTemplateController@exportCSV');
 				});

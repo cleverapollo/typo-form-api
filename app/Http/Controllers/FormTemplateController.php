@@ -112,6 +112,132 @@ class FormTemplateController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
+    /**
+     * Duplicate a resource in storage.
+     *
+     * @param  string $application_slug
+     * @param  int $id
+     * @param  \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function duplicate($application_slug, $id, Request $request)
+    {
+        $this->validate($request, [
+            'name' => 'required|max:191'
+        ]);
+
+        try {
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
+
+            // Check whether user has permission
+            if (!$this->hasPermission($user, $application)) {
+                return $this->returnError('application', 403, 'duplicate form_templates');
+            }
+
+            // Send error if application does not exist
+            if (!$application) {
+                return $this->returnApplicationNameError();
+            }
+
+            $form_template = $application->form_templates()->find($id);
+
+            // Send error if form_template does not exist
+            if (!$form_template) {
+                return $this->returnError('form_template', 404, 'duplicate');
+            }
+
+            // Duplicate form template
+            $new_form_template = $application->form_templates()->create([
+                'name' => $request->input('name'),
+                'type_id' => $form_template->type_id,
+                'show_progress' => $form_template->show_progress,
+                'allow_submit' => $form_template->allow_submit,
+                'auto' => $form_template->auto
+            ]);
+
+            if ($new_form_template) {
+                $section_map = [];
+                $question_map = [];
+                $answer_map = [];
+
+                $form_template->sections()->get()->each(function ($section) use ($new_form_template, $section_map, $question_map, $answer_map) {
+                    $new_section = $new_form_template->sections()->create([
+                        'name' => $section->name,
+                        'parent_section_id' => $section->parent_section_id,
+                        'order' => $section->order,
+                        'repeatable' => $section->repeatable,
+                        'max_rows' => $section->max_rows,
+                        'min_rows' => $section->min_rows
+                    ]);
+                    $section_map[$section->id] = $new_section->id;
+
+                    $section->questions()->get()->each(function ($question) use ($new_section, $new_form_template, $question_map, $answer_map) {
+                        $new_question = $new_section->questions()->create([
+                            'question' => $question->question,
+                            'description' => $question->description,
+                            'mandatory' => $question->mandatory,
+                            'question_type_id' => $question->question_type_id,
+                            'order' => $question->order,
+                            'width' => $question->width,
+                            'sort_id' => $question->sort_id
+                        ]);
+                        $question_map[$question->id] = $new_question->id;
+
+                        $question->validations()->get()->each(function ($validation) use ($new_question, $new_form_template) {
+                            $new_question->validations()->create([
+                                'form_template_id' => $new_form_template->id,
+                                'validation_type_id' => $validation->validation_type_id,
+                                'validation_data' => $validation->validation_data
+                            ]);
+                        });
+
+                        $question->answers()->get()->each(function ($answer) use ($new_question, $answer_map) {
+                            $new_answer = $new_question->answers()->create([
+                                'answer' => $answer->answer,
+                                'parameter' => $answer->parameter,
+                                'order' => $answer->order
+                            ]);
+                            $answer_map[$answer->id] = $new_answer->id;
+                        });
+                    });
+                });
+
+//                $new_form_template->sections()->get()->each(function ($new_section) use ($section_map) {
+//                    $new_section->update([
+//                        'parent_section_id' => isset($new_section->parent_section_id) ? $section_map[$new_section->parent_section_id] : null
+//                    ]);
+//                });
+
+//                $form_template->triggers()->get()->each(function ($trigger) use ($new_form_template, $question_map, $answer_map) {
+//                    $new_form_template->triggers()->create([
+//                        'type' => $trigger->type,
+//                        'question_id' => $question_map[$trigger->question_id],
+//                        'parent_question_id' => $question_map[$trigger->parent_question_id],
+//                        'parent_answer_id' => $answer_map[$trigger->parent_answer_id],
+//                        'value' => $trigger->value,
+//                        'comparator_id' => $trigger->comparator_id,
+//                        'order' => $trigger->order,
+//                        'operator' => $trigger->operator
+//                    ]);
+//                });
+
+                return $this->returnSuccessMessage('form_template', $section_map);
+            }
+
+            // Send error if form_template is not created
+            return $this->returnError('form_template', 503, 'create');
+        } catch (Exception $e) {
+            // Send error
+            return $this->returnErrorMessage(503, $e->getMessage());
+        }
+    }
 
 	/**
 	 * Display the specified resource.
