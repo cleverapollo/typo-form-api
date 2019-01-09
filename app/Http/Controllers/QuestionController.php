@@ -408,10 +408,10 @@ class QuestionController extends Controller
 			$question->save();
 
 			// Update other sections order
-			$question->section->children()->where('order', '>=', $question->order)->get()->each(function ($other) {
-				$other->order += 1;
-				$other->save();
-			});
+//			$question->section->children()->where('order', '>=', $question->order)->get()->each(function ($other) {
+//				$other->order += 1;
+//				$other->save();
+//			});
 
 			// Update other questions order
 			$question->section->questions()->where([
