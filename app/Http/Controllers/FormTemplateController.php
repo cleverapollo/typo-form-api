@@ -167,7 +167,8 @@ class FormTemplateController extends Controller
                 $question_map = [];
                 $answer_map = [];
 
-                $form_template->sections()->get()->each(function ($section) use ($new_form_template, $section_map, $question_map, $answer_map) {
+                $sections = $form_template->sections()->get();
+                foreach ($sections as $section) {
                     $new_section = $new_form_template->sections()->create([
                         'name' => $section->name,
                         'parent_section_id' => $section->parent_section_id,
@@ -178,7 +179,8 @@ class FormTemplateController extends Controller
                     ]);
                     $section_map[$section->id] = $new_section->id;
 
-                    $section->questions()->get()->each(function ($question) use ($new_section, $new_form_template, $question_map, $answer_map) {
+                    $questions = $section->questions()->get();
+                    foreach ($questions as $question) {
                         $new_question = $new_section->questions()->create([
                             'question' => $question->question,
                             'description' => $question->description,
@@ -190,45 +192,49 @@ class FormTemplateController extends Controller
                         ]);
                         $question_map[$question->id] = $new_question->id;
 
-                        $question->validations()->get()->each(function ($validation) use ($new_question, $new_form_template) {
+                        $validations = $question->validations()->get();
+                        foreach ($validations as $validation) {
                             $new_question->validations()->create([
                                 'form_template_id' => $new_form_template->id,
                                 'validation_type_id' => $validation->validation_type_id,
                                 'validation_data' => $validation->validation_data
                             ]);
-                        });
+                        }
 
-                        $question->answers()->get()->each(function ($answer) use ($new_question, $answer_map) {
+                        $answers = $question->answers()->get();
+                        foreach ($answers as $answer) {
                             $new_answer = $new_question->answers()->create([
                                 'answer' => $answer->answer,
                                 'parameter' => $answer->parameter,
                                 'order' => $answer->order
                             ]);
                             $answer_map[$answer->id] = $new_answer->id;
-                        });
-                    });
-                });
+                        }
+                    }
+                }
 
-//                $new_form_template->sections()->get()->each(function ($new_section) use ($section_map) {
-//                    $new_section->update([
-//                        'parent_section_id' => isset($new_section->parent_section_id) ? $section_map[$new_section->parent_section_id] : null
-//                    ]);
-//                });
+                $sections = $new_form_template->sections()->get();
+                foreach ($sections as $new_section) {
+                    $new_section->update([
+                        'parent_section_id' => isset($new_section->parent_section_id) ? $section_map[$new_section->parent_section_id] : null
+                    ]);
+                }
 
-//                $form_template->triggers()->get()->each(function ($trigger) use ($new_form_template, $question_map, $answer_map) {
-//                    $new_form_template->triggers()->create([
-//                        'type' => $trigger->type,
-//                        'question_id' => $question_map[$trigger->question_id],
-//                        'parent_question_id' => $question_map[$trigger->parent_question_id],
-//                        'parent_answer_id' => $answer_map[$trigger->parent_answer_id],
-//                        'value' => $trigger->value,
-//                        'comparator_id' => $trigger->comparator_id,
-//                        'order' => $trigger->order,
-//                        'operator' => $trigger->operator
-//                    ]);
-//                });
+                $triggers = $form_template->triggers()->get();
+                foreach ($triggers as $trigger) {
+                    $new_form_template->triggers()->create([
+                        'type' => $trigger->type,
+                        'question_id' => $question_map[$trigger->question_id],
+                        'parent_question_id' => $question_map[$trigger->parent_question_id],
+                        'parent_answer_id' => $answer_map[$trigger->parent_answer_id],
+                        'value' => $trigger->value,
+                        'comparator_id' => $trigger->comparator_id,
+                        'order' => $trigger->order,
+                        'operator' => $trigger->operator
+                    ]);
+                }
 
-                return $this->returnSuccessMessage('form_template', $section_map);
+                return $this->returnSuccessMessage('form_template', new FormTemplateResource(FormTemplate::find($new_form_template->id)));
             }
 
             // Send error if form_template is not created
