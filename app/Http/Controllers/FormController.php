@@ -385,7 +385,7 @@ class FormController extends Controller
 
 			$new_status = Status::find($status_id);
 
-            if ($form->status->status == 'Open' && $new_status->status == 'Closed') {
+            if ($status_id && $form->status->status == 'Open' && $new_status->status == 'Closed') {
                 $submitted_date = Carbon::now();
                 $form->update(['submitted_date' => $submitted_date]);
             }
