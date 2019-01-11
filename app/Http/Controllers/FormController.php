@@ -156,6 +156,12 @@ class FormController extends Controller
 				return $this->returnError('form template', 404, 'create form');
 			}
 
+            // Check whether user has permission
+            $user = Auth::user();
+            if ($form_template->status->status == 'Open' && !$this->hasPermission($user, $form_template->application_id)) {
+                return $this->returnError('application', 403, 'create form');
+            }
+
 			$user_id = $request->input('user_id', null);
 			if ($user_id) {
 				// Send error if organisation does not exist
@@ -212,6 +218,12 @@ class FormController extends Controller
             // Send error if section does not exist
             if (!$form_template) {
                 return $this->returnError('form template', 404, 'create form');
+            }
+
+            // Check whether user has permission
+            $user = Auth::user();
+            if ($form_template->status->status == 'Open' && !$this->hasPermission($user, $form_template->application_id)) {
+                return $this->returnError('application', 403, 'create form');
             }
 
             $form = $form_template->forms()->find($id);
@@ -365,6 +377,11 @@ class FormController extends Controller
 				'id' => $id,
 				'user_id' => $user->id
 			])->first();
+
+            // Check whether user has permission
+            if ($form_template->status->status == 'Open' && !$this->hasPermission($user, $form_template->application_id)) {
+                return $this->returnError('application', 403, 'update form');
+            }
 
 			if (!$form && $this->hasPermission($user, $form_template->application_id)) {
                 $form = $form_template->forms()->where([
