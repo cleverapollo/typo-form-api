@@ -224,7 +224,7 @@ class FormTemplateController extends Controller
                 foreach ($triggers as $trigger) {
                     $new_form_template->triggers()->create([
                         'type' => $trigger->type,
-                        'question_id' => isset($trigger->question_id) ? $question_map[$trigger->question_id] : null,
+                        'question_id' => isset($trigger->question_id) ? ($trigger->type === 'Question' ? $question_map[$trigger->question_id] : $section_map[$trigger->question_id]) : null,
                         'parent_question_id' => isset($trigger->parent_question_id) ? $question_map[$trigger->parent_question_id] : null,
                         'parent_answer_id' => isset($trigger->parent_answer_id) ? $answer_map[$trigger->parent_answer_id] : null,
                         'value' => $trigger->value,
