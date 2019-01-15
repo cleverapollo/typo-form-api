@@ -29,7 +29,8 @@ class FormResource extends JsonResource
 			] : null,
 			'form_template' => [
 				'id' => $this->form_template_id,
-				'name' => $this->form_template->name
+				'name' => $this->form_template->name,
+                'status_id' => $this->form_template->status_id
 			],
 			'progress' => $this->progress,
 			'period_start' => $this->period_start,

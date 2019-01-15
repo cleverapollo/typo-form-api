@@ -24,7 +24,8 @@ class FormTemplateResource extends JsonResource
 			'auto' => $this->auto,
             'metas' => $this->metas,
             'forms_length' => count($this->forms),
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
+            'status_id' => $this->status_id
 		];
 	}
 }

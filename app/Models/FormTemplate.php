@@ -44,7 +44,7 @@ class FormTemplate extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'type_id', 'application_id', 'show_progress', 'auto'
+		'name', 'type_id', 'application_id', 'show_progress', 'auto', 'status_id'
 	];
 
 	/**
@@ -101,5 +101,13 @@ class FormTemplate extends Model
     public function logs()
     {
         return $this->morphMany('App\Models\Log', 'resourcable');
+    }
+
+    /**
+     * Get the status that owns the Form.
+     */
+    public function status()
+    {
+        return $this->belongsTo('App\Models\Status');
     }
 }

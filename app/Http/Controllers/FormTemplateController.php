@@ -9,6 +9,7 @@ use App\Models\ApplicationUser;
 use App\Models\FormTemplate;
 use App\Models\QuestionType;
 use App\Models\Type;
+use App\Models\Status;
 use App\Http\Resources\FormTemplateResource;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -98,7 +99,8 @@ class FormTemplateController extends Controller
 			// Create form_template
             $form_template = $application->form_templates()->create([
                 'type_id' => $type_id,
-                'name' => $request->input('name')
+                'name' => $request->input('name'),
+                'status_id' => Status::where('status', 'Open')->first()->id
             ]);
 
 			if ($form_template) {
@@ -159,7 +161,8 @@ class FormTemplateController extends Controller
                 'type_id' => $form_template->type_id,
                 'show_progress' => $form_template->show_progress,
                 'allow_submit' => $form_template->allow_submit,
-                'auto' => $form_template->auto
+                'auto' => $form_template->auto,
+                'status_id' => $form_template->status_id
             ]);
 
             if ($new_form_template) {
@@ -297,7 +300,8 @@ class FormTemplateController extends Controller
             'type_id' => 'nullable|integer|min:1',
 			'name' => 'filled|max:191',
 			'show_progress' => 'filled|boolean',
-			'csv' => 'file'
+			'csv' => 'file',
+            'status_id' => 'nullable|integer|min:1',
 		]);
 
 		try {
@@ -326,7 +330,7 @@ class FormTemplateController extends Controller
 			}
 
 			// Update form_template
-			if ($form_template->fill($request->only('type_id', 'name', 'show_progress'))->save()) {
+			if ($form_template->fill($request->only('type_id', 'name', 'show_progress', 'status_id'))->save()) {
 				// Analyze CSV
 				$this->analyzeCSV($form_template, $request);
 
