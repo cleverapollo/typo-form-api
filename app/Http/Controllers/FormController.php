@@ -20,6 +20,7 @@ use App\Http\Resources\ResponseResource;
 use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends Controller
 {
@@ -129,7 +130,118 @@ class FormController extends Controller
         }
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
-    }
+	}
+	
+	public function uploadFormData($application_slug, $id, Request $request) {
+		try {
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
+
+			// Check whether user has permission
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'upload form data');
+			}
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			// Get Form Template
+			$form_template = $application->form_templates()->find($id);
+
+			if($form_template) {
+				ini_set('max_execution_time', 0);
+
+				if ($request->hasFile('file') && $request->file('file')->isValid()) {
+					$import_map = [];
+
+					Excel::load($request->file('file')->getRealPath(), function($reader) use($import_map, $application, $form_template, $user) {
+						$results = $reader->get();
+						foreach($results as $row) {
+
+							// Find Existing Form or Create
+							$form_id = $import_map[$row->form_id] ?? null;
+							if(!$form_id && $row->organisation) {
+
+								//Find Existing Organisation
+								$organisation = $application->organisations()->where('name', $row->organisation)->first();
+								if(!$organisation) {
+
+									// Create Organisation
+									$share_token = base64_encode(str_random(40));
+									while (!is_null(Organisation::where('share_token', $share_token)->first())) {
+										$share_token = base64_encode(str_random(40));
+									}
+									$organisation = $application->organisations()->create([
+										'name' => $row->organisation,
+										'share_token' => $share_token
+									]);
+								}
+
+								// Create Form
+								$form = $form_template->forms()->create([
+									'user_id' => $user->id,
+									'organisation_id' => $organisation->id,
+									'progress' => 0,
+									'status_id' => Status::where('status', 'Open')->first()->id
+								]);
+
+								$import_map[$row->form_id] = $form->id;
+							}
+
+							// Get Form
+							$form = Form::find($import_map[$row->form_id]);
+
+							// Find Section/Question/Answer
+							$sections = $form_template->sections()->get();
+
+							// Get Sections
+							foreach($sections as $section) {
+								if($section->name === $row->section) {
+
+									// Get Questions
+									$questions = $section->questions()->get();
+									foreach($questions as $question) {
+										if($question->question === $row->question) {
+
+											// Get Answers
+											$answers = $question->answers()->get();
+											$answer_id = null;
+											foreach($answers as $answer) {
+												if($answer->answer === $row->answer) {
+													$answer_id = $answer->id;
+													break;
+												}
+											}
+
+											// Set Response
+											$form->responses()->create([
+												'question_id' => $question->id,
+												'response' => is_null($answer_id) ? $row->answer : null,
+												'answer_id' => !is_null($answer_id) ? $answer->id : null,
+												'order' => empty($row->order) ? 1 : $row->order
+											]);
+
+											break;
+										}
+									}
+									break;
+								}
+							}
+						}
+					});
+				}
+				return $this->returnSuccessMessage('upload', 'Form data successfully uploaded.');
+			}
+		} catch (Exception $e) {
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
 
 	/**
 	 * Store a newly created resource in storage.
