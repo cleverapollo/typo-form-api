@@ -346,6 +346,53 @@ class FormTemplateController extends Controller
 	}
 
 	/**
+	 * Update the form template
+	 *
+	 * @param  string $application_slug
+	 * @param  int $id
+	 * @param  \Illuminate\Http\Request $request
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \Illuminate\Validation\ValidationException
+	 */
+	public function uploadFormTemplate($application_slug, $id, Request $request)
+	{
+		try {
+            $user = Auth::user();
+            if ($user->role->name == 'Super Admin') {
+                $application = Application::where('slug', $application_slug)->first();
+            } else {
+                $application = $user->applications()->where('slug', $application_slug)->first();
+            }
+
+			// Check whether user has permission
+			if (!$this->hasPermission($user, $application)) {
+				return $this->returnError('application', 403, 'update form_templates');
+			}
+
+			// Send error if application does not exist
+			if (!$application) {
+				return $this->returnApplicationNameError();
+			}
+
+			$form_template = $application->form_templates()->find($id);
+
+			// Send error if form_template does not exist
+			if (!$form_template) {
+				return $this->returnError('form_template', 404, 'update');
+			}
+
+			return $this->analyzeCSV($form_template, $request);
+
+			// Send error if there is an error on update
+			return $this->returnError('upload', 503, 'update');
+		} catch (Exception $e) {
+			// Send error
+			return $this->returnErrorMessage(503, $e->getMessage());
+		}
+	}
+
+	/**
 	 * Remove the specified resource from storage.
 	 *
 	 * @param  string $application_slug
@@ -403,6 +450,7 @@ class FormTemplateController extends Controller
 	public function analyzeCSV($form_template, Request $request)
 	{
 		try {
+			ini_set('max_execution_time', 0);
 			if ($request->hasFile('csv') && $request->file('csv')->isValid()) {
 				// Remove original data of form_template
 				$form_template->sections->each(function ($section) {
@@ -502,6 +550,7 @@ class FormTemplateController extends Controller
 							}
 						}
 					}
+					return $this->returnSuccessMessage('upload', 'Form template has been uploaded successfully.');
 				}
             } else {
                 return $this->returnErrorMessage(503, 'Invalid CSV file.');
