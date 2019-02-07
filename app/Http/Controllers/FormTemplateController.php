@@ -353,7 +353,6 @@ class FormTemplateController extends Controller
 	 * @param  \Illuminate\Http\Request $request
 	 *
 	 * @return \Illuminate\Http\JsonResponse
-	 * @throws \Illuminate\Validation\ValidationException
 	 */
 	public function uploadFormTemplate($application_slug, $id, Request $request)
 	{
@@ -383,9 +382,6 @@ class FormTemplateController extends Controller
 			}
 
 			return $this->analyzeCSV($form_template, $request);
-
-			// Send error if there is an error on update
-			return $this->returnError('upload', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());

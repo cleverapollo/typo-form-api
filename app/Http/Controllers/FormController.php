@@ -154,90 +154,82 @@ class FormController extends Controller
 			// Get Form Template
 			$form_template = $application->form_templates()->find($id);
 
-			if($form_template) {
-				ini_set('max_execution_time', 0);
+			if(!$form_template) {
+                return $this->returnError('form_template', 403, 'upload form data');
+            }
 
-				if ($request->hasFile('file') && $request->file('file')->isValid()) {
-					$import_map = [];
+            ini_set('max_execution_time', 0);
 
-					Excel::load($request->file('file')->getRealPath(), function($reader) use($import_map, $application, $form_template, $user) {
-						$results = $reader->get();
-						foreach($results as $row) {
+            if ($request->hasFile('file') && $request->file('file')->isValid()) {
+                $import_map = [];
+                $path = $request->file('file')->getRealPath();
 
-							// Find Existing Form or Create
-							$form_id = $import_map[$row->form_id] ?? null;
-							if(!$form_id && $row->organisation) {
+                $results = Excel::load($path, function ($reader) {})->get();
 
-								//Find Existing Organisation
-								$organisation = $application->organisations()->where('name', $row->organisation)->first();
-								if(!$organisation) {
+                if (!empty($results) && $results->count()) {
+                    foreach ($results as $row) {
+                        // Find Existing Form or Create
+                        $form_id = $import_map[$row->form_id] ?? null;
+                        if(!$form_id && $row->organisation) {
 
-									// Create Organisation
-									$share_token = base64_encode(str_random(40));
-									while (!is_null(Organisation::where('share_token', $share_token)->first())) {
-										$share_token = base64_encode(str_random(40));
-									}
-									$organisation = $application->organisations()->create([
-										'name' => $row->organisation,
-										'share_token' => $share_token
-									]);
-								}
+                            //Find Existing Organisation
+                            $organisation = $application->organisations()->where('name', $row->organisation)->first();
+                            if(!$organisation) {
 
-								// Create Form
-								$form = $form_template->forms()->create([
-									'user_id' => $user->id,
-									'organisation_id' => $organisation->id,
-									'progress' => 0,
-									'status_id' => Status::where('status', 'Open')->first()->id
-								]);
+                                // Create Organisation
+                                $share_token = base64_encode(str_random(40));
+                                while (!is_null(Organisation::where('share_token', $share_token)->first())) {
+                                    $share_token = base64_encode(str_random(40));
+                                }
+                                $organisation = $application->organisations()->create([
+                                    'name' => $row->organisation,
+                                    'share_token' => $share_token
+                                ]);
+                            }
 
-								$import_map[$row->form_id] = $form->id;
-							}
+                            // Create Form
+                            $form = $form_template->forms()->create([
+                                'user_id' => $user->id,
+                                'organisation_id' => $organisation->id,
+                                'progress' => 0,
+                                'status_id' => Status::where('status', 'Open')->first()->id
+                            ]);
 
-							// Get Form
-							$form = Form::find($import_map[$row->form_id]);
+                            $import_map[$row->form_id] = $form->id;
+                        }
 
-							// Find Section/Question/Answer
-							$sections = $form_template->sections()->get();
+                        // Get Form
+                        $form = Form::find($import_map[$row->form_id]);
 
-							// Get Sections
-							foreach($sections as $section) {
-								if($section->name === $row->section) {
+                        // Find Section/Question/Answer
+                        // Get Section
+                        $section = $form_template->sections()->where(['name' => $row->section])->first();
+                        if($section) {
+                            // Get Question
+                            $question = $section->questions()->where(['question' => $row->question])->first();
+                            if($question) {
+                                // Get Answers
+                                $answer = $question->answers()->where(['answer' => $row->answer])->first();
+                                $response = $row->response;
+                                if ($question->question_type === 'Multiple choice grid' || $question->question_type === 'Checkbox grid') {
+                                    $response = $question->answers()->where(['answer' => $row->response])->first();
+                                    $response = $response ? $response->id : null;
+                                }
 
-									// Get Questions
-									$questions = $section->questions()->get();
-									foreach($questions as $question) {
-										if($question->question === $row->question) {
-
-											// Get Answers
-											$answers = $question->answers()->get();
-											$answer_id = null;
-											foreach($answers as $answer) {
-												if($answer->answer === $row->answer) {
-													$answer_id = $answer->id;
-													break;
-												}
-											}
-
-											// Set Response
-											$form->responses()->create([
-												'question_id' => $question->id,
-												'response' => is_null($answer_id) ? $row->answer : null,
-												'answer_id' => !is_null($answer_id) ? $answer->id : null,
-												'order' => empty($row->order) ? 1 : $row->order
-											]);
-
-											break;
-										}
-									}
-									break;
-								}
-							}
-						}
-					});
-				}
-				return $this->returnSuccessMessage('upload', 'Form data successfully uploaded.');
-			}
+                                // Set Response
+                                $form->responses()->create([
+                                    'question_id' => $question->id,
+                                    // 'response' => $response,
+                                    'response' => ($answer) ? $row->answer : null,
+                                    'answer_id' => ($answer) ? $answer->id : null,
+                                    'order' => empty($row->order) ? 1 : $row->order
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+            return $this->returnSuccessMessage('upload', 'Form data successfully uploaded.');
 		} catch (Exception $e) {
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
