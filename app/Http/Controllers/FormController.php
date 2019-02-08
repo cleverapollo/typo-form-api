@@ -247,14 +247,14 @@ class FormController extends Controller
 
     /**
      * Result of Trigger
-     * @param object $form
+     * @param object $responses
      * @param object $trigger
      * @param integer $order
      * @return bool
      */
-    public function check_trigger($form, $trigger, $order) {
+    public function check_trigger($responses, $trigger, $order) {
         $question = Question::find($trigger->parent_question_id);
-        $parent_responses = $form->responses->where('question_id', $trigger->parent_question_id)->where('order', $order)->toArray();
+        $parent_responses = $responses->where('question_id', $trigger->parent_question_id)->where('order', $order)->toArray();
         $trigger_type = TriggerType::where([
             'question_type_id' => $question->question_type_id,
             'comparator_id' => $trigger->comparator_id
@@ -453,9 +453,10 @@ class FormController extends Controller
      * @param object $form_content
      * @param array $triggers
      * @param integer $order
+     * @param object $responses
      * @return bool
      */
-    public function check_triggers($form_content, $triggers, $order) {
+    public function check_triggers($form_content, $triggers, $order, $responses) {
         // if length = 0, show is true
         if (!count($triggers)) {
             return true;
@@ -465,7 +466,7 @@ class FormController extends Controller
         $tempF = true;
         foreach($triggers as $trigger) {
             $parent_question = Question::find($trigger->parent_question_id);
-            $tempF = $tempF && $this->check_trigger($form_content, $trigger, $order) && $form_content->sections->{$parent_question->section_id}->orders->{$order}->questions->{$parent_question->id}->show;
+            $tempF = $tempF && $this->check_trigger($responses, $trigger, $order) && $form_content->sections->{$parent_question->section_id}->orders->{$order}->questions->{$parent_question->id}->show;
             if ($trigger->operator === 1 || $trigger->operator === true) {
                 if ($tempF) {
                     return true;
@@ -587,7 +588,7 @@ class FormController extends Controller
 
             // Parent Section Triggers
             $triggers = $form_template->triggers->where('type', 'Section')->where('question_id', $parent_section->id)->sortBy('order');
-            $trigger_result = $this->check_triggers($form_content, $triggers, 1);
+            $trigger_result = $this->check_triggers($form_content, $triggers, 1, $form->responses);
             // if Result is true, show is false
             if ($trigger_result == false) {
                 $form_content->sections->{$parent_section->id}->show = false;
@@ -611,7 +612,7 @@ class FormController extends Controller
             foreach ($orders as $order) {
                 foreach ($questions as $question) {
                     $triggers = $form_template->triggers->where('type', 'Question')->where('question_id', $question->id)->sortBy('order');
-                    $trigger_result = $this->check_triggers($form_content, $triggers, $order);
+                    $trigger_result = $this->check_triggers($form_content, $triggers, $order, $form->responses);
                     $form_content->sections->{$parent_section->id}->orders->{$order}->questions->{$question->id}->show = $trigger_result;
                     $flag = $flag || $trigger_result;
                     if ($trigger_result) {
@@ -647,7 +648,7 @@ class FormController extends Controller
 
                 // Child Section Triggers
                 $triggers = $form_template->triggers->where('type', 'Section')->where('question_id', $child_section->id)->sortBy('order');
-                $trigger_result = $this->check_triggers($form_content, $triggers, 1);
+                $trigger_result = $this->check_triggers($form_content, $triggers, 1, $form->responses);
                 // if Result is true, show is false
                 if ($trigger_result == false) {
                     $form_content->sections->{$child_section->id}->show = false;
@@ -668,7 +669,7 @@ class FormController extends Controller
                 foreach ($orders as $order) {
                     foreach ($questions as $question) {
                         $triggers = $form_template->triggers->where('type', 'Question')->where('question_id', $question->id)->sortBy('order');
-                        $trigger_result = $this->check_triggers($form_content, $triggers, $order);
+                        $trigger_result = $this->check_triggers($form_content, $triggers, $order, $form->responses);
                         $form_content->sections->{$child_section->id}->orders->{$order}->questions->{$question->id}->show = $trigger_result;
                         $flag = $flag || $trigger_result;
                         if ($trigger_result) {
