@@ -330,5 +330,26 @@ class Controller extends BaseController
             'query' => $query,
             'value' => $value
         ];
-    }
+	}
+	
+	public function getApplication($user, $application_slug) {
+		$application = $user->role->name === 'Super Admin' ? Application::where('slug', $application_slug)->first() : $user->applications()->where('slug', $application_slug)->first();
+		
+		return $application;
+	}
+
+	public function isUserApplicationAdmin($user, $application) {
+		$is_user_application_admin = $user->role->name === 'Super Admin' || $this->getUserApplicationRole($user, $application) === 'Admin';
+		
+		return $is_user_application_admin;
+	}
+
+	public function getUserApplicationRole($user, $application) {
+		$user_application_role = ApplicationUser::where([
+			'user_id' => $user->id,
+			'application_id' => $application->id
+		])->first()->role;
+
+		return $user_application_role;
+	}
 }
