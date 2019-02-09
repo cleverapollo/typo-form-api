@@ -162,34 +162,42 @@ class FormController extends Controller
             }
 
             ini_set('max_execution_time', 0);
+            $import_map = [];
 
             if ($request->hasFile('file') && $request->file('file')->isValid()) {
-                $import_map = [];
                 $path = $request->file('file')->getRealPath();
 
                 $results = Excel::load($path, function ($reader) {})->get();
 
                 if (!empty($results) && $results->count()) {
                     foreach ($results as $row) {
-                        // Find Existing Form or Create
-                        $form_id = $import_map[$row->form_id] ?? null;
-                        if(!$form_id && $row->organisation) {
 
-                            //Find Existing Organisation
-                            $organisation = $application->organisations()->where('name', $row->organisation)->first();
-                            if(!$organisation) {
+                        //Find Existing Organisation
+                        $organisation = $application->organisations()->where('name', $row->organisation)->first();
+                        if(!$organisation) {
 
-                                // Create Organisation
+                            // Create Organisation
+                            $share_token = base64_encode(str_random(40));
+                            while (!is_null(Organisation::where('share_token', $share_token)->first())) {
                                 $share_token = base64_encode(str_random(40));
-                                while (!is_null(Organisation::where('share_token', $share_token)->first())) {
-                                    $share_token = base64_encode(str_random(40));
-                                }
-                                $organisation = $application->organisations()->create([
-                                    'name' => $row->organisation,
-                                    'share_token' => $share_token
-                                ]);
                             }
+                            $organisation = $application->organisations()->create([
+                                'name' => $row->organisation,
+                                'share_token' => $share_token
+                            ]);
+                        }
 
+                        // Find Existing Form or Create
+                        // Get Form
+                        $form = $form_template->forms()->where('organisation_id', $organisation->id)->first();
+                        if ($form && !in_array($form->id, $import_map)) {
+                            // Remove Existing Data
+                            $form->responses->each(function ($response) {
+                                $response->delete();
+                            });
+                            array_push($import_map, $form->id);
+                        }
+                        if(!$form) {
                             // Create Form
                             $form = $form_template->forms()->create([
                                 'user_id' => $user->id,
@@ -197,12 +205,8 @@ class FormController extends Controller
                                 'progress' => 0,
                                 'status_id' => Status::where('status', 'Open')->first()->id
                             ]);
-
-                            $import_map[$row->form_id] = $form->id;
+                            array_push($import_map, $form->id);
                         }
-
-                        // Get Form
-                        $form = Form::find($import_map[$row->form_id]);
 
                         // Find Section/Question/Answer
                         // Get Section
@@ -235,7 +239,7 @@ class FormController extends Controller
                         // Get Form
                         $form = Form::find($form_id);
                         $progress = $this->progress($form);
-                        $form->update(['progress', $progress]);
+                        $form->update(['progress' => $progress]);
                     }
                 }
             }
