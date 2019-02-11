@@ -340,16 +340,16 @@ class Controller extends BaseController
 
 	public function isUserApplicationAdmin($user, $application) {
 		$is_user_application_admin = $user->role->name === 'Super Admin' || $this->getUserApplicationRole($user, $application) === 'Admin';
-		
+
 		return $is_user_application_admin;
 	}
 
 	public function getUserApplicationRole($user, $application) {
-		$user_application_role = ApplicationUser::where([
+		$role = ApplicationUser::where([
 			'user_id' => $user->id,
 			'application_id' => $application->id
 		])->first()->role;
 
-		return $user_application_role;
+		return $role->name ?? false;
 	}
 }

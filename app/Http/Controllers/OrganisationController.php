@@ -37,23 +37,14 @@ class OrganisationController extends Controller
 	 */
 	public function index($application_slug)
 	{
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
-
-		// Send error if application does not exist
-		if (!$application) {
+		// Get Application
+		$user = Auth::user();
+		if(!$application = $this->getApplication($user, $application_slug)) {
 			return $this->returnApplicationNameError();
 		}
 
-		$organisations = $user->organisations()->where('application_id', $application->id)->get();
-
-		if ($user->role->name == 'Super Admin') {
-			$organisations = Organisation::with(['forms', 'users'])->where('application_id', $application->id)->get();
-		}
+		// Get Organisations
+		$organisations = $this->isUserApplicationAdmin($user, $application) ? Organisation::where('application_id', $application->id)->get() : $user->organisations()->get();
 
 		return $this->returnSuccessMessage('organisations', OrganisationResource::collection($organisations));
 	}
@@ -337,7 +328,7 @@ class OrganisationController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function allUsers($application_slug)
+    public function getUsers($application_slug)
     {
         $user = Auth::user();
         if ($user->role->name == 'Super Admin') {
@@ -391,47 +382,32 @@ class OrganisationController extends Controller
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function getUsers($application_slug, $id)
+	public function getOrganisationUsers($application_slug, $id)
 	{
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
-
-		// Send error if application does not exist
-		if (!$application) {
+		// Get Application
+		$user = Auth::user();
+		if(!$application = $this->getApplication($user, $application_slug)) {
 			return $this->returnApplicationNameError();
 		}
 
-		$organisation = $user->organisations()->where([
-			'organisation_id' => $id,
-			'application_id' => $application->id
-		])->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$organisation = Organisation::where([
-				'id' => $id,
-				'application_id' => $application->id
-			])->first();
+		// Get Organisation
+		if(!$organisation = $application->organisations()->where('application_id', $application->id)->where('id', $id)->first()) {
+			return $this->returnError('organisation', 404, 'show organisation');
 		}
 
-		if ($organisation) {
-			$currentUsers = $organisation->users()->get();
-			$type = Type::where('name', 'organisation')->first();
+		$users = $organisation->users()->get();
+		$type = Type::where('name', 'organisation')->first();
 
-			$invitedUsers = Invitation::where([
-				'reference_id' => $organisation->id,
-				'status' => 0,
-                'type_id' => $type->id
-			])->get();
+		$invitedUsers = Invitation::where([
+			'reference_id' => $organisation->id,
+			'status' => 0,
+			'type_id' => $type->id
+		])->get();
 
-			return $this->returnSuccessMessage('users', [
-				'current' => UserResource::collection($currentUsers),
-				'unaccepted' => InvitationResource::collection($invitedUsers)
-			]);
-		}
+		return $this->returnSuccessMessage('users', [
+			'current' => UserResource::collection($users),
+			'unaccepted' => InvitationResource::collection($invitedUsers)
+		]);
 
 		// Send error if application does not exist
 		return $this->returnError('organisation', 404, 'show users');
@@ -455,38 +431,15 @@ class OrganisationController extends Controller
 			'invitations.*.organisation_role_id' => 'required|integer|min:2'
 		]);
 
-        $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
-
-		// Send error if application does not exist
-		if (!$application) {
+		// Get Application
+		$user = Auth::user();
+		if(!$application = $this->getApplication($user, $application_slug)) {
 			return $this->returnApplicationNameError();
 		}
 
-		$organisation = $user->organisations()->where([
-			'organisation_id' => $id,
-			'application_id' => $application->id
-		])->first();
-
-		if ($user->role->name == 'Super Admin') {
-			$organisation = Organisation::where([
-				'id' => $id,
-				'application_id' => $application->id
-			])->first();
-		}
-
-		// Send error if organisation does not exist
-		if (!$organisation) {
+		// Get Organisation
+		if(!$organisation = $application->organisations()->where('application_id', $application->id)->where('id', $id)->first()) {
 			return $this->returnError('organisation', 404, 'send invitation');
-		}
-
-		// Check whether user has permission to send invitation
-		if (!$this->hasPermission($user, $organisation)) {
-			return $this->returnError('organisation', 403, 'send invitation');
 		}
 
 		$invitations = $request->input('invitations', []);

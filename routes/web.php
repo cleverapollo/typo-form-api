@@ -69,7 +69,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 			$router->group(['prefix' => 'organisation'], function () use ($router) {
 				$router->get('/', 'OrganisationController@index');
 				$router->post('/', 'OrganisationController@store');
-                $router->get('/user', 'OrganisationController@allUsers');
+                $router->get('/user', 'OrganisationController@getUsers');
 
 				$router->group(['prefix' => '{id}'], function () use ($router) {
 					$router->get('/', 'OrganisationController@show');
@@ -78,7 +78,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->post('invite', 'OrganisationController@inviteUsers');
 
 					$router->group(['prefix' => 'user'], function () use ($router) {
-						$router->get('/', 'OrganisationController@getUsers');
+						$router->get('/', 'OrganisationController@getOrganisationUsers');
 						$router->put('{user_id}', 'OrganisationController@updateUser');
 						$router->delete('{user_id}', 'OrganisationController@deleteUser');
 					});
