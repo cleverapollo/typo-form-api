@@ -208,9 +208,14 @@ class FormController extends Controller
                             array_push($import_map, $form->id);
                         }
 
-                        // Find Section/Question/Answer
-                        // Get Section
-                        $section = $form_template->sections()->where(['name' => $row->section])->first();
+						// Find Section/Question/Answer
+						
+						// Get Parent Section
+						$parent_section = $form_template->sections()->where(['name' => $row->parent_section])->first();
+						$parent_section_id = $parent_section->id ?? null;
+
+						// Get Section
+                        $section = $form_template->sections()->where(['name' => $row->section])->where('parent_section_id', $parent_section_id)->first();
                         if($section) {
                             // Get Question
                             $question = $section->questions()->where(['question' => $row->question])->first();
@@ -226,7 +231,6 @@ class FormController extends Controller
                                 // Set Response
                                 $form->responses()->create([
                                     'question_id' => $question->id,
-                                    // 'response' => $response,
                                     'response' => (!$answer) ? $row->answer : null,
                                     'answer_id' => ($answer) ? $answer->id : null,
                                     'order' => empty($row->order) ? 1 : $row->order
