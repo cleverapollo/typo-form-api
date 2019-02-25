@@ -35,6 +35,18 @@ class Question extends Model
 			$question->validations->each(function ($validation) {
 				$validation->delete();
 			});
+
+            $question->triggers->each(function ($trigger) {
+                $trigger->delete();
+            });
+
+			$question_triggers = QuestionTrigger::where([
+                'type' => 'Question',
+                'parent_question_id' => $question->id
+            ])->get();
+            $question_triggers->each(function ($trigger) {
+                $trigger->delete();
+            });
 		});
 	}
 

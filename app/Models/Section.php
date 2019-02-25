@@ -31,6 +31,14 @@ class Section extends Model
 			$section->questions->each(function ($question) {
 				$question->delete();
 			});
+
+            $section_triggers = QuestionTrigger::where([
+                'type' => 'Section',
+                'parent_question_id' => $section->id
+            ])->get();
+            $section_triggers->each(function ($trigger) {
+                $trigger->delete();
+            });
 		});
 	}
 
