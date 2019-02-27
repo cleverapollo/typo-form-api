@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use Storage;
 use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
@@ -222,16 +223,34 @@ class FormController extends Controller
                             if($question) {
                                 // Get Answers
                                 $answer = $question->answers()->where(['answer' => $row->answer])->first();
-                                $response = $row->response;
-                                if ($question->question_type === 'Multiple choice grid' || $question->question_type === 'Checkbox grid') {
-                                    $response = $question->answers()->where(['answer' => $row->response])->first();
-                                    $response = $response ? $response->id : null;
+                                // $response = $row->response;
+                                // if ($question->question_type === 'Multiple choice grid' || $question->question_type === 'Checkbox grid') {
+                                //     $response = $question->answers()->where(['answer' => $row->response])->first();
+                                //     $response = $response ? $response->id : null;
+                                // }
+                                $response = null;
+                                if (!$answer) {
+                                    $response = $row->answer;
+                                    $question_type_id = QuestionType::where('type', 'File upload')->first()->id;
+                                    if ($question->question_type_id === $question_type_id) {
+                                        $contents = file_get_contents($response);
+
+                                        $name = substr($response, strrpos($response, '/') + 1);
+                                        $filePath = 'uploads/' . $name;
+                                        $file = [];
+                                        Storage::disk('s3')->put($filePath, $contents, 'public');
+                                        $file['size'] = '';
+                                        $file['name'] = $name;
+                                        $file['url'] = 'https://s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/' . env('AWS_BUCKET') . '/' . $filePath;
+                                        $file['stored_name'] = $name;
+                                        $response = '[' . json_encode($file) . ']';
+                                    }
                                 }
 
                                 // Set Response
                                 $form->responses()->create([
                                     'question_id' => $question->id,
-                                    'response' => (!$answer) ? $row->answer : null,
+                                    'response' => $response,
                                     'answer_id' => ($answer) ? $answer->id : null,
                                     'order' => empty($row->order) ? 1 : $row->order
                                 ]);
