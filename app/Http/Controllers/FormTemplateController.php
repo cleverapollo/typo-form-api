@@ -390,9 +390,13 @@ class FormTemplateController extends Controller
 			$form_template->validations->each(function ($validation) {
 				$validation->delete();
 			});
+			$form_template->triggers->each(function ($trigger) {
+				$trigger->delete();
+			});
 
 			// Read File
 			$data = Excel::load($request->file('csv')->getRealPath(), function ($reader) {})->get();
+			$answer_map = [];
 
 			if (!empty($data) && $data->count()) {
 				foreach ($data as $row) {
@@ -447,9 +451,40 @@ class FormTemplateController extends Controller
 									'order' => $row->answer_order ?? 1
 								]);
 							}
+
+							// Add Question and Answer to answer map
+							if(isset($row->identifier)) {
+								$answer_map[$row->identifier] = ['question_id' => $question->id, 'answer_id' => $answer->id];
+							}
 						}
 					}
 				}
+
+				// Loop through triggers
+				$completed_triggers = [];
+				foreach($data as $row) {
+			
+					if(isset($row->triggered_by_id) && isset($row->identifier)) {
+						$triggers = explode(',', $row->triggered_by_id);
+
+						foreach($triggers as $key=>$trigger) {
+		
+							if(isset($answer_map[$trigger]) && isset($answer_map[$row->identifier]) && !in_array($answer_map[$row->identifier]['question_id'], $completed_triggers)) {
+								$form_template->triggers()->create([
+									'type' => 'Question',
+									'question_id' => $answer_map[$row->identifier]['question_id'] ?? null,
+									'parent_question_id' => $answer_map[$trigger]['question_id'] ?? null,
+									'parent_answer_id' => $answer_map[$trigger]['answer_id'] ?? null,
+									'comparator_id' => 1,
+									'order' => ($key+1),
+									'operator' => 1
+								]);
+							}
+						}
+						$completed_triggers[] = $answer_map[$row->identifier]['question_id'];
+					}
+				}
+
 				return $this->returnSuccessMessage('upload', 'Form template has been uploaded successfully.');
 			}
 		} catch (Exception $e) {
