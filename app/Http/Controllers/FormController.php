@@ -135,6 +135,21 @@ class FormController extends Controller
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
 	}
+
+	private function is_url_exist($url){
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if($code == 200){
+            $status = true;
+        }else{
+            $status = false;
+        }
+        curl_close($ch);
+        return $status;
+    }
 	
 	public function uploadFormData($application_slug, $id, Request $request) {
 		try {
@@ -233,17 +248,20 @@ class FormController extends Controller
                                     $response = $row->answer;
                                     $question_type_id = QuestionType::where('type', 'File upload')->first()->id;
                                     if ($question->question_type_id === $question_type_id) {
-                                        $contents = file_get_contents($response);
-
-                                        $name = substr($response, strrpos($response, '/') + 1);
-                                        $filePath = 'uploads/' . $name;
-                                        $file = [];
-                                        Storage::disk('s3')->put($filePath, $contents, 'public');
-                                        $file['size'] = '';
-                                        $file['name'] = $name;
-                                        $file['url'] = 'https://s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/' . env('AWS_BUCKET') . '/' . $filePath;
-                                        $file['stored_name'] = $name;
-                                        $response = '[' . json_encode($file) . ']';
+                                        if ($this->is_url_exist($response)) {
+                                            $contents = file_get_contents($response);
+                                            $name = substr($response, strrpos($response, '/') + 1);
+                                            $filePath = 'uploads/' . $name;
+                                            $file = [];
+                                            Storage::put($filePath, $contents, 'public');
+                                            $file['size'] = Storage::size($filePath);
+                                            $file['name'] = $name;
+                                            $file['url'] = Storage::url($filePath);
+                                            $file['stored_name'] = $name;
+                                            $response = '[' . json_encode($file) . ']';
+                                        } else {
+                                            $response = '';
+                                        }
                                     }
                                 }
 
