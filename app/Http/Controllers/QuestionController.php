@@ -257,7 +257,7 @@ class QuestionController extends Controller
 				}
                 $old_question_type = QuestionType::find($question->question_type_id);
                 if ($question_type->type !== $old_question_type->type) {
-                    $question->answers()->delete();
+                    //$question->answers()->delete();
                     $question->responses()->delete();
                     $question->triggers()->delete();
                     $question->validations()->delete();
