@@ -238,57 +238,26 @@ class FormController extends Controller
                             if($question) {
                                 // Get Answers
                                 $answer = $question->answers()->where(['answer' => $row->answer])->first();
-                                $response = $row->response;
-                                $multiple_choice_question_type_id = QuestionType::where('type', 'Multiple choice grid')->first()->id;
-                                $checkbox_grid_question_type_id = QuestionType::where('type', 'Checkbox grid')->first()->id;
-                                $file_upload_question_type_id = QuestionType::where('type', 'File upload')->first()->id;
-                                if ($question->question_type_id === $multiple_choice_question_type_id || $question->question_type_id === $checkbox_grid_question_type_id) {
-                                    $response = $question->answers()->where(['answer' => $row->response])->first();
-                                    $response = $response ? $response->id : null;
-                                }
-                                if ($question->question_type_id === $file_upload_question_type_id) {
-                                    if ($this->is_url_exist($response)) {
-                                        $contents = file_get_contents($response);
-                                        $name = base64_encode(str_random(40));
-                                        $filePath = 'uploads/' . $name;
-                                        $file = [];
-                                        Storage::put($filePath, $contents, 'public');
-                                        $file['size'] = Storage::size($filePath);
-                                        $file['name'] = $name;
-                                        $file['url'] = Storage::url($filePath);
-                                        $file['stored_name'] = $name;
-                                        $response = '[' . json_encode($file) . ']';
-                                    } else {
-                                        $response = null;
-                                    }
-                                }
+                                $response = (!empty($row->response) && !is_null($row->response) && $row->response !== "NULL") ? $row->response : null;
 
                                 // Set Response
-                                $form->responses()->create([
-                                    'question_id' => $question->id,
-                                    'response' => $response,
-                                    'answer_id' => ($answer) ? $answer->id : null,
-                                    'order' => empty($row->order) ? 1 : $row->order
-                                ]);
+                                if($answer || $response) {
+                                    $form->responses()->create([
+                                        'question_id' => $question->id,
+                                        'response' => $response,
+                                        'answer_id' => ($answer) ? $answer->id : null,
+                                        'order' => empty($row->order) ? 1 : $row->order
+                                    ]);
+                                }
                             }
                         }
 
+                        // Set Form Status and Progress
                         $status_id = Status::where('status', $row->status)->first()->id;
                         $form->update([
-                            'progress' => $row->progress,
+                            'progress' => $row->status && $row->status === 'Closed' ? 100 : $row->progress ?? 0,
                             'status_id' => $status_id
                         ]);
-                    }
-
-                    foreach ($import_map as $form_id) {
-                        // Get Form
-                        $form = Form::find($form_id);
-                        $progress = 100;
-                        $status_id = Status::where('status', 'Closed')->first()->id;
-                        if ($form->status_id !== $status_id) {
-                            $progress = $this->progress($form);
-                        }
-                        $form->update(['progress' => $progress]);
                     }
                 }
             }
