@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use Storage;
 use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
@@ -134,6 +135,21 @@ class FormController extends Controller
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
 	}
+
+	private function is_url_exist($url){
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if($code == 200){
+            $status = true;
+        }else{
+            $status = false;
+        }
+        curl_close($ch);
+        return $status;
+    }
 	
 	public function uploadFormData($application_slug, $id, Request $request) {
 		try {
@@ -222,28 +238,26 @@ class FormController extends Controller
                             if($question) {
                                 // Get Answers
                                 $answer = $question->answers()->where(['answer' => $row->answer])->first();
-                                $response = $row->response;
-                                if ($question->question_type === 'Multiple choice grid' || $question->question_type === 'Checkbox grid') {
-                                    $response = $question->answers()->where(['answer' => $row->response])->first();
-                                    $response = $response ? $response->id : null;
-                                }
+                                $response = (!empty($row->response) && !is_null($row->response) && $row->response !== "NULL") ? $row->response : null;
 
                                 // Set Response
-                                $form->responses()->create([
-                                    'question_id' => $question->id,
-                                    'response' => (!$answer) ? $row->answer : null,
-                                    'answer_id' => ($answer) ? $answer->id : null,
-                                    'order' => empty($row->order) ? 1 : $row->order
-                                ]);
+                                if($answer || $response) {
+                                    $form->responses()->create([
+                                        'question_id' => $question->id,
+                                        'response' => $response,
+                                        'answer_id' => ($answer) ? $answer->id : null,
+                                        'order' => empty($row->order) ? 1 : $row->order
+                                    ]);
+                                }
                             }
                         }
-                    }
 
-                    foreach ($import_map as $form_id) {
-                        // Get Form
-                        $form = Form::find($form_id);
-                        $progress = $this->progress($form);
-                        $form->update(['progress' => $progress]);
+                        // Set Form Status and Progress
+                        $status_id = Status::where('status', $row->status)->first()->id;
+                        $form->update([
+                            'progress' => $row->status && $row->status === 'Closed' ? 100 : $row->progress ?? 0,
+                            'status_id' => $status_id
+                        ]);
                     }
                 }
             }
