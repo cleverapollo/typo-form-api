@@ -24,7 +24,8 @@ class QuestionResource extends JsonResource
 			'width' => $this->width,
 			'sort_id' => $this->sort_id,
 			'answers' => AnswerResource::collection($this->answers),
-            'metas' => $this->metas
+            'metas' => $this->metas,
+            'key' => $this->key
 		];
 	}
 }

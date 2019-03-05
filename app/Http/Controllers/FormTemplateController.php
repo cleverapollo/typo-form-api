@@ -191,7 +191,8 @@ class FormTemplateController extends Controller
                             'question_type_id' => $question->question_type_id,
                             'order' => $question->order,
                             'width' => $question->width,
-                            'sort_id' => $question->sort_id
+                            'sort_id' => $question->sort_id,
+                            'key' => $question->key
                         ]);
                         $question_map[$question->id] = $new_question->id;
 

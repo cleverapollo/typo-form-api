@@ -56,7 +56,7 @@ class Question extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'question', 'description', 'mandatory', 'section_id', 'question_type_id', 'order', 'width', 'sort_id'
+		'question', 'description', 'mandatory', 'section_id', 'question_type_id', 'order', 'width', 'sort_id', 'key'
 	];
 
 	/**

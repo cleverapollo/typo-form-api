@@ -89,7 +89,8 @@ class QuestionController extends Controller
 				'question_type_id' => $question_type_id,
 				'order' => $order,
 				'width' => $request->input('width', null),
-				'sort_id' => $sort_id
+				'sort_id' => $sort_id,
+                'key' => $request->input('key', null)
 			]);
 
 			$question_type = QuestionType::find($question_type_id);
@@ -149,7 +150,8 @@ class QuestionController extends Controller
 				'question_type_id' => $question->question_type_id,
 				'order' => ($question->order + 1),
 				'width' => $question->width,
-				'sort_id' => $question->sort_id
+				'sort_id' => $question->sort_id,
+                'key' => $question->key
 			]);
 
 			if ($newQuestion) {
@@ -283,7 +285,7 @@ class QuestionController extends Controller
 			}
 
 			// Update question
-			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width', 'sort_id'))->save()) {
+			if ($question->fill($request->only('question', 'description', 'mandatory', 'question_type_id', 'width', 'sort_id', 'key'))->save()) {
 				return $this->returnSuccessMessage('question', new QuestionResource(Question::find($question->id)));
 			}
 
