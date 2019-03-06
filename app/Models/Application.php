@@ -26,7 +26,7 @@ class Application extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'name', 'slug', 'css', 'icon', 'share_token', 'logo', 'primary_color', 'secondary_color', 'background_image', 'support_text', 'join_flag', 'default_route'
+		'name', 'slug', 'css', 'icon', 'share_token', 'logo', 'background_image', 'support_text', 'join_flag', 'default_route'
 	];
 
 	/**
