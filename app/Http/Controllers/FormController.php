@@ -150,122 +150,212 @@ class FormController extends Controller
         curl_close($ch);
         return $status;
     }
-	
-	public function uploadFormData($application_slug, $id, Request $request) {
-		try {
-            $user = Auth::user();
-            if ($user->role->name == 'Super Admin') {
-                $application = Application::where('slug', $application_slug)->first();
-            } else {
-                $application = $user->applications()->where('slug', $application_slug)->first();
+
+    public function uploadFormDataByColumn($form_template, $results, $where) {
+        foreach ($results as $row) {
+
+            //Find Existing Organisation
+            $organisation = $application->organisations()->where('name', $row->organisation)->first();
+            if(!$organisation && $row->organisation) {
+
+                // Create Organisation
+                $share_token = base64_encode(str_random(40));
+                while (!is_null(Organisation::where('share_token', $share_token)->first())) {
+                    $share_token = base64_encode(str_random(40));
+                }
+                $organisation = $application->organisations()->create([
+                    'name' => $row->organisation,
+                    'share_token' => $share_token
+                ]);
             }
 
-			// Check whether user has permission
-			if (!$this->hasPermission($user, $application)) {
-				return $this->returnError('application', 403, 'upload form data');
-			}
-
-			// Send error if application does not exist
-			if (!$application) {
-				return $this->returnApplicationNameError();
-			}
-
-			// Get Form Template
-			$form_template = $application->form_templates()->find($id);
-
-			if(!$form_template) {
-                return $this->returnError('form_template', 403, 'upload form data');
+            // Find Existing Form or Create
+            // Get form using where query
+            $form = null;
+            if($where) {
+                $form = $this->findFormWhere($form_template, $row, $where);
+            } elseif($organisation) {
+                $form = $form_template->forms()->where('organisation_id', $organisation->id)->first();
             }
 
-            ini_set('max_execution_time', 0);
-            $import_map = [];
+            if ($form && !in_array($form->id, $import_map)) {
+                // Remove Existing Data
+                $form->responses->each(function ($response) {
+                    $response->delete();
+                });
+                array_push($import_map, $form->id);
+            }
+            if(!$form) {
+                // Create Form
+                $form = $form_template->forms()->create([
+                    'user_id' => $user->id,
+                    'organisation_id' => $organisation ? $organisation->id : null,
+                    'progress' => 0,
+                    'status_id' => Status::where('status', 'Open')->first()->id
+                ]);
+                array_push($import_map, $form->id);
+            }
+            
+            // Get Parent Section
+            $parent_section = $form_template->sections()->where(['name' => $row->parent_section])->first();
+            $parent_section_id = $parent_section->id ?? null;
 
-            if ($request->hasFile('file') && $request->file('file')->isValid()) {
-                $path = $request->file('file')->getRealPath();
+            // Get Section
+            $section = $form_template->sections()->where(['name' => $row->section])->where('parent_section_id', $parent_section_id)->first();
+            if($section) {
+                // Get Question
+                $question = $section->questions()->where(['question' => $row->question])->first();
+                if($question) {
+                    // Get Answers
+                    $answer = $question->answers()->where(['answer' => $row->answer])->first();
+                    $response = (!empty($row->response) && !is_null($row->response) && $row->response !== "NULL") ? $row->response : null;
 
-                $results = Excel::load($path, function ($reader) {})->get();
-
-                if (!empty($results) && $results->count()) {
-                    foreach ($results as $row) {
-
-                        //Find Existing Organisation
-                        $organisation = $application->organisations()->where('name', $row->organisation)->first();
-                        if(!$organisation) {
-
-                            // Create Organisation
-                            $share_token = base64_encode(str_random(40));
-                            while (!is_null(Organisation::where('share_token', $share_token)->first())) {
-                                $share_token = base64_encode(str_random(40));
-                            }
-                            $organisation = $application->organisations()->create([
-                                'name' => $row->organisation,
-                                'share_token' => $share_token
-                            ]);
-                        }
-
-                        // Find Existing Form or Create
-                        // Get Form
-                        $form = $form_template->forms()->where('organisation_id', $organisation->id)->first();
-                        if ($form && !in_array($form->id, $import_map)) {
-                            // Remove Existing Data
-                            $form->responses->each(function ($response) {
-                                $response->delete();
-                            });
-                            array_push($import_map, $form->id);
-                        }
-                        if(!$form) {
-                            // Create Form
-                            $form = $form_template->forms()->create([
-                                'user_id' => $user->id,
-                                'organisation_id' => $organisation->id,
-                                'progress' => 0,
-                                'status_id' => Status::where('status', 'Open')->first()->id
-                            ]);
-                            array_push($import_map, $form->id);
-                        }
-
-						// Find Section/Question/Answer
-						
-						// Get Parent Section
-						$parent_section = $form_template->sections()->where(['name' => $row->parent_section])->first();
-						$parent_section_id = $parent_section->id ?? null;
-
-						// Get Section
-                        $section = $form_template->sections()->where(['name' => $row->section])->where('parent_section_id', $parent_section_id)->first();
-                        if($section) {
-                            // Get Question
-                            $question = $section->questions()->where(['question' => $row->question])->first();
-                            if($question) {
-                                // Get Answers
-                                $answer = $question->answers()->where(['answer' => $row->answer])->first();
-                                $response = (!empty($row->response) && !is_null($row->response) && $row->response !== "NULL") ? $row->response : null;
-
-                                // Set Response
-                                if($answer || $response) {
-                                    $form->responses()->create([
-                                        'question_id' => $question->id,
-                                        'response' => $response,
-                                        'answer_id' => ($answer) ? $answer->id : null,
-                                        'order' => empty($row->order) ? 1 : $row->order
-                                    ]);
-                                }
-                            }
-                        }
-
-                        // Set Form Status and Progress
-                        $status_id = Status::where('status', $row->status)->first()->id;
-                        $form->update([
-                            'progress' => $row->status && $row->status === 'Closed' ? 100 : $row->progress ?? 0,
-                            'status_id' => $status_id
+                    // Set Response
+                    if($answer || $response) {
+                        $form->responses()->create([
+                            'question_id' => $question->id,
+                            'response' => $response,
+                            'answer_id' => ($answer) ? $answer->id : null,
+                            'order' => empty($row->order) ? 1 : $row->order
                         ]);
                     }
                 }
             }
-            return $this->returnSuccessMessage('upload', 'Form data successfully uploaded.');
+
+            // Set Form Status and Progress
+            $status_id = Status::where('status', ($row->status ?? 'Closed'))->first()->id;
+            $form->update([
+                'progress' => $row->status && $row->status === 'Closed' ? 100 : $row->progress ?? 0,
+                'status_id' => $status_id
+            ]);
+        }        
+    }
+	
+	public function uploadFormData($application_slug, $id, Request $request) {
+		try {
+            switch($request->input('method')) {
+                case 'key': 
+                    return $this->uploadFormDataByKey($application_slug, $id, $request);
+                default: 
+                    return $this->uploadFormDataByColumn($application_slud, $id, $request);
+            }
 		} catch (Exception $e) {
-			return $this->returnErrorMessage(503, $e->getMessage());
+			return $this->returnErrorMessage(503, $e->getMessage() . ' on line ' . $e->getLine());
 		}
-	}
+    }
+
+    public function uploadFormDataByKey($application_slug, $id, Request $request) {
+        try {
+			// Get Application
+			$user = Auth::user();
+			if(!$application = $this->getApplication($user, $application_slug)) {
+				return $this->returnApplicationNameError();
+			}
+
+			// Check User Permissions
+			if(!$this->isUserApplicationAdmin($user, $application)) {
+				return $this->returnError('application', 403, 'update form data');
+			}
+
+            // Get Form Template
+            if(!$form_template = $application->form_templates()->with('sections.questions.answers')->where('id', $id)->first()) {
+				return $this->returnError('form_template', 404, 'update form data');
+            }
+
+			// Check Valid File
+			if(!$request->file('file')->isValid()) {
+				return $this->returnErrorMessage(503, 'Invalid CSV file.');
+			}
+
+            // Get Params
+            $where = json_decode($request->input('where', null));
+            $path = $request->file('file')->getRealPath();
+
+            ini_set('max_execution_time', 0);
+            Excel::filter('chunk')->load($path)->chunk(, function($results) use ($form_template, $where, $user) {
+                $import_map = [];
+                foreach($results as $key=>$row) {
+                    error_log($key);
+
+                    // Find Existing Form or Create
+                    if($form_id = $this->findFormWhere($form_template, $row, $where)) {
+                        $form = Form::where('id', $form_id)->first();
+
+                        // Delete Existing Responses
+                        if (!in_array($form->id, $import_map)) {
+                            $form->responses->each(function ($response) {
+                                $response->delete();
+                            });
+                        }
+                    } else {
+                        // Create Form
+                        $form = $form_template->forms()->create([
+                            'user_id' => $user->id,
+                            'progress' => 0,
+                            'status_id' => Status::where('status', 'Open')->first()->id
+                        ]);
+                    }
+                    array_push($import_map, $form->id);
+        
+                    foreach($row as $key=>$val) {
+                        if($question = $this->findQuestionInSections($form_template->sections, 'key', $key)) {
+                            $answer = $question->answers->where('answer', $val)->first();
+                            $result = $form->responses()->create([
+                                'question_id' => $question->id,
+                                'response' => $val,
+                                'answer_id' => $answer->id ?? null,
+                                'order' => 1
+                            ]);
+                        }
+                    }
+                }
+            });
+
+            return $this->returnSuccessMessage('upload', 'Form data successfully uploaded.');
+        } catch (Exception $e) {
+            error_log($e->getMessage() . ' on line ' . $e->getLine());
+            return $this->returnErrorMessage(503, $e->getMessage() . ' on line ' . $e->getLine());
+        }
+    }
+
+    private function findFormWhere($form_template, $data, $where) {
+        $matches = [];
+        $forms = FormTemplate::with('forms.responses')->where('id', $form_template->id)->first()->forms;
+
+        // Questions
+        foreach($where->questions as $where) {
+            if($question = $this->findQuestionInSections($form_template->sections, $where->key, $where->value)) {
+                $response = $this->findResponseInForms($forms, $question->id, $data->{$where->column});
+                if(!$response) {
+                    return false;
+                }
+                $matches[] = $response->form_id;
+            }
+        }
+
+        $form_id = count(array_unique($matches)) === 1 ? reset($matches) : false;
+        return $form_id;
+    }
+
+    private function findQuestionInSections($sections, $key, $value) {
+        foreach($sections as $section) {
+            if($question = $section->questions->where($key, $value)->first()) {
+                return $question;
+            }
+        }
+
+        return false;
+    }
+
+    private function findResponseInForms($forms, $question_id, $value) {
+        foreach($forms as $form) {
+            if($response = $form->responses->where('question_id', $question_id)->where('response', $value)->first()) {
+                return $response;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Result of Trigger
