@@ -98,7 +98,7 @@ $app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 class_alias('Illuminate\Support\Facades\Response','Response');
-// class_alias('Illuminate\Support\Facades\Storage', 'Storage');
+//class_alias('Illuminate\Support\Facades\Storage', 'Storage');
 
 /*
 |--------------------------------------------------------------------------

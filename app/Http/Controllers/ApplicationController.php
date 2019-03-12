@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\Status;
