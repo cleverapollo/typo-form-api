@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class FileController extends Controller
