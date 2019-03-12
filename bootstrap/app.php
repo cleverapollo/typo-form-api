@@ -2,11 +2,9 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-try {
-    (new Dotenv\Dotenv(__DIR__.'/../'))->load();
-} catch (Dotenv\Exception\InvalidPathException $e) {
-    //
-}
+(new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
+    dirname(__DIR__)
+))->bootstrap();
 
 /*
 |--------------------------------------------------------------------------
@@ -100,7 +98,7 @@ $app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 class_alias('Illuminate\Support\Facades\Response','Response');
-class_alias('Illuminate\Support\Facades\Storage', 'Storage');
+// class_alias('Illuminate\Support\Facades\Storage', 'Storage');
 
 /*
 |--------------------------------------------------------------------------
