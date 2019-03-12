@@ -151,6 +151,7 @@ class FormController extends Controller
         return $status;
     }
 
+    /*
     public function uploadFormDataByColumn($form_template, $results, $where) {
         foreach ($results as $row) {
 
@@ -243,6 +244,7 @@ class FormController extends Controller
 			return $this->returnErrorMessage(503, $e->getMessage() . ' on line ' . $e->getLine());
 		}
     }
+
 
     public function uploadFormDataByKey($application_slug, $id, Request $request) {
         try {
@@ -356,6 +358,7 @@ class FormController extends Controller
 
         return false;
     }
+    */
 
     /**
      * Result of Trigger
