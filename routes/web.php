@@ -100,7 +100,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->post('/', 'FormTemplateController@update');
                     $router->post('/duplicate', 'FormTemplateController@duplicate');
 					$router->delete('/', 'FormTemplateController@destroy');
-					$router->get('export', 'FormTemplateController@exportCSV');
+					$router->get('export', 'FormTemplateFileController@show');
 					$router->post('/upload', 'FormTemplateController@uploadFormTemplate');
 					$router->post('/form/upload', 'FormUploadController@store');
 				});

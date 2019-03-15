@@ -72,8 +72,12 @@ class AppServiceProvider extends ServiceProvider
             $model::observe($observer);
         }
 
-        // Log Database Queries
-        /*
+        if(env('DB_LOG', false)) {
+            $this->logDatabase();
+        }
+    }
+
+    private function logDatabase() {
         DB::listen(function($query) {
             Log::info(
                 $query->sql,
@@ -81,6 +85,5 @@ class AppServiceProvider extends ServiceProvider
                 $query->time
             );
         });
-        */
     }
 }

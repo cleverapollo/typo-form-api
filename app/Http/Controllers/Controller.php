@@ -21,6 +21,19 @@ class Controller extends BaseController
 	use AuthorizesRequests;
 
 	/**
+	 * Return JSON response
+	 *
+	 * @param array $data
+	 * @param string $status
+	 * @param integer $code
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	protected function jsonResponse($data, $status = 200) {
+		return response()
+			->json($data, $status);
+	}
+
+	/**
 	 * Return error response
 	 *
 	 * @param $data

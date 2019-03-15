@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Illuminate\Support\Facades\Storage;
+// use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use App\Services\FileStoreService;
 
 class FileController extends Controller
 {
+    private $fileStoreService;
+
+    public function __construct() {
+        $this->fileStoreService = new FileStoreService;
+    }
     
 	/**
 	 * Store File
@@ -17,17 +23,10 @@ class FileController extends Controller
 	 */
 	public function store(Request $request)
 	{
-		try {
-            $file = [];
-            $path = Storage::putFile('uploads', $request->file('file'));
-            $file['size'] = Storage::size($path);
-            $file['name'] = $request->file->getClientOriginalName();
-            $file['url'] = Storage::url($path);
-            $file['stored_name'] = basename($path);
-			return $this->returnSuccessMessage('file', $file);
-		} catch (Exception $e) {
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
+        $file = $this->fileStoreService
+            ->upload($request->file('file'), $request->file('file')->getClientOriginalName());
+            
+        return $this->jsonResponse(['file' => $file]);
     }
     
     /**
@@ -37,13 +36,10 @@ class FileController extends Controller
 	 * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request) {
-        try {
-            $file = '/uploads/' . $request->input('name');
-            $result = Storage::delete($file);
-            return $this->returnSuccessMessage('result', $result);
-        } catch(Exception $e) {
-            return $this->returnErrorMessage(503, $e->getMessage());
-        }
+        $result = $this->fileStoreService
+            ->delete($request->input('name'));
+
+        return $this->jsonResponse(['result', $result]);
     }
 
     /**
@@ -53,6 +49,6 @@ class FileController extends Controller
      * @return file
      */
     public function download($name) {
-        return Storage::download($name);
+        return $this->fileStoreService->download($name);
     }
 }
