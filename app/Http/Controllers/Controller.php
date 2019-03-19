@@ -164,7 +164,7 @@ class Controller extends BaseController
 						'name' => $data->name,
 						'link' => $link,
 						'email' => $inviteeEmail,
-						'title' => "You have been invited to join the " . $type->name . " " . $data->name . " on Informed 365"
+						'title' => "You have been invited to join the " . $data->name . " " . $type->name . " on Informed 365"
 					]));
 				}
 			}
