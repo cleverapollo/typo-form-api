@@ -9,14 +9,17 @@ use App\Models\FormTemplate;
 Use App\Models\Question;
 use App\Models\QuestionType;
 use App\Services\FormService;
+use App\Services\FileStoreService;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FormUploadService extends Service {
 
     private $formService;
+    private $fileStoreService;
 
     public function __construct() {
         $this->formService = new FormService;
+        $this->fileStoreService = new FileStoreService;
     }
     
     public function uploadFormData($data) {
@@ -68,6 +71,17 @@ class FormUploadService extends Service {
                         }
                     }
                 }
+            });
+    }
+
+    public function uploadApplicationFormData($data) {
+
+        error_log($data['file']);
+
+        Excel::filter('chunk')
+            ->load($data['file'])
+            ->chunk(1000, function($results) use ($data) {
+                error_log(var_dump($results->first()));
             });
     }
 }

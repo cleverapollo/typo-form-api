@@ -49,6 +49,11 @@ class FileStoreService extends Service {
         ];
     }
 
+    public function get($file, $disk = null) {
+        $disk = $disk ?? ENV('FILESYSTEM_DRIVER');
+        return Storage::disk($disk)->get($file);
+    }
+
     public function download($file, $disk = null) {
         $disk = $disk ?? ENV('FILESYSTEM_DRIVER');
 

@@ -110,7 +110,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
                 $router->get('/', 'FormController@all');
                 $router->post('/filter', 'ApplicationController@filterForm');
                 $router->post('/filter/export', 'ApplicationController@exportForm');
-                $router->get('{id}', 'FormController@one');
+				$router->get('{id}', 'FormController@one');
+				$router->post('/upload', 'ApplicationFormUploadController@store');
             });
 
 			$router->group(['prefix' => 'application-email'], function () use ($router) {
