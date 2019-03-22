@@ -3,27 +3,25 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use Queue;
 use Illuminate\Http\Request;
 use App\Jobs\ApplicationFormUploadJob;
-use App\Services\FileStoreService;
+use App\Services\ExcelService;
 
 class ApplicationFormUploadController extends Controller {
 
     private $fileStoreService;
+    private $excelService;
 
     public function __construct() {
         $this->middleware('auth:api');
-        $this->fileStoreService = new FileStoreService;
+        $this->excelService = new ExcelService;
     }
 
     public function store(Request $request) {
-        // Store File
-        $file = $this->fileStoreService
-            ->uploadAs($request->file('file'), $request->file('file')->getClientOriginalName(), 'local');
-
+        $data = $this->excelService->toArray($request->file('file')->getRealPath());
+        
         // Set Job Params
-        $data['file'] = $file['path'];
+        $data['data'] = $data;
         $data['user_id'] = Auth::user()->id;
         $data['application_slug'] = $request->route('application_slug');
         

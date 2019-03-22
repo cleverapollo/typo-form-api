@@ -77,7 +77,7 @@ class Observer
      */
     public function created(Model $model)
     {
-        $this->createLog($model, __METHOD__);
+        // $this->createLog($model, __METHOD__);
     }
 
     /**
@@ -88,7 +88,7 @@ class Observer
      */
     public function updating(Model $model)
     {
-        $this->createLog($model, __METHOD__);
+        // $this->createLog($model, __METHOD__);
     }
 
     /**
@@ -99,6 +99,6 @@ class Observer
      */
     public function deleting(Model $model)
     {
-        $this->createLog($model, __METHOD__);
+        // $this->createLog($model, __METHOD__);
     }
 }

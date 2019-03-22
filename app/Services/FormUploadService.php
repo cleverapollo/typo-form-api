@@ -75,13 +75,52 @@ class FormUploadService extends Service {
     }
 
     public function uploadApplicationFormData($data) {
+        foreach($data['data'] as $sheet) {
+            if(!count($sheet->rows)) break;
 
-        error_log($data['file']);
+            if($form_template = FormTemplate::with('sections')->where('name', $sheet->name)->first()) {
+                $status = Status::where('status', 'Open')->first()->id;
+                $question_types = QuestionType::get();
+                $sections = $form_template->sections->pluck('id')->all();
+                $questions = Question::with('answers')->whereIn('section_id', $sections)->get();
 
-        Excel::filter('chunk')
-            ->load($data['file'])
-            ->chunk(1000, function($results) use ($data) {
-                error_log(var_dump($results->first()));
-            });
+                foreach($sheet->rows as $row) {
+
+                    // Get or Set Form
+                    if(!$form = $this->formService->findForm($form_template->id, $row)) {
+                        $form = Form::create([
+                            'form_template_id' => $form_template->id,
+                            'user_id' => $data['user_id'],
+                            'status_id' => $status
+                        ]);
+                    }
+
+                    // Get Existing Responses
+                    $responses = Response::where('form_id', $form->id)->get();
+
+                    foreach($row as $key=>$val) {
+                        if($question = $questions->where('key', $key)->first()) {
+                            $answer = $question->answers->where('answer', $val)->first();
+                            $answer_id = $answer->id ?? null;
+                            $response = $answer_id ? null : $val;
+                            $question_type = $question_types->where('id', $question->question_type_id)->first();
+
+                            // Check for change in response
+                            if($responses->where('question_id', $question->id)->where('answer_id', $answer_id)->where('response', $val)->first()) break;
+
+                            // Update Response
+                            Response::where('form_id', $form->id)->where('question_id', $question->id)->where('answer_id', $answer_id)->delete();
+                            Response::create([
+                                'form_id' => $form->id,
+                                'question_id' => $question->id,
+                                'response' => $response,
+                                'answer_id' => $answer_id,
+                                'order' => 1
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
