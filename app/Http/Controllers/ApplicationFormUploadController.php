@@ -18,14 +18,16 @@ class ApplicationFormUploadController extends Controller {
     }
 
     public function store(Request $request) {
-        $data = $this->excelService->toArray($request->file('file')->getRealPath());
+        $data = $this->excelService->toArray($request->file('file')->getRealPath(), 1);
+
+        foreach($data as $chunk) {
+            $job = [];
+            $job['data'] = $chunk;
+            $job['user_id'] = Auth::user()->id;
+            $job['application_slug'] = $request->route('application_slug');
+            dispatch(new ApplicationFormUploadJob($job));
+        }
         
-        // Set Job Params
-        $data['data'] = $data;
-        $data['user_id'] = Auth::user()->id;
-        $data['application_slug'] = $request->route('application_slug');
-        
-        dispatch(new ApplicationFormUploadJob($data));
         return response()->json(['upload' => 'The form data has been uploaded for import.']);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Form;
 use App\Models\Section;
 use App\Models\Question;
+use App\Models\Answer;
+use App\Models\QuestionType;
 use App\Models\FormTemplate;
 use App\Models\Response;
 
@@ -48,20 +50,51 @@ class FormService extends Service {
 
         if($forms = Form::where('form_template_id', $form_template_id)->get()->pluck('id')) {
             $sections = Section::where('form_template_id', $form_template_id)->get()->pluck('id');
-            $questions = Question::whereIn('section_id', $sections)->get();
+            $questions = Question::with('answers')->whereIn('section_id', $sections)->get();
             $responses = Response::whereIn('question_id', $questions->pluck('id'))->get();
+            $question_types = QuestionType::get();
 
             foreach($data as $key=>$val) {
-                if($question = $questions->where('key', $key)->first()) {
-                    $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('response', $val)->pluck('form_id');
+                if(($question = $questions->where('key', $key)->first()) && !empty($val)) {
+                    $question->type = $question_types->where('id', $question->question_type_id)->first();
+                    if(($answer = $question->answers->where('answer', $val)->first()) && $question->type !== 'Lookup') {
+                        $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('answer_id', $answer->id)->pluck('form_id');
+                    } else {
+                        $val = $this->formatResponse($question->type, $val);
+                        $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('response', $val)->pluck('form_id');
+                    }
                 }
 
                 if($forms->count() <= 1) break;
             }
         }
 
-        $form = $forms ? Form::where('id', $forms->first())->first() : null;
+        $form = $forms && count($forms) === 1 ? Form::where('id', $forms->first())->first() : null;
         
         return $form;
+    }
+
+    public function findLookupForm($question_id, $value) {
+        $form_id = null;
+        
+        if($answer = Answer::where('question_id', $question_id)->first()) {
+            $link = json_decode($answer['answer']);
+            if($response = Response::where('question_id', $link->questionId)->where('response', $value)->first()) {
+                $form_id = $response['form_id'];
+            }
+        }
+
+        return $form_id;
+    }
+
+    public function formatResponse($question, $response) {
+        switch($question->type) {
+            case 'Lookup':
+                return $this->findLookupForm($question->id, $response);
+            case 'Date':
+                return $response->date ? $response->format('Y-m-d H:i:s') : null;
+            default:
+                return $response;
+        }
     }
 }
