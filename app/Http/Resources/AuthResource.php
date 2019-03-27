@@ -22,7 +22,9 @@ class AuthResource extends JsonResource
 			'social_id' => $this->social_id,
 			'provider' => $this->provider,
 			'role_id' => $this->role_id,
-			'api_token' => $this->api_token
+			'api_token' => $this->api_token,
+			'created_at' => $this->created_at,
+			'updated_at' => $this->updated_at
 		];
 	}
 }
