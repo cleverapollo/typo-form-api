@@ -5,6 +5,7 @@ namespace App\Observers;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Log;
+use App\Models\Note;
 
 class Observer
 {
@@ -59,6 +60,27 @@ class Observer
         ]);
     }
 
+
+    /**
+     * Create Log for Model Action
+     *
+     * @param Model $model
+     * @return void
+     */
+    private function createNote($model) {
+        $user_id = Auth::user() ? Auth::user()->id : null;
+        $recordable_type = class_basename($model);
+        $recordable_id = $model->id;
+
+        Note::create([
+            'event'             => '', // Phone, Email, System Generated
+            'note'              => '', // information
+            'created_by'        => $user_id,
+            'recordable_id'     => $recordable_id,
+            'recordable_type'   => $recordable_type
+        ]);
+    }
+
     /**
      * Handle to the Model action type.
      *
@@ -78,6 +100,7 @@ class Observer
     public function created(Model $model)
     {
         // $this->createLog($model, __METHOD__);
+        $this->createNote($model);
     }
 
     /**

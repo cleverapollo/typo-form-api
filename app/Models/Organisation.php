@@ -54,4 +54,12 @@ class Organisation extends Model
     {
         return $this->morphMany('App\Models\Log', 'resourcable');
     }
+
+    /**
+     * Get all of the Organisation's notes.
+     */
+    public function notes()
+    {
+        return $this->morphMany('App\Models\Note', 'recordable');
+    }
 }

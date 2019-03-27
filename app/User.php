@@ -84,6 +84,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany('App\Models\Log');
     }
 
+    /**
+     * Get all of the User's notes.
+     */
+    public function notes()
+    {
+        return $this->morphMany('App\Models\Note', 'recordable');
+    }
+
 	/**
 	 * Send the password reset notification.
 	 *
