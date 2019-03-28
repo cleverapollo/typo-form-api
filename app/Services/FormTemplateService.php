@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\FormTemplate;
+use App\Models\Application;
 use App\Services\FileStoreService;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -66,5 +67,23 @@ class FormTemplateService extends Service {
         })->string('csv');
 
         return $this->fileStoreService->uploadContents($file, $file_name);
+    }
+
+    /**
+     * Get Application Form Templates
+     *
+     * @param String $slug
+     * @return void
+     */
+    public function getApplicationFormTemplates(String $application_slug) {
+        $form_templates = null;
+
+        if($application = Application::where('slug', $application_slug)->first()) {
+            $form_templates = FormTemplate::with(['sections.questions.answers','metas'])
+                ->where('application_id', $application->id)
+                ->get();
+        }
+
+        return $form_templates;
     }
 }

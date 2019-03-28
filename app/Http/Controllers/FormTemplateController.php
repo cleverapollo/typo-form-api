@@ -14,8 +14,13 @@ use App\Http\Resources\FormTemplateResource;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
+use App\Services\FormTemplateService;
+
 class FormTemplateController extends Controller
 {
+
+	private $formTemplateService;
+
 	/**
 	 * Create a new controller instance.
 	 *
@@ -23,7 +28,9 @@ class FormTemplateController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api', ['except' => []]);
+		//$this->middleware('auth:api', ['except' => []]);
+		$this->middleware('auth:api');
+		$this->formTemplateService = new FormTemplateService;
 	}
 
 	/**
@@ -35,7 +42,10 @@ class FormTemplateController extends Controller
 	 */
 	public function index($application_slug)
 	{
-		$user = Auth::user();
+		$form_templates = $this->formTemplateService->getApplicationFormTemplates($application_slug);
+		return $this->jsonResponse(['form_templates' => $form_templates]);
+
+	/*	$user = Auth::user();
 
 		if($user->role->name === 'Super Admin') {
 			$application = Application::with('form_templates.metas')->where('slug', $application_slug)->first();
@@ -50,6 +60,7 @@ class FormTemplateController extends Controller
 		}
 
 		return $this->returnSuccessMessage('form_templates', FormTemplateResource::collection($application->form_templates));
+		*/
 	}
 
 	/**
