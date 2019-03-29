@@ -12,11 +12,19 @@ class Note extends Model
      * @var array
      */
     protected $fillable = [
-        'event', 'note', 'created_by', 'recordable_id', 'recordable_type'
+        'event', 'note', 'user_id', 'recordable_id', 'recordable_type'
     ];
 
     /**
-     * Get all of the owning logable models
+     * Get the user that owns the Form.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
+
+    /**
+     * Get all of the owning recordable models
      */
     public function recordable()
     {

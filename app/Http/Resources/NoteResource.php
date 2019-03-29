@@ -19,10 +19,10 @@ class NoteResource extends JsonResource
 			'event' => $this->event,
             'note' => $this->note,
             'user' => [
-                'id' => $this->created_by->id,
-                'first_name' => $this->created_by->first_name,
-                'last_name' => $this->created_by->last_name,
-                'email' => $this->created_by->email
+                'id' => $this->user->id,
+                'first_name' => $this->user->first_name,
+                'last_name' => $this->user->last_name,
+                'email' => $this->user->email
             ],
             'recordable_id' => $this->recordable_id,
             'recordable_type' => $this->recordable_type

@@ -61,6 +61,14 @@ class Application extends Model
 		return $this->hasMany('App\Models\ApplicationEmail');
 	}
 
+    /**
+     * Get the form_templates for the Application.
+     */
+    public function notes()
+    {
+        return $this->hasMany('App\Models\Note');
+    }
+
 	/**
 	 * Get all of the Application's meta data
 	 */

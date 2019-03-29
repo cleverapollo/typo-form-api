@@ -124,6 +124,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					// $router->delete('/', 'ApplicationEmailController@destroy');
 				});
 			});
+
+            $router->group(['prefix' => 'notes'], function () use ($router) {
+                $router->get('/', 'NoteController@index');
+                $router->post('/', 'NoteController@store');
+
+                $router->group(['prefix' => '{id}'], function () use ($router) {
+                    $router->get('/', 'NoteController@show');
+                    $router->post('/', 'NoteController@update');
+                    $router->delete('/', 'NoteController@destroy');
+                });
+            });
 		});
 	});
 
