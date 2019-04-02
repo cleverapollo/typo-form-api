@@ -71,19 +71,5 @@ class AppServiceProvider extends ServiceProvider
         foreach ($this->modelList as $model => $observer) {
             $model::observe($observer);
         }
-
-        if(env('DB_LOG', false)) {
-            $this->logDatabase();
-        }
-    }
-
-    private function logDatabase() {
-        DB::listen(function($query) {
-            Log::info(
-                $query->sql,
-                $query->bindings,
-                $query->time
-            );
-        });
     }
 }
