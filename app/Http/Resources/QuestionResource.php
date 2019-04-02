@@ -20,6 +20,7 @@ class QuestionResource extends JsonResource
 			'description' => $this->description,
 			'mandatory' => $this->mandatory,
 			'question_type_id' => $this->question_type_id,
+			'question_type' => $this->questionType->type,
 			'order' => $this->order,
 			'width' => $this->width,
 			'sort_id' => $this->sort_id,

@@ -37,10 +37,10 @@ class AuthServiceProvider extends ServiceProvider
                     ['api_token', '=', $request->header('API-Token')]
                 ])->first();
 
-                if (!is_null($user)) {
-                    $expire_date = Carbon::now();
-                    $user->update(['expire_date' => $expire_date]);
-                }
+                // if (!is_null($user)) {
+                //    $expire_date = Carbon::now();
+                //    $user->update(['expire_date' => $expire_date]);
+                // }
                 return $user;
             }
         });

@@ -48,10 +48,10 @@ class SectionController extends Controller
         $user = Auth::user();
 
         if($user->role->name === 'Super Admin') {
-            $application = Application::with('form_templates.metas')->where('slug', $application_slug)->first();
+            $application = Application::with(['form_templates.sections.questions.answers', 'form_templates.sections.questions.questionType', 'form_templates.sections.questions.metas', 'form_templates.metas'])->where('slug', $application_slug)->first();
         } else {
-            $user->load('applications.form_templates.metas');
-            $application = $user->applications()->where('slug', $application_slug)->first();
+            //$user->load('applications.form_templates.metas');
+            $application = $user->applications()->with(['form_templates.sections.questions.answers', 'form_templates.sections.questions.questionType', 'form_templates.sections.questions.metas', 'form_templates.metas'])->where('slug', $application_slug)->first();
         }
 
         // No Application

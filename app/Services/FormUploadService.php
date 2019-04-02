@@ -85,6 +85,8 @@ class FormUploadService extends Service {
             $questions = Question::with('answers')->whereIn('section_id', $sections)->get();
 
             foreach($sheet->rows as $row) {
+                // Check for empty row
+                if(empty(array_filter($row))) continue;
 
                 // Get or Set Form
                 if(!$form = $this->formService->findForm($form_template->id, $row)) {
@@ -109,16 +111,15 @@ class FormUploadService extends Service {
                         $answer = $question->answers->where('answer', $val)->first();
                         $answer_id = $answer->id ?? null;
                         $response = $answer_id ? null : $val;
-                        $question_type = $question_types->where('id', $question->question_type_id)->first();
+                        $question_type = $question_types->where('id', $question->question_type_id)->first();                        
 
-                        // Check for no answer match
-                        if(count($question->answers) > 0 && !$answer) continue;
-
-                        // Check for lookup
-                        $original_val = $val;
+                        // Check for lookup or no matching answer
                         if($question_type->type === 'Lookup') {
                             $response = $this->formService->findLookupForm($question->id, $val);
+                        } else {
+                            if(count($question->answers) > 0 && !$answer) continue;
                         }
+                        
                         // Check for change in response
                         if($responses->where('question_id', $question->id)->where('answer_id', $answer_id)->where('response', $response)->first()) continue;
 
