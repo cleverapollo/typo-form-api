@@ -1,5 +1,6 @@
 <?php
 use App\Models\Status;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -14,7 +15,7 @@ class AddStatusIdToFormTemplatesTable extends Migration
     public function up()
     {
         Schema::table('form_templates', function (Blueprint $table) {
-            $status_id = Status::where('status', 'Closed')->first()->id;
+            $status_id = Status::firstOrCreate(['status' => 'Closed'])->id;
             $table->unsignedInteger('status_id')->default($status_id)->after('auto');
             $table->foreign('status_id')->references('id')->on('statuses')->onDelete('cascade');
         });

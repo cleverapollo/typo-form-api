@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\Type;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class TypesTableSeeder extends Seeder
 {
@@ -13,19 +12,13 @@ class TypesTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('types')->delete();
+        $items = [
+            ['id' => 1, 'name' => 'application'],
+            ['id' => 2, 'name' => 'organisation']
+        ];
 
-	    DB::table('types')->insert([
-		    'name' => 'application',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('types')->insert([
-		    'name' => 'organisation',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
+        foreach ($items as $item) {
+            Type::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }

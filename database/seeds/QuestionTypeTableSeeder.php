@@ -1,10 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\QuestionType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class QuestionTypeTableSeeder extends Seeder
 {
@@ -15,138 +12,33 @@ class QuestionTypeTableSeeder extends Seeder
 	 */
 	public function run()
 	{
-        DB::table('question_types')->delete();
+        $items = [
+            ['id' => 1, 'type' => 'Short answer'],
+            ['id' => 2, 'type' => 'Paragraph'],
+            ['id' => 3, 'type' => 'Multiple choice'],
+            ['id' => 4, 'type' => 'Checkboxes'],
+            ['id' => 5, 'type' => 'Dropdown'],
+            ['id' => 6, 'type' => 'File upload'],
+            ['id' => 7, 'type' => 'Linear scale'],
+            ['id' => 8, 'type' => 'Multiple choice grid'],
+            ['id' => 9, 'type' => 'Checkbox grid'],
+            ['id' => 10, 'type' => 'Date'],
+            ['id' => 11, 'type' => 'Time'],
+            ['id' => 12, 'type' => 'Content Block'],
+            ['id' => 13, 'type' => 'ABN Lookup'],
+            ['id' => 14, 'type' => 'Number'],
+            ['id' => 15, 'type' => 'Decimal'],
+            ['id' => 16, 'type' => 'Email'],
+            ['id' => 17, 'type' => 'Percent'],
+            ['id' => 18, 'type' => 'Phone number'],
+            ['id' => 19, 'type' => 'Address'],
+            ['id' => 20, 'type' => 'URL'],
+            ['id' => 21, 'type' => 'Country'],
+            ['id' => 22, 'type' => 'Lookup']
+        ];
 
-		DB::table('question_types')->insert([
-			'type' => 'Short answer',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Paragraph',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Multiple choice',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Checkboxes',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Dropdown',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'File upload',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Linear scale',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Multiple choice grid',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Checkbox grid',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Date',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Time',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'Content Block',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-		DB::table('question_types')->insert([
-			'type' => 'ABN Lookup',
-			'created_at' => Carbon::now(),
-			'updated_at' => Carbon::now()
-		]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Number',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Decimal',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Email',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Percent',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-		]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Phone number',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Address',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'URL',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Country',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('question_types')->insert([
-            'type' => 'Lookup',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
+        foreach ($items as $item) {
+            QuestionType::updateOrCreate(['id' => $item['id']], $item);
+        }
 	}
 }

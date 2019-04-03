@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\ValidationType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ValidationTypeTableSeeder extends Seeder
 {
@@ -13,97 +12,26 @@ class ValidationTypeTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('validation_types')->delete();
+        $items = [
+            ['id' => 1, 'type' => 'Number'],
+            ['id' => 2, 'type' => 'Email'],
+            ['id' => 3, 'type' => 'Words'],
+            ['id' => 4, 'type' => 'Letters'],
+            ['id' => 5, 'type' => 'Checkbox'],
+            ['id' => 6, 'type' => 'Dropdown'],
+            ['id' => 7, 'type' => 'Multiple choice'],
+            ['id' => 8, 'type' => 'Decimal validation'],
+            ['id' => 9, 'type' => 'Date after'],
+            ['id' => 10, 'type' => 'Date before'],
+            ['id' => 11, 'type' => 'Date between'],
+            ['id' => 12, 'type' => 'Future date'],
+            ['id' => 13, 'type' => 'Minimum Value'],
+            ['id' => 14, 'type' => 'Maximum Value'],
+            ['id' => 15, 'type' => 'Between']
+        ];
 
-	    DB::table('validation_types')->insert([
-		    'type' => 'Number',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Email',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Words',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Letters',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Checkbox',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Dropdown',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Multiple choice',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('validation_types')->insert([
-		    'type' => 'Decimal validation',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Date after',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Date before',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Date between',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Future date',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Minimum Value',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Maximum Value',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        DB::table('validation_types')->insert([
-            'type' => 'Between',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
+        foreach ($items as $item) {
+            ValidationType::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }

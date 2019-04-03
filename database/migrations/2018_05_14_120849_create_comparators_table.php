@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -18,6 +19,11 @@ class CreateComparatorsTable extends Migration
 	        $table->string('comparator');
             $table->timestamps();
         });
+
+        Artisan::call('db:seed', [
+            '--class' => ComparatorsTableSeeder::class
+        ]);
+
     }
 
     /**

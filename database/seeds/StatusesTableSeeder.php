@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\Status;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class StatusesTableSeeder extends Seeder
 {
@@ -13,31 +12,15 @@ class StatusesTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('statuses')->delete();
+        $items = [
+            ['id' => 1, 'status' => 'Open'],
+            ['id' => 2, 'status' => 'Closed'],
+            ['id' => 3, 'status' => 'Archived'],
+            ['id' => 4, 'status' => 'Locked']
+        ];
 
-	    DB::table('statuses')->insert([
-		    'status' => 'Open',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('statuses')->insert([
-		    'status' => 'Closed',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('statuses')->insert([
-		    'status' => 'Archived',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('statuses')->insert([
-		    'status' => 'Locked',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
+        foreach ($items as $item) {
+            Status::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }
