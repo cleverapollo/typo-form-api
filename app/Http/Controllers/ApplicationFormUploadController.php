@@ -9,7 +9,6 @@ use App\Services\ExcelService;
 
 class ApplicationFormUploadController extends Controller {
 
-    private $fileStoreService;
     private $excelService;
 
     public function __construct() {

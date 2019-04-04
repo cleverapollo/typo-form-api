@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Illuminate\Http\Request;
-use App\Jobs\FormUploadJob;
+use App\Jobs\FormTemplateUploadJob;
 use App\Services\ExcelService;
 
-class FormUploadController extends Controller {
+class FormTemplateUploadController extends Controller {
 
     private $excelService;
 
@@ -25,10 +25,9 @@ class FormUploadController extends Controller {
             $job['user_id'] = Auth::user()->id;
             $job['application_slug'] = $request->route('application_slug');
             $job['form_template_id'] = $request->route('id');
-            $job['where'] = json_decode($request->input('where', null));
-            dispatch(new FormUploadJob($job));
+            dispatch(new FormTemplateUploadJob($job));
         }
 
-        return response()->json(['upload' => 'The form data has been uploaded for import.']);
+        return response()->json(['upload' => 'The form template data has been uploaded for import.']);
     }
 }

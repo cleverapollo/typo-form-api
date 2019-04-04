@@ -20,8 +20,6 @@ class UserResource extends JsonResource
 			'last_name' => $this->last_name,
 			'email' => $this->email,
 			'role_id' => $this->role_id,
-			'social_id' => $this->social_id,
-			'provider' => $this->provider,
 			'created_at' => $this->created_at,
 			'updated_at' => $this->updated_at,
 			'organisation_role_id' => $this->whenPivotLoaded('organisation_users', function () {

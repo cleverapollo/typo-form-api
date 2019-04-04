@@ -4,15 +4,12 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Role;
 use App\Models\Type;
-use App\Models\Status;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\Invitation;
 use App\Models\Comparator;
-use App\Models\QuestionType;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicationUserResource;
@@ -21,10 +18,11 @@ use App\Http\Resources\FormResource;
 use App\Jobs\UsersNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Services\ApplicationService;
 
 class ApplicationController extends Controller
 {
+    private $applicationService;
 	/**
 	 * Create a new controller instance.
 	 *
@@ -33,6 +31,7 @@ class ApplicationController extends Controller
 	public function __construct()
 	{
 		$this->middleware('auth:api', ['except' => ['show']]);
+        $this->applicationService = new ApplicationService;
 	}
 
 	/**
@@ -609,121 +608,7 @@ class ApplicationController extends Controller
                 return $this->returnError('application', 403, 'export');
 			}
 
-			//Application
-			ini_set('max_execution_time', 0);
-			$data = [];
-			$application->load(['users', 'organisations', 'form_templates.forms.status', 'form_templates.sections.questions.answers', 'form_templates.sections.questions.responses']);
-			$data['Applications'][$application->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $application->toArray());
-
-			//Users
-			foreach($application->users as $user) {
-				$user_details = array_intersect_key($user->toArray(), array_flip(['id', 'first_name', 'last_name', 'email']));
-				$application_user_details = array_intersect_key($user->pivot->toArray(), array_flip(['role_id', 'created_at', 'updated_at']));
-				$data['Users'][$user->id] = array_merge($user_details, $application_user_details);
-			}
-
-			//Organisations
-			foreach($application->organisations as $organisation) {
-				$data['Organisations'][$organisation->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $organisation->toArray());
-			}
-
-			//Form Templates
-			foreach($application->form_templates as $form_template) {
-				$data['Form Templates'][$form_template->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form_template->toArray());
-
-				//
-				foreach($form_template->forms as $form) {
-					$data['Forms'][$form->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $form->toArray());
-				}			
-
-				//Sections
-				foreach($form_template->sections as $section) {
-					$data['Sections'][$section->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $section->toArray());
-				
-					//Questions
-					foreach($section->questions as $question) {
-						$data['Questions'][$question->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $question->toArray());
-
-						//Answers
-						foreach($question->answers as $answer) {
-							$data['Answers'][$answer->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $answer->toArray());
-						}
-
-						//Responses
-						foreach($question->responses as $response) {
-							$data['Responses'][$response->id] = array_map(function($item) { return is_array($item) ? null : $item; }, $response->toArray());
-						}
-					}
-				}
-			}
-
-			//Question Types
-			$question_types = QuestionType::all();
-
-			foreach($data['Form Templates'] as $form_template) {
-				foreach($data['Forms'] as $form) {
-					if($form['form_template_id'] === $form_template['id']) {
-						foreach($data['Responses'] as $response) {
-							if($response['form_id'] === $form['id']) {
-								$row = [
-									'form_template_id' => $form_template['id'],
-									'form_template' => $form_template['name'],
-									'form_id' => $response['form_id'],
-									'form_created' => $form['created_at'],
-									'form_progress' => $form['progress'],
-									'form_status' => Status::find($form['status_id'])->status,
-									'user_id' => $form['user_id'],
-									'first_name' => $data['Users'][$form['user_id']]['first_name'] ?? '',
-									'last_name' => $data['Users'][$form['user_id']]['last_name'] ?? '',
-									'section' => $data['Sections'][$data['Questions'][$response['question_id']]['section_id']]['name'] ?? '',
-									'question_id' => $response['question_id'],
-									'question' => $data['Questions'][$response['question_id']]['question'] ?? '',
-									'answer' => $data['Answers'][$response['answer_id']]['answer'] ?? '',
-									'response_created' => $response['created_at']
-								];
-
-								//Get the question type
-								$question_type_id = $data['Questions'][$response['question_id']]['question_type_id'];
-								$question_type = $question_types->firstWhere('id', $question_type_id)->type;
-								
-								//Format the response
-								switch($question_type) {
-									case 'Multiple choice grid':
-										$row['response'] = $data['Answers'][$response['response']]['answer'];
-										break;
-
-									default:
-										$row['response'] = $response['response'];
-										break;
-								}
-
-								$name = substr($form_template['name'], 0, 28);
-								$data[$name][] = $row;
-							}
-						}
-					}
-				}
-			}
-
-			//Create excel document
-            $file = Excel::create($application->name, function ($excel) use ($data) {
-				
-				//Add each element from the data array
-				foreach($data as $key=>$val) {
-					$excel->sheet($key, function ($sheet) use ($data, $key) {
-						$sheet->fromArray($data[$key]);
-					});
-				}
-			})->string('xlsx');
-
-			$filename = $application->name . '.xlsx';
-			Storage::put('exports/' . $filename, $file);
-
-			$file = [];
-            $file['size'] = Storage::size('exports/' . $filename);
-            $file['name'] = $filename;
-            $file['url'] = Storage::url('exports/' . $filename);
-            $file['stored_name'] = $filename;
+            $file = $this->applicationService->export($application_slug);
 
 			return $this->returnSuccessMessage('file', $file);
         } catch (Exception $e) {
@@ -978,145 +863,6 @@ class ApplicationController extends Controller
         }
     }
 
-    /**
-     * Filter forms and export as CSV
-     *
-     * @param  $application_slug
-     * @param  Request $request
-     *
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function exportForm($application_slug, Request $request)
-    {
-        $this->validate($request, [
-            'filters' => 'array',
-            'filters.*.source' => 'required',
-            'filters.*.query' => 'filled|integer',
-            'filters.*.question_id' => 'filled|integer'
-        ]);
-
-        try {
-            $user = Auth::user();
-            if ($user->role->name == 'Super Admin') {
-                $application = Application::where('slug', $application_slug)->first();
-            } else {
-                $application = $user->applications()->where('slug', $application_slug)->first();
-            }
-
-            // Send error if application does not exist
-            if (!$application) {
-                return $this->returnApplicationNameError();
-            }
-
-            // ToDo: check admin
-
-            $filters = $request->input('filters');
-            $comparisons = [];
-            $questions = [];
-            foreach ($filters as $key => $filter) {
-                if ($filter['query']) {
-                    $query = Comparator::find($filter['query']);
-                    if ($query) {
-                        $comparison = $this->getComparator($query->comparator, $filter['value']);
-                        $comparison['source'] = $filter['source'];
-
-                        if ($comparison['source'] == 'question_id') {
-                            if ($filter['question_id']) {
-                                $comparison['question_id'] = $filter['question_id'];
-                                $questions[] = $comparison;
-                            }
-                        } else {
-                            $comparisons[] = $comparison;
-                        }
-                    }
-                }
-            }
-
-            $form_templates = $application->form_templates()->get();
-            $formsData = [];
-            foreach ($form_templates as $form_template) {
-                $forms = $form_template->forms;
-                foreach ($comparisons as $comparison) {
-                    switch ($comparison['query']) {
-                        case 'is null':
-                            $forms = $forms->whereNull($comparison['source']);
-                            break;
-                        case 'is not null':
-                            $forms = $forms->whereNotNull($comparison['source']);
-                            break;
-                        case 'in list':
-                            $forms = $forms->whereIn($comparison['source'], explode(',', $comparison['value']));
-                            break;
-                        case 'not in list':
-                            $forms = $forms->whereNotIn($comparison['source'], explode(',', $comparison['value']));
-                            break;
-                        case '':
-                            break;
-                        default:
-                            $forms = $forms->where($comparison['source'], $comparison['query'], $comparison['value']);
-                    }
-                }
-
-                $forms = $forms->all();
-                foreach ($forms as $form) {
-                    $invalid = false;
-                    $responseCollection = new Collection();
-
-                    foreach ($questions as $question) {
-                        $responses = $form->responses->where('question_id', $question['question_id']);
-                        switch ($question['query']) {
-                            case 'is null':
-                                $responses = $responses->whereNull('response');
-                                break;
-                            case 'is not null':
-                                $responses = $responses->whereNotNull('response');
-                                break;
-                            case 'in list':
-                                $responses = $responses->whereIn('response', explode(',', $question['value']));
-                                break;
-                            case 'not in list':
-                                $responses = $responses->whereNotIn('response', explode(',', $question['value']));
-                                break;
-                            case '':
-                                break;
-                            default:
-                                $responses = $responses->where('response', $question['query'], $question['value']);
-                        }
-
-                        if (count($responses->all()) == 0) {
-                            $invalid = true;
-                        } else {
-                            $responseCollection = $responseCollection->merge($responses);
-                        }
-                    }
-
-                    if (!$invalid) {
-                        // ToDo: Consider about the export response column
-                        $formsData[] = [
-                            'Form ID' => $form->id,
-                            'Form Template ID' => $form->form_template_id,
-                            'User ID' => $form->user_id,
-                            'Organisation ID' => $form->organisation_id,
-                            'Progress' => $form->progress,
-                            'Period Start' => $form->period_start,
-                            'Period End' => $form->period_end,
-                            'Status' => Status::find($form->status_id)->status
-                        ];
-                    }
-                }
-            }
-
-            return Excel::create($application->name, function ($excel) use ($formsData) {
-                $excel->sheet('Forms', function ($sheet) use ($formsData) {
-                    $sheet->fromArray($formsData);
-                });
-            })->download('xlsx');
-        } catch (Exception $e) {
-            // Send error
-            return $this->returnErrorMessage(503, $e->getMessage());
-        }
-    }
 
 	/**
 	 * Check whether user has permission or not

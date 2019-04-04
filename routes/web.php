@@ -116,7 +116,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
                     $router->post('/duplicate', 'FormTemplateController@duplicate');
 					$router->delete('/', 'FormTemplateController@destroy');
 					$router->get('export', 'FormTemplateFileController@show');
-					$router->post('/upload', 'FormTemplateController@uploadFormTemplate');
+					$router->post('/upload', 'FormTemplateUploadController@store');
 					$router->post('/form/upload', 'FormUploadController@store');
 				});
 			});
@@ -125,7 +125,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->group(['prefix' => 'form'], function () use ($router) {
                 $router->get('/', 'FormController@all');
                 $router->post('/filter', 'ApplicationController@filterForm');
-                $router->post('/filter/export', 'ApplicationController@exportForm');
 				$router->get('{id}', 'FormController@one');
 				$router->post('/upload', 'ApplicationFormUploadController@store');
             });

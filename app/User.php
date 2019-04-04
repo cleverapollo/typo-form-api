@@ -28,8 +28,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 		'last_name',
 		'email',
 		'password',
-		'social_id',
-		'provider',
 		'role_id',
 		'api_token',
 		'expire_date'
