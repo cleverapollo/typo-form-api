@@ -19,7 +19,10 @@ class InvitationResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'inviter_id' => $this->inviter_id,
-			'invitee' => $this->invitee,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+			'email' => $this->email,
+            'properties' => $this->properties,
 			$type->name . '_id' => $this->reference_id,
             $type->name . '_role_id' => $this->role_id,
 			'created_at' => $this->created_at

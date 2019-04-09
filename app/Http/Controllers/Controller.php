@@ -105,15 +105,15 @@ class Controller extends BaseController
 	 * @param $data
 	 * @param $invitations
 	 */
-	protected function sendInvitation($type_name, $data, $invitations)
+	protected function sendInvitation($type_name, $data, $invitations, $host, $role_id)
 	{
         $type = Type::where('name', $type_name)->first();
         if (!$type) return;
+        $role = Role::find($role_id);
+        if (!$role) return;
 		if ($invitations && count($invitations) > 0) {
 			foreach ($invitations as $invitation) {
 				// Check whether the role exists or not
-				$role = Role::find($invitation[$type->name . '_role_id']);
-				if (!$role) continue;
 
 				$inviteeEmail = strtolower($invitation['email']);
 
@@ -130,7 +130,7 @@ class Controller extends BaseController
 
 				// Check if the user is already invited
 				$previousInvitation = Invitation::where([
-					'invitee' => $inviteeEmail,
+					'email' => $inviteeEmail,
 					'reference_id' => $data->id,
 					'status' => 0,
                     'type_id' => $type->id
@@ -142,7 +142,10 @@ class Controller extends BaseController
 					// Input to the invitations table
 					Invitation::insert([
 						'inviter_id' => $user->id,
-						'invitee' => $inviteeEmail,
+						'first_name' => $invitation['first_name'],
+                        'last_name' => $invitation['last_name'],
+						'email' => $inviteeEmail,
+                        'properties' => $invitation['properties'],
 						'reference_id' => $data->id,
 						'role_id' => $role->id,
 						'created_at' => Carbon::now(),
@@ -150,13 +153,12 @@ class Controller extends BaseController
                         'type_id' => $type->id
 					]);
 
-					$link = '';
 					if ($type->name == 'application') {
-					    $link = $data->slug . '.' . config('mail.fronturl');
+					    $link = $data->slug . '.' . $host;
                     }
                     else {
                         $application = Application::where('id', $data->application_id)->first();
-					    $link = $application->slug . '.' . config('mail.fronturl') . '/organisations/' . $data->id;
+					    $link = $application->slug . '.' . $host . '/organisations/' . $data->id;
                     }
 
 					dispatch(new ProcessInvitationEmail([
@@ -182,7 +184,7 @@ class Controller extends BaseController
 		$user = Auth::user();
         $type = Type::where('name', $type_name)->first();
 		$invitations = Invitation::where([
-			'invitee' => strtolower($user->email),
+			'email' => strtolower($user->email),
 			'type_id' => $type->id,
 			'status' => 0
 		])->get();

@@ -12,8 +12,12 @@ class Invitation extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'inviter_id', 'invitee', 'reference_id', 'type_id', 'role_id', 'status'
+        'inviter_id', 'first_name', 'last_name', 'email', 'properties', 'reference_id', 'type_id', 'role_id', 'status'
 	];
+
+    protected $casts = [
+        'properties' => 'array'
+    ];
 
 	/**
 	 * Get the inviter that sent the Invitation.

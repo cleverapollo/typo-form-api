@@ -329,7 +329,7 @@ class ApplicationController extends Controller
 		$this->validate($request, [
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role_id' => 'required|integer|min:2'
+            'role_id' => 'required|integer|min:2'
 		]);
 
 		$user = Auth::user();
@@ -351,9 +351,10 @@ class ApplicationController extends Controller
 
 		$invitations = $request->input('invitations', []);
 		$host = $request->header('Origin');
+        $role_id = $request->input('role_id');
 
 		// Send invitation
-		$this->sendInvitation('application', $application, $invitations, $host);
+		$this->sendInvitation('application', $application, $invitations, $host, $role_id);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
 	}
