@@ -145,7 +145,7 @@ class Controller extends BaseController
 						'first_name' => $invitation['first_name'],
                         'last_name' => $invitation['last_name'],
 						'email' => $inviteeEmail,
-                        'properties' => $invitation['properties'],
+                        'meta' => $invitation['meta'],
 						'reference_id' => $data->id,
 						'role_id' => $role->id,
 						'created_at' => Carbon::now(),

@@ -22,7 +22,7 @@ class InvitationResource extends JsonResource
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
 			'email' => $this->email,
-            'properties' => $this->properties,
+            'meta' => $this->meta,
 			$type->name . '_id' => $this->reference_id,
             $type->name . '_role_id' => $this->role_id,
 			'created_at' => $this->created_at
