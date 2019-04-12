@@ -66,4 +66,4 @@ https://medium.com/@kamerk22/the-smart-way-to-handle-request-validation-in-larav
 * Repo owner or admin:
 * td@greenbizcheck.com
 * Skype tim.dorey
-* Ask in Slack
+* Ask in Slack (test deploy 002)
