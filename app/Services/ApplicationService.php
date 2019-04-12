@@ -8,6 +8,7 @@ use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\QuestionType;
 use App\Models\Status;
+use App\Models\Invitations;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 
@@ -156,5 +157,22 @@ class ApplicationService extends Service {
         }
 
         return $form_templates;
+    }
+
+    public function inviteUser ($data) {
+        /**
+         * TODO:
+         * Insert User into invitations table
+         * Send Email to User with invitation data
+         */
+
+        Invitations::create([
+            'inviter_id' => $data['user_id'],
+            'email' => $data['invitations']->email,
+            'first_name' => $data['invitations']->firstname,
+            'last_name' => $data['invitations']->lastname,
+            'meta' => $data['invitations']->meta,
+            'role_id' => $data['role_id']
+        ]);
     }
 }

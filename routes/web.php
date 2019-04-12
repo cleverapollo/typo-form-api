@@ -74,7 +74,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 				$router->delete('{id}', 'ApplicationController@deleteInvitedUser');
 			});
 
-			$router->post('invite', 'ApplicationController@inviteUsers');
+			// $router->post('invite', 'ApplicationController@inviteUsers');
+			$router->post('invite', 'ApplicationInvitationController@store');
 
 			// Application Organisations Routes
 			$router->group(['prefix' => 'organisation'], function () use ($router) {
