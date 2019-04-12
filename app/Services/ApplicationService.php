@@ -3,12 +3,12 @@
 namespace App\Services;
 
 use Exception;
-use Illuminate\Support\Facades\Storage;
 use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\QuestionType;
 use App\Models\Status;
-use App\Models\Invitations;
+use App\Models\Invitation;
+use App\Jobs\ProcessInvitationEmail;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 
@@ -166,13 +166,23 @@ class ApplicationService extends Service {
          * Send Email to User with invitation data
          */
 
-        Invitations::create([
+        Invitation::create([
             'inviter_id' => $data['user_id'],
-            'email' => $data['invitations']->email,
-            'first_name' => $data['invitations']->firstname,
-            'last_name' => $data['invitations']->lastname,
-            'meta' => $data['invitations']->meta,
-            'role_id' => $data['role_id']
+            'email' => $data['invitation']['email'],
+            'first_name' => $data['invitation']['firstname'],
+            'last_name' => $data['invitation']['lastname'],
+            'meta' => $data['meta'],
+            'role_id' => $data['role_id'],
+            'type_id' => $data['type_id'],
+            'reference_id' => $data['application']->id
         ]);
+
+        dispatch(new ProcessInvitationEmail([
+            'type' => 'Application',
+            'name' => $data['application']->name,
+            'link' => $data['application']->slug . '.' . $data['host'],
+            'email' => $data['invitation']['email'],
+            'title' => "You have been invited to join the " . $data['application']->name . " Application on Informed 365"
+        ]));
     }
 }
