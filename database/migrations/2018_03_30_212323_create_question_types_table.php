@@ -21,7 +21,8 @@ class CreateQuestionTypesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => QuestionTypeTableSeeder::class
+            '--class' => QuestionTypeTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

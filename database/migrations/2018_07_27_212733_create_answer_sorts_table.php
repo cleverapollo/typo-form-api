@@ -21,7 +21,8 @@ class CreateAnswerSortsTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => AnswerSortsTableSeeder::class
+            '--class' => AnswerSortsTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

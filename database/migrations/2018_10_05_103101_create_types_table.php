@@ -21,7 +21,8 @@ class CreateTypesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => TypesTableSeeder::class
+            '--class' => TypesTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

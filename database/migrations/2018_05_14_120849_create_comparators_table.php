@@ -21,7 +21,8 @@ class CreateComparatorsTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => ComparatorsTableSeeder::class
+            '--class' => ComparatorsTableSeeder::class,
+            '--force' => true,
         ]);
 
     }

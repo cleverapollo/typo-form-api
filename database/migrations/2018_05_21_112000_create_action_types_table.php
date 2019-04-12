@@ -21,7 +21,8 @@ class CreateActionTypesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => ActionTypesTableSeeder::class
+            '--class' => ActionTypesTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

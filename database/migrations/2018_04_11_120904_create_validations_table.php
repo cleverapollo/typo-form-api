@@ -27,7 +27,8 @@ class CreateValidationsTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => ValidationTypeTableSeeder::class
+            '--class' => ValidationTypeTableSeeder::class,
+            '--force' => true,
         ]);
     }
 
