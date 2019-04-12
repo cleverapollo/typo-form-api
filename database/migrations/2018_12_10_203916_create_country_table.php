@@ -21,7 +21,8 @@ class CreateCountryTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => CountriesTableSeeder::class
+            '--class' => CountriesTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

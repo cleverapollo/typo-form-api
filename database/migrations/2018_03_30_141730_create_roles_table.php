@@ -21,7 +21,8 @@ class CreateRolesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => RolesTableSeeder::class
+            '--class' => RolesTableSeeder::class,
+            '--force' => true,
         ]);
     }
 

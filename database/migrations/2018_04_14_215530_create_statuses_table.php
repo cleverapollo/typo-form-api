@@ -21,7 +21,8 @@ class CreateStatusesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => StatusesTableSeeder::class
+            '--class' => StatusesTableSeeder::class,
+            '--force' => true,
         ]);
 
     }

@@ -26,7 +26,8 @@ class CreateTriggerTypesTable extends Migration
         });
 
         Artisan::call('db:seed', [
-            '--class' => TriggerTypeTableSeeder::class
+            '--class' => TriggerTypeTableSeeder::class,
+            '--force' => true,
         ]);
     }
 
