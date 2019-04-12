@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9da8b4fc253ba05f28183134e3c3200c",
+    "content-hash": "b7c634a65311bece7061cf5343c48cad",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -330,6 +330,40 @@
                 "schedule"
             ],
             "time": "2019-03-31T00:38:28+00:00"
+        },
+        {
+            "name": "dyned/lumen-maintenance-mode",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jsilalahi/lumen-maintenance-mode.git",
+                "reference": "b05a9f792d5b7a2acc4c0cb74a3dd424f90c834d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jsilalahi/lumen-maintenance-mode/zipball/b05a9f792d5b7a2acc4c0cb74a3dd424f90c834d",
+                "reference": "b05a9f792d5b7a2acc4c0cb74a3dd424f90c834d",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/lumen-framework": "^5.6",
+                "php": ">=7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DynEd\\Lumen\\MaintenanceMode\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Jogi Silalahi",
+                    "email": "jsilalahi@dyned.com"
+                }
+            ],
+            "description": "Maintenance mode command for Lumen",
+            "time": "2018-03-09T07:48:44+00:00"
         },
         {
             "name": "egulias/email-validator",

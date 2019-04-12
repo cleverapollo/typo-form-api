@@ -91,6 +91,7 @@ $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 $app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
+$app->register(DynEd\Lumen\MaintenanceMode\MaintenanceModeServiceProvider::class);
 
 // Clockwork Debugging Tool
 if (env('APP_DEBUG')) {
