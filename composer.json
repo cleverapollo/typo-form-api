@@ -16,6 +16,7 @@
         "league/flysystem": "^1.0",
         "league/flysystem-aws-s3-v3": "^1.0",
         "predis/predis": "^1.1",
+        "ramsey/uuid": "^3.8",
         "rap2hpoutre/fast-excel": "^1.2",
         "vlucas/phpdotenv": "~3.3"
     },
