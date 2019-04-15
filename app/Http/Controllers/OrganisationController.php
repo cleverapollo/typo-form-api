@@ -421,7 +421,7 @@ class OrganisationController extends Controller
 		$this->validate($request, [
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.organisation_role_id' => 'required|integer|min:2'
+			'role_id' => 'required|integer|min:2'
 		]);
 
 		// Get Application
@@ -437,9 +437,10 @@ class OrganisationController extends Controller
 
 		$invitations = $request->input('invitations', []);
 		$host = $request->header('Origin');
+        $role_id = $request->input('role_id');
 
 		// Send invitation
-		$this->sendInvitation('organisation', $organisation, $invitations, $host);
+		$this->sendInvitation('organisation', $organisation, $invitations, $host, $role_id);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
 	}

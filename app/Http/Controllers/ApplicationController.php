@@ -316,49 +316,6 @@ class ApplicationController extends Controller
 	}
 
 	/**
-	 * Invite users to the Application.
-	 *
-	 * @param  string $application_slug
-	 * @param  \Illuminate\Http\Request $request
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 * @throws \Illuminate\Validation\ValidationException
-	 */
-	public function inviteUsers($application_slug, Request $request)
-	{
-		$this->validate($request, [
-			'invitations' => 'array',
-			'invitations.*.email' => 'required|email',
-			'invitations.*.application_role_id' => 'required|integer|min:2'
-		]);
-
-		$user = Auth::user();
-		if ($user->role->name == 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		} else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
-
-		// Send error if application does not exist
-		if (!$application) {
-			return $this->returnApplicationNameError();
-		}
-
-		// Check whether user has permission to send invitation
-		if (!$this->hasPermission($user, $application)) {
-			return $this->returnError('application', 403, 'send invitation');
-		}
-
-		$invitations = $request->input('invitations', []);
-		$host = $request->header('Origin');
-
-		// Send invitation
-		$this->sendInvitation('application', $application, $invitations, $host);
-
-		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
-	}
-
-	/**
 	 * Update user role in the Application.
 	 *
 	 * @param  string $application_slug
