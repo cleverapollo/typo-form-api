@@ -48,15 +48,16 @@ class ApplicationInvitationController extends Controller
             $data['invitation'] = $invitation;
             $data['role_id'] = $request->input('role_id');
             $data['type_id'] = $type->id;
-            $data['application'] = $application;
-            $data['host'] = $request->header('Origin');
+            $data['application_id'] = $application->id;
             $data['meta'] = [
                 'form_templates' => $request->input('form_templates'),
                 'subject' => $request->input('subject'),
                 'message' => $request->input('message'),
                 'cc' => $request->input('cc'),
-                'bcc' => $request->input('bcc')
+                'bcc' => $request->input('bcc'),
+                'organisation' => $invitation['organisation']
             ];
+    
             dispatch(new ApplicationInvitationJob($data));
         }
         

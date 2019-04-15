@@ -7,15 +7,15 @@ use Log;
 class Service {
     
     /**
-     * Log any errors
+     * Convert email addresses from string to array
      *
-     * @param Exception $e
+     * @param String $email
      * @return void
      */
-    public function logError($e) {
-        Log::error(
-            $e->getMessage() . '. ' . 
-            $e->getFile() . ' on line ' . $e->getLine() . '. ' .
-            $e->getCode() . '.');
+    public function formatEmailAddresses ($email) {
+        $email = str_replace(' ', '', $email);
+        $email = str_replace(';', ',', $email);
+        $email = explode(',', $email);
+        return $email;
     }
 }

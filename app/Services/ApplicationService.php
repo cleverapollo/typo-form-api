@@ -11,6 +11,7 @@ use App\Models\Invitation;
 use App\Jobs\ProcessInvitationEmail;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
+use Illuminate\Support\Facades\Mail;
 
 class ApplicationService extends Service {
 
@@ -159,30 +160,76 @@ class ApplicationService extends Service {
         return $form_templates;
     }
 
+    /**
+     * Checks for user inviation
+     *
+     * @param String $email
+     * @param Int $reference_id
+     * @return boolean
+     */
+    public function hasInvitation ($email, $reference_id) {
+        return !empty($this->getInvitation($email, $reference_id));
+    }
+
+    /**
+     * Get user invitation
+     *
+     * @param String $email
+     * @param Int $reference_id
+     * @return void
+     */
+    public function getInvitation($email, $reference_id) {
+        return Invitation::where('email', $email)
+            ->where('reference_id', $reference_id)
+            ->first();
+    }
+
+    /**
+     * Create user invitation
+     *
+     * @param Array $data
+     * @return void
+     */
     public function inviteUser ($data) {
-        /**
-         * TODO:
-         * Insert User into invitations table
-         * Send Email to User with invitation data
-         */
+        if(!$this->hasInvitation($data['invitation']['email'], $data['application_id'])) {
+            Invitation::create([
+                'inviter_id' => $data['user_id'],
+                'email' => $data['invitation']['email'],
+                'first_name' => $data['invitation']['firstname'],
+                'last_name' => $data['invitation']['lastname'],
+                'meta' => $data['meta'],
+                'role_id' => $data['role_id'],
+                'type_id' => $data['type_id'],
+                'reference_id' => $data['application_id']
+            ]);
+        }
 
-        Invitation::create([
-            'inviter_id' => $data['user_id'],
-            'email' => $data['invitation']['email'],
-            'first_name' => $data['invitation']['firstname'],
-            'last_name' => $data['invitation']['lastname'],
-            'meta' => $data['meta'],
-            'role_id' => $data['role_id'],
-            'type_id' => $data['type_id'],
-            'reference_id' => $data['application']->id
-        ]);
+        $this->sendInvitationEmail($data);
+    }
 
-        dispatch(new ProcessInvitationEmail([
-            'type' => 'Application',
-            'name' => $data['application']->name,
-            'link' => $data['application']->slug . '.' . $data['host'],
-            'email' => $data['invitation']['email'],
-            'title' => "You have been invited to join the " . $data['application']->name . " Application on Informed 365"
-        ]));
+    /**
+     * Send user invitation email
+     *
+     * @param Array $data
+     * @return void
+     */
+    public function sendInvitationEmail ($data) {
+        Mail::send([], [], function ($message) use ($data) {
+            $message
+                ->to($data['invitation']['email'])
+                ->from(ENV('MAIL_FROM_ADDRESS'))
+                ->subject($data['meta']['subject'])
+                ->setBody($data['meta']['message'], 'text/html');
+            
+            // Optional CC
+            if (!empty($data['meta']['cc'])) {
+                $message->cc($this->formatEmailAddresses($data['meta']['cc']));
+            }
+
+            // Optional BCC
+            if (!empty($data['meta']['bcc'])) {
+                $message->bcc($this->formatEmailAddresses($data['meta']['bcc']));
+            }
+        });
     }
 }
