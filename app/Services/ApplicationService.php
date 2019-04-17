@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use Exception;
+use Auth;
+use Carbon\Carbon;
 use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\QuestionType;
 use App\Models\Status;
 use App\Models\Invitation;
-use App\Jobs\ProcessInvitationEmail;
+use App\Models\Type;
+use App\Models\Role;
+use App\Models\ApplicationUser;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +25,55 @@ class ApplicationService extends Service {
     public function __construct() {
         $this->formTemplate = new FormTemplate;
         $this->fileStoreService = new FileStoreService;
+    }
+
+    public function acceptInvitation($slug) {
+        $application = Application::where('slug', $slug)->first();
+        $user = Auth::user();
+        $type = Type::where('name', 'application')->first();
+        $invitation = Invitation::where([
+            'email' => strtolower($user->email),
+            'type_id' => $type->id,
+            'reference_id' => $application->id,
+            'status' => 0
+        ])->first();
+
+
+
+        $user_list = ApplicationUser::where([
+            'user_id' => $user->id,
+            'application_id' => $application->id
+        ])->first();
+
+        // Check if user already exists in the Application
+        if (!$user_list) {
+            if ($user_list = ApplicationUser::insert([
+                'user_id' => $user->id,
+                'application_id' => $application->id,
+                'role_id' => $invitation->role_id
+            ])) {
+                // Remove token and update status at invitations table
+                Invitation::where('id', $invitation->id)->update([
+                    'status' => 1,
+                    'updated_at' => Carbon::now()
+                ]);
+            }
+        }
+
+        if ($application->join_flag) {
+            $application_user = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->first();
+
+            if (!$application_user) {
+                ApplicationUser::create([
+                    'user_id' => $user->id,
+                    'application_id' => $application->id,
+                    'role_id' => Role::where('name', 'User')->first()->id
+                ]);
+            }
+        }
     }
 
     public function export($application_slug) {
