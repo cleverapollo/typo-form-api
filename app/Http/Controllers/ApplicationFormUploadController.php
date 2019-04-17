@@ -17,6 +17,7 @@ class ApplicationFormUploadController extends Controller {
     }
 
     public function store(Request $request) {
+        ini_set('max_execution_time', 0);
         $data = $this->excelService->toArray($request->file('file')->getRealPath(), 1);
 
         foreach($data as $chunk) {

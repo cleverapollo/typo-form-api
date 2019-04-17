@@ -84,7 +84,7 @@ class FormUploadService extends Service {
                 if(empty(array_filter($row))) continue;
 
                 // Get or Set Form
-                if(!$form = $this->formService->findForm($form_template->id, $row)) {
+                if(!$form = $this->formService->findFormFromResponse($form_template->id, $row)) {
                     $form = Form::create([
                         'form_template_id' => $form_template->id,
                         'user_id' => $data['user_id'],
@@ -94,8 +94,9 @@ class FormUploadService extends Service {
 
                 // Get Existing Responses
                 $responses = Response::where('form_id', $form->id)->get();
-
                 foreach($row as $key=>$val) {
+
+
                     if($question = $questions->where('key', $key)->first()) {
 
                         // Convert Boolean
