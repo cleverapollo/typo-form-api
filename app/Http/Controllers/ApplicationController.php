@@ -305,7 +305,7 @@ class ApplicationController extends Controller
         $type = Type::where('name', 'application')->first();
 		$invitedUsers = Invitation::where([
 			'reference_id' => $application->id,
-			'status' => 0,
+			'status' => false,
             'type_id' => $type->id
 		])->get();
 

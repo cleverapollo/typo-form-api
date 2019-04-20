@@ -7,12 +7,14 @@ use Auth;
 use Carbon\Carbon;
 use App\Models\FormTemplate;
 use App\Models\Application;
+use App\Models\ApplicationUser;
+use App\Models\Organisation;
+use App\Models\OrganisationUser;
 use App\Models\QuestionType;
 use App\Models\Status;
 use App\Models\Invitation;
 use App\Models\Type;
 use App\Models\Role;
-use App\Models\ApplicationUser;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 use Illuminate\Support\Facades\Mail;
@@ -27,38 +29,9 @@ class ApplicationService extends Service {
         $this->fileStoreService = new FileStoreService;
     }
 
-    public function acceptInvitation($slug) {
+    public function acceptInvitation($slug, $user) {
         $application = Application::where('slug', $slug)->first();
-        $user = Auth::user();
         $type = Type::where('name', 'application')->first();
-        $invitation = Invitation::where([
-            'email' => strtolower($user->email),
-            'type_id' => $type->id,
-            'reference_id' => $application->id,
-            'status' => 0
-        ])->first();
-
-
-
-        $user_list = ApplicationUser::where([
-            'user_id' => $user->id,
-            'application_id' => $application->id
-        ])->first();
-
-        // Check if user already exists in the Application
-        if (!$user_list) {
-            if ($user_list = ApplicationUser::insert([
-                'user_id' => $user->id,
-                'application_id' => $application->id,
-                'role_id' => $invitation->role_id
-            ])) {
-                // Remove token and update status at invitations table
-                Invitation::where('id', $invitation->id)->update([
-                    'status' => 1,
-                    'updated_at' => Carbon::now()
-                ]);
-            }
-        }
 
         if ($application->join_flag) {
             $application_user = ApplicationUser::where([
@@ -72,6 +45,49 @@ class ApplicationService extends Service {
                     'application_id' => $application->id,
                     'role_id' => Role::where('name', 'User')->first()->id
                 ]);
+            }
+            return;
+        }
+
+        $invitations = Invitation::where([
+            'email' => strtolower($user->email),
+            'type_id' => $type->id,
+            'reference_id' => $application->id,
+            'status' => false
+        ])->get();
+
+        foreach ($invitations as $invitation) {
+            $user_list = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->first();
+
+            // Check if user already exists in the Application
+            if (!$user_list) {
+                if ($user_list = ApplicationUser::insert([
+                    'user_id' => $user->id,
+                    'application_id' => $application->id,
+                    'role_id' => $invitation->role_id
+                    // 'meta' => $invitation->meta
+                ])) {
+                    $organisation_name = $invitation->meta['organisation'];
+                    if ($organisation_name && $organisation_name != '') {
+                        $organisation = Organisation::firstOrCreate([
+                            'name' => $organisation_name,
+                            'application_id' => $application->id
+                        ]);
+                        OrganisationUser::insert([
+                            'user_id' => $user->id,
+                            'organisation_id' => $organisation->id,
+                            'role_id' => Role::where('name', 'Admin')->first()->id
+                        ]);
+                    }
+                    // Remove token and update status at invitations table
+                    Invitation::where('id', $invitation->id)->update([
+                        'status' => 1,
+                        'updated_at' => Carbon::now()
+                    ]);
+                }
             }
         }
     }

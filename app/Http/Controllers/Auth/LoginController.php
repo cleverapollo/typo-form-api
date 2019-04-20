@@ -37,21 +37,16 @@ class LoginController extends Controller
      * Handle an authentication attempt.
      *
      * @param  \Illuminate\Http\Request $request
+     * @param  mixed $user
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return void
      */
-    public function authenticate(Request $request)
+    public function authenticated(Request $request, $user)
     {
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $origin = $request->header('Origin');
-            if (strlen($origin)) {
-                $request_slug = explode('.', explode('://', $origin)[1])[0];
-                $this->applicationService->acceptInvitation($request_slug);
-            }
-
-            return redirect()->intended('dashboard');
+        $origin = $request->header('Origin');
+        if (strlen($origin)) {
+            $request_slug = explode('.', explode('://', $origin)[1])[0];
+            $this->applicationService->acceptInvitation($request_slug, $user);
         }
     }
 }

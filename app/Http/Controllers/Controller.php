@@ -132,7 +132,7 @@ class Controller extends BaseController
 				$previousInvitation = Invitation::where([
 					'email' => $inviteeEmail,
 					'reference_id' => $data->id,
-					'status' => 0,
+					'status' => false,
                     'type_id' => $type->id
 				])->first();
 
@@ -186,7 +186,7 @@ class Controller extends BaseController
 		$invitations = Invitation::where([
 			'email' => strtolower($user->email),
 			'type_id' => $type->id,
-			'status' => 0
+			'status' => false
 		])->get();
 
         foreach ($invitations as $invitation) {
@@ -208,7 +208,7 @@ class Controller extends BaseController
                 ])) {
                     // Remove token and update status at invitations table
                     Invitation::where('id', $invitation->id)->update([
-                        'status' => 1,
+                        'status' => true,
                         'updated_at' => Carbon::now()
                     ]);
                 }
