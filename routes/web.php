@@ -27,6 +27,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('register', 'Auth\RegisterController@register');
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
+	
+	// ACL Routes
+	$router->get('acl', 'AclController@index');
 
 	// Invitation Routes
 	$router->post('join/organisation/{token}', 'OrganisationController@join');

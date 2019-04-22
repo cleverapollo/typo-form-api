@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use DB;
 use Log;
+use Bouncer;
 use App\Models\Application;
 use App\Models\Answer;
 use App\Models\ApplicationUser;
@@ -71,5 +72,15 @@ class AppServiceProvider extends ServiceProvider
         foreach ($this->modelList as $model => $observer) {
             $model::observe($observer);
         }
+
+        // Rename Bouncer tables to prefixed variations due to an overlap with existing roles tables.
+        // All four tables are renamed for consistency
+        //
+        Bouncer::tables([
+            'permissions' => 'acl_permissions',
+            'assigned_roles' => 'acl_assigned_roles',
+            'roles' => 'acl_roles',
+            'abilities' => 'acl_abilities',
+        ]);
     }
 }

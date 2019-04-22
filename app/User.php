@@ -11,12 +11,14 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordRequest as ResetPasswordNotification;
+use Silber\Bouncer\Database\HasRolesAndAbilities;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
 	use Authenticatable, Authorizable;
 	use CanResetPassword;
 	use Notifiable;
+	use HasRolesAndAbilities;
 
 	/**
 	 * The attributes that are mass assignable.
