@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Note extends Model
 {
+    use SoftDeletes;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'event', 'note', 'user_id', 'recordable_id', 'recordable_type'
+        'note_type_id', 'description', 'note', 'user_id', 'recordable_id', 'recordable_type'
     ];
 
     /**

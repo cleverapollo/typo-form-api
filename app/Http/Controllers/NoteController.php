@@ -81,8 +81,9 @@ class NoteController extends Controller
             }
 
             $note = $application->notes()->create([
-                'event' => $request->input('event'),
+                'note_type_id' => $request->input('note_type_id'),
                 'note' => $request->input('note'),
+                'description' => $request->input('description'),
                 'user_id' => $user->id,
                 'recordable_id' => $request->input('recordable_id'),
                 'recordable_type' => $request->input('recordable_type')
@@ -173,7 +174,7 @@ class NoteController extends Controller
 			}
 
 			// Update note
-			if ($note->fill($request->only('event', 'note', 'recordable_id', 'recordable_type'))->save()) {
+			if ($note->fill($request->only('note_type_id', 'description', 'note', 'recordable_id', 'recordable_type'))->save()) {
 				return $this->returnSuccessMessage('note', new NoteResource($note));
 			}
 

@@ -15,7 +15,8 @@ class CreateNotesTable extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('event');
+            $table->unsignedInteger('note_type_id');
+            $table->text('description');
             $table->text('note');
             $table->unsignedInteger('application_id');
             $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
@@ -34,8 +35,6 @@ class CreateNotesTable extends Migration
      */
     public function down()
     {
-        Schema::table('notes', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('notes');
     }
 }

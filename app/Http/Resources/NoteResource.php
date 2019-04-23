@@ -16,7 +16,8 @@ class NoteResource extends JsonResource
 	{
 		return [
 			'id' => $this->id,
-			'event' => $this->event,
+			'note_type_id' => $this->note_type_id,
+			'description' => $this->description,
             'note' => $this->note,
             'user' => [
                 'id' => $this->user->id,
@@ -25,7 +26,8 @@ class NoteResource extends JsonResource
                 'email' => $this->user->email
             ],
             'recordable_id' => $this->recordable_id,
-            'recordable_type' => $this->recordable_type
+			'recordable_type' => $this->recordable_type,
+			'updated_at' => $this->updated_at
 		];
 	}
 }
