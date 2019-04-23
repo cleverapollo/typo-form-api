@@ -77,17 +77,10 @@ class OrganisationController extends Controller
 				return $this->returnApplicationNameError();
 			}
 
-			$share_token = base64_encode(str_random(40));
-			while (!is_null(Organisation::where('share_token', $share_token)->first())) {
-				$share_token = base64_encode(str_random(40));
-			}
-
 			// Create organisation
 			$organisation = $user->organisations()->create([
 				'name' => $request->input('name'),
-                'description' => $request->input('description', null),
-				'application_id' => $application->id,
-				'share_token' => $share_token
+				'application_id' => $application->id
 			], [
 				'role_id' => Role::where('name', 'Admin')->first()->id
 			]);
@@ -428,7 +421,7 @@ class OrganisationController extends Controller
 		$this->validate($request, [
 			'invitations' => 'array',
 			'invitations.*.email' => 'required|email',
-			'invitations.*.organisation_role_id' => 'required|integer|min:2'
+			'role_id' => 'required|integer|min:2'
 		]);
 
 		// Get Application
@@ -444,9 +437,10 @@ class OrganisationController extends Controller
 
 		$invitations = $request->input('invitations', []);
 		$host = $request->header('Origin');
+        $role_id = $request->input('role_id');
 
 		// Send invitation
-		$this->sendInvitation('organisation', $organisation, $invitations, $host);
+		$this->sendInvitation('organisation', $organisation, $invitations, $host, $role_id);
 
 		return $this->returnSuccessMessage('message', 'Invitation has been sent successfully.');
 	}

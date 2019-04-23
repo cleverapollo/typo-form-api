@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RolesTableSeeder extends Seeder
 {
@@ -13,25 +12,14 @@ class RolesTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('roles')->delete();
+        $items = [
+            ['id' => 1, 'name' => 'Super Admin'],
+            ['id' => 2, 'name' => 'Admin'],
+            ['id' => 3, 'name' => 'User']
+        ];
 
-	    DB::table('roles')->insert([
-		    'name' => 'Super Admin',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('roles')->insert([
-		    'name' => 'Admin',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('roles')->insert([
-		    'name' => 'User',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
+        foreach ($items as $item) {
+            Role::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }

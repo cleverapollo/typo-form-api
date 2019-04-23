@@ -19,12 +19,9 @@ use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
 use App\Http\Resources\FormResource;
-use App\Http\Resources\FormAllResource;
 use App\Http\Resources\ResponseResource;
-use App\Http\Resources\ApplicationUserResource;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends Controller
 {
@@ -135,21 +132,6 @@ class FormController extends Controller
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
 	}
-
-	private function is_url_exist($url){
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if($code == 200){
-            $status = true;
-        }else{
-            $status = false;
-        }
-        curl_close($ch);
-        return $status;
-    }
 
     /*
     public function uploadFormDataByColumn($form_template, $results, $where) {

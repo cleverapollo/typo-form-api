@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Illuminate\Http\Request;
-use App\Jobs\ApplicationFormUploadJob;
+use App\Jobs\FormTemplateUploadJob;
 use App\Services\ExcelService;
 
-class ApplicationFormUploadController extends Controller {
+class FormTemplateUploadController extends Controller {
 
     private $excelService;
 
@@ -17,7 +17,6 @@ class ApplicationFormUploadController extends Controller {
     }
 
     public function store(Request $request) {
-        ini_set('max_execution_time', 0);
         $data = $this->excelService->toArray($request->file('file')->getRealPath(), 1);
 
         foreach($data as $chunk) {
@@ -25,9 +24,10 @@ class ApplicationFormUploadController extends Controller {
             $job['data'] = $chunk;
             $job['user_id'] = Auth::user()->id;
             $job['application_slug'] = $request->route('application_slug');
-            dispatch(new ApplicationFormUploadJob($job));
+            $job['form_template_id'] = $request->route('id');
+            dispatch(new FormTemplateUploadJob($job));
         }
-        
-        return response()->json(['upload' => 'The form data has been uploaded for import.']);
+
+        return response()->json(['upload' => 'The form template data has been uploaded for import.']);
     }
 }

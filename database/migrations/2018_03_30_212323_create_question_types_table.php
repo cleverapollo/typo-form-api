@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -18,6 +19,11 @@ class CreateQuestionTypesTable extends Migration
             $table->string('type')->unique();
             $table->timestamps();
         });
+
+        Artisan::call('db:seed', [
+            '--class' => QuestionTypeTableSeeder::class,
+            '--force' => true,
+        ]);
     }
 
     /**

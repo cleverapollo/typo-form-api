@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -18,6 +19,11 @@ class CreateRolesTable extends Migration
             $table->string('name')->unique();
             $table->timestamps();
         });
+
+        Artisan::call('db:seed', [
+            '--class' => RolesTableSeeder::class,
+            '--force' => true,
+        ]);
     }
 
     /**

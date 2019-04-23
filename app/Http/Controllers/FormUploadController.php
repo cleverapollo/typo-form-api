@@ -3,33 +3,33 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use Queue;
 use Illuminate\Http\Request;
 use App\Jobs\FormUploadJob;
-use App\Services\FileStoreService;
+use App\Services\ExcelService;
 
 class FormUploadController extends Controller {
 
-    private $fileStoreService;
+    private $excelService;
 
     public function __construct() {
         $this->middleware('auth:api');
-        $this->fileStoreService = new FileStoreService;
+        $this->excelService = new ExcelService;
     }
 
     public function store(Request $request) {
-        // Store File
-        $file = $this->fileStoreService
-            ->uploadAs($request->file('file'), $request->file('file')->getClientOriginalName());
+        ini_set('max_execution_time', 0);
+        $data = $this->excelService->toArray($request->file('file')->getRealPath(), 1);
 
-        // Set Job Params
-        $data['file'] = $file['path'];
-        $data['user_id'] = Auth::user()->id;
-        $data['application_slug'] = $request->route('application_slug');
-        $data['form_template_id'] = $request->route('id');
-        $data['where'] = json_decode($request->input('where', null));
-        
-        dispatch(new FormUploadJob($data));
+        foreach($data as $chunk) {
+            $job = [];
+            $job['data'] = $chunk;
+            $job['user_id'] = Auth::user()->id;
+            $job['application_slug'] = $request->route('application_slug');
+            $job['form_template_id'] = $request->route('id');
+            $job['where'] = json_decode($request->input('where', null));
+            dispatch(new FormUploadJob($job));
+        }
+
         return response()->json(['upload' => 'The form data has been uploaded for import.']);
     }
 }

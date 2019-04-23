@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\ActionType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ActionTypesTableSeeder extends Seeder
 {
@@ -13,31 +12,15 @@ class ActionTypesTableSeeder extends Seeder
      */
     public function run()
     {
-	    // Delete all record
-	    DB::table('action_types')->delete();
+        $items = [
+            ['id' => 1, 'type' => 'send email'],
+            ['id' => 2, 'type' => 'create form template'],
+            ['id' => 3, 'type' => 'create form'],
+            ['id' => 4, 'type' => 'send form']
+        ];
 
-	    DB::table('action_types')->insert([
-		    'type' => 'send email',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('action_types')->insert([
-		    'type' => 'create form template',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('action_types')->insert([
-		    'type' => 'create form',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-	    DB::table('action_types')->insert([
-		    'type' => 'send form',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
+        foreach ($items as $item) {
+            ActionType::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }

@@ -89,12 +89,18 @@ $app->register(\Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
-$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 $app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
+$app->register(DynEd\Lumen\MaintenanceMode\MaintenanceModeServiceProvider::class);
+$app->register(Illuminate\Redis\RedisServiceProvider::class);
+
+// Clockwork Debugging Tool
+if (env('APP_DEBUG')) {
+    $app->withEloquent();
+    $app->register(Clockwork\Support\Lumen\ClockworkServiceProvider::class);
+}
 
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
-$app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 class_alias('Illuminate\Support\Facades\Response','Response');

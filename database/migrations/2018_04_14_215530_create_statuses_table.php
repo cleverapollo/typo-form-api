@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -18,6 +19,12 @@ class CreateStatusesTable extends Migration
             $table->string('status');
             $table->timestamps();
         });
+
+        Artisan::call('db:seed', [
+            '--class' => StatusesTableSeeder::class,
+            '--force' => true,
+        ]);
+
     }
 
     /**

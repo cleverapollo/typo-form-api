@@ -7,15 +7,18 @@ use Exception;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\FormTemplate;
-use App\Models\QuestionType;
 use App\Models\Type;
 use App\Models\Status;
 use App\Http\Resources\FormTemplateResource;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
+
+use App\Services\FormTemplateService;
 
 class FormTemplateController extends Controller
 {
+
+	private $formTemplateService;
+
 	/**
 	 * Create a new controller instance.
 	 *
@@ -23,7 +26,9 @@ class FormTemplateController extends Controller
 	 */
 	public function __construct()
 	{
-		$this->middleware('auth:api', ['except' => []]);
+		//$this->middleware('auth:api', ['except' => []]);
+		$this->middleware('auth:api');
+		$this->formTemplateService = new FormTemplateService;
 	}
 
 	/**
@@ -35,7 +40,10 @@ class FormTemplateController extends Controller
 	 */
 	public function index($application_slug)
 	{
-		$user = Auth::user();
+		$form_templates = $this->formTemplateService->getApplicationFormTemplates($application_slug);
+		return $this->jsonResponse(['form_templates' => $form_templates]);
+
+	/*	$user = Auth::user();
 
 		if($user->role->name === 'Super Admin') {
 			$application = Application::with('form_templates.metas')->where('slug', $application_slug)->first();
@@ -50,6 +58,7 @@ class FormTemplateController extends Controller
 		}
 
 		return $this->returnSuccessMessage('form_templates', FormTemplateResource::collection($application->form_templates));
+		*/
 	}
 
 	/**
@@ -332,9 +341,6 @@ class FormTemplateController extends Controller
 
 			// Update form_template
 			if ($form_template->fill($request->only('type_id', 'name', 'show_progress', 'status_id'))->save()) {
-				// Analyze CSV
-				$this->analyzeCSV($form_template, $request);
-
 				return $this->returnSuccessMessage('form_template', new FormTemplateResource(FormTemplate::find($form_template->id)));
 			}
 
@@ -342,153 +348,6 @@ class FormTemplateController extends Controller
 			return $this->returnError('form_template', 503, 'update');
 		} catch (Exception $e) {
 			// Send error
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
-	}
-
-	/**
-	 * Update the form template
-	 *
-	 * @param  string $application_slug
-	 * @param  int $id
-	 * @param  \Illuminate\Http\Request $request
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function uploadFormTemplate($application_slug, $id, Request $request)
-	{
-		try {
-			// Get Application
-			$user = Auth::user();
-			if(!$application = $this->getApplication($user, $application_slug)) {
-				return $this->returnApplicationNameError();
-			}
-
-			// Check User Permissions
-			if(!$this->isUserApplicationAdmin($user, $application)) {
-				return $this->returnError('application', 403, 'update form_templates');
-			}
-
-			// Get Form Template
-			if(!$form_template = $application->form_templates()->find($id)) {
-				return $this->returnError('form_template', 404, 'update');
-			}
-
-			// Check Valid File
-			if(!$request->file('csv')->isValid()) {
-				return $this->returnErrorMessage(503, 'Invalid CSV file.');
-			}
-
-			ini_set('max_execution_time', 0);
-
-			// Remove Existing Data
-			$form_template->sections->each(function ($section) {
-				$section->delete();
-			});
-			$form_template->forms->each(function ($form) {
-				$form->delete();
-			});
-			$form_template->validations->each(function ($validation) {
-				$validation->delete();
-			});
-			$form_template->triggers->each(function ($trigger) {
-				$trigger->delete();
-			});
-
-			// Read File
-			$data = Excel::load($request->file('csv')->getRealPath(), function ($reader) {})->get();
-			$answer_map = [];
-
-			if (!empty($data) && $data->count()) {
-				foreach ($data as $row) {
-
-					// Get or set Parent Section
-					$parent_section_id = null;
-					if($row->parent_section_name) {
-						$parent_section = $form_template->sections()->where('name', $row->parent_section_name)->first();
-						if(!$parent_section) {
-							$parent_section = $form_template->sections()->create([
-								'name' => $row->parent_section_name,
-								'order' => $row->section_order ?? 1
-							]);
-						}
-						$parent_section_id = $parent_section->id;
-					}
-
-					// Get or set Section
-					$section = $form_template->sections()->where('name', $row->section_name)->where('parent_section_id', $parent_section_id)->first();
-					if(!$section && $row->section_name) {
-						$section = $form_template->sections()->create([
-							'name' => $row->section_name,
-							'parent_section_id' => $parent_section_id,
-							'order' => $row->section_order ?? 1,
-							'repeatable' => $row->section_repeatable ?? 0,
-							'max_rows' => $row->section_repeatable_rows_max_count,
-							'min_rows' => $row->section_repeatable_rows_min_count
-						]);						
-					}
-
-					// Get or Set Question
-					if($section && $row->question) {
-						$question = $section->questions()->where(['question' => $row->question])->first();
-						if(!$question) {
-							$question_type = $question_type = QuestionType::where('type', $row->question_type)->first();
-							$question = $section->questions()->create([
-								'question' => $row->question,
-								'description' => $row->question_description ?? '',
-								'mandatory' => $row->question_mandatory ?? 1,
-								'question_type_id' => $question_type->id ?? 1,
-								'order' => $row->question_order ?? 1
-							]);
-						}
-
-						// Get or set Answer
-						if($question) {
-							$answer = $question->answers()->where('answer', $row->answer)->where('order', $row->answer_order)->first();
-							if(!$answer) {
-								$answer = $question->answers()->create([
-									'answer' => $row->answer,
-									'parameter' => $row->answer_parameter ?? true,
-									'order' => $row->answer_order ?? 1
-								]);
-							}
-
-							// Add Question and Answer to answer map
-							if(isset($row->identifier)) {
-								$answer_map[$row->identifier] = ['question_id' => $question->id, 'answer_id' => $answer->id];
-							}
-						}
-					}
-				}
-
-				// Loop through triggers
-				$completed_triggers = [];
-				foreach($data as $row) {
-			
-					if(isset($row->triggered_by_id) && isset($row->identifier)) {
-						$triggers = explode(',', $row->triggered_by_id);
-
-						foreach($triggers as $key=>$trigger) {
-		
-							if(isset($answer_map[$trigger]) && isset($answer_map[$row->identifier]) && !in_array($answer_map[$row->identifier]['question_id'], $completed_triggers)) {
-								$form_template->triggers()->create([
-									'type' => 'Question',
-									'question_id' => $answer_map[$row->identifier]['question_id'] ?? null,
-									'parent_question_id' => $answer_map[$trigger]['question_id'] ?? null,
-									'parent_answer_id' => $answer_map[$trigger]['answer_id'] ?? null,
-									'comparator_id' => 1,
-									'order' => ($key+1),
-									'operator' => 1
-								]);
-							}
-						}
-						$completed_triggers[] = $answer_map[$row->identifier]['question_id'];
-					}
-				}
-
-				return $this->returnSuccessMessage('upload', 'Form template has been uploaded successfully.');
-			}
-		} catch (Exception $e) {
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
 	}
@@ -534,239 +393,6 @@ class FormTemplateController extends Controller
 
 			// Send error if there is an error on delete
 			return $this->returnError('form_template', 503, 'delete');
-		} catch (Exception $e) {
-			// Send error
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
-	}
-
-	/**
-	 * Import data from CSV
-	 *
-	 * @param $form_template
-	 * @param Request $request
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function analyzeCSV($form_template, Request $request)
-	{
-		try {
-			ini_set('max_execution_time', 0);
-			if ($request->hasFile('csv') && $request->file('csv')->isValid()) {
-				// Remove original data of form_template
-				$form_template->sections->each(function ($section) {
-					$section->delete();
-				});
-				$form_template->forms->each(function ($form) {
-                    $form->delete();
-				});
-				$form_template->validations->each(function ($validation) {
-					$validation->delete();
-				});
-
-				// Read data from csv file
-				$path = $request->file('csv')->getRealPath();
-
-				$data = Excel::load($path, function ($reader) {})->get();
-
-				if (!empty($data) && $data->count()) {
-					foreach ($data as $dt) {
-						// Handling Section
-						$created = false;
-						$sections = $form_template->sections()->get();
-						foreach ($sections as $s) {
-							if ($s->name == $dt->section_name) {
-								$created = true;
-								$section = $s;
-							}
-						}
-
-						// Create section if not created
-						if (!$created) {
-							$parent_section_id = null;
-							if ($dt->parent_section_name) {
-								foreach ($sections as $s) {
-									if ($s->name == $dt->parent_section_name) {
-										$parent_section_id = $s->id;
-									}
-								}
-							}
-
-							$section = $form_template->sections()->create([
-								'name' => $dt->section_name,
-								'parent_section_id' => $parent_section_id,
-                                'order' => $dt->section_order ?? 1,
-                                'repeatable' => $dt->section_repeatable ?? 0,
-								'max_rows' => $dt->section_repeatable_rows_max_count,
-								'min_rows' => $dt->section_repeatable_rows_min_count
-							]);
-						}
-
-						if ($dt->question) {
-							// Handling Question
-							$created = false;
-							$questions = $section->questions()->get();
-							foreach ($questions as $q) {
-								if ($q->question == $dt->question && $q->order == $dt->question_order) {
-									$created = true;
-									$question = $q;
-								}
-							}
-
-							// Create question if not created
-							if (!$created) {
-								$question_type_id = null;
-								$question_type = QuestionType::where('type', $dt->question_type)->first();
-								if ($question_type) {
-									$question_type_id = $question_type->id;
-								}
-
-								$question = $section->questions()->create([
-									'question' => $dt->question,
-                                    'description' => $dt->question_description ?? '',
-                                    'mandatory' => $dt->question_mandatory ?? 1,
-                                    'question_type_id' => $question_type_id ?? 1,
-                                    'order' => $dt->question_order ?? 1
-								]);
-							}
-
-							if ($dt->answer) {
-								// Handling Answer
-								$created = false;
-								$answers = $question->answers()->get();
-								foreach ($answers as $a) {
-									if ($a->answer == $dt->answer && $a->order == $dt->answer_order) {
-										$created = true;
-									}
-								}
-
-								// Create answer if not created
-								if (!$created) {
-									$question->answers()->create([
-										'answer' => $dt->answer,
-                                        'parameter' => $dt->answer_parameter ?? true,
-                                        'order' => $dt->answer_order ?? 1
-									]);
-								}
-							}
-						}
-					}
-					return $this->returnSuccessMessage('upload', 'Form template has been uploaded successfully.');
-				}
-            } else {
-                return $this->returnErrorMessage(503, 'Invalid CSV file.');
-			}
-		} catch (Exception $e) {
-			return $this->returnErrorMessage(503, 'Invalid CSV file.');
-		}
-	}
-
-	/**
-	 * Export data to CSV
-	 *
-	 * @param $application_slug
-	 * @param $id
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function exportCSV($application_slug, $id)
-	{
-		try {
-            $user = Auth::user();
-            if ($user->role->name == 'Super Admin') {
-                $application = Application::where('slug', $application_slug)->first();
-            } else {
-                $application = $user->applications()->where('slug', $application_slug)->first();
-            }
-
-			// Send error if application does not exist
-			if (!$application) {
-				return $this->returnApplicationNameError();
-			}
-
-			$form_template = $application->form_templates()->find($id);
-
-			// Send error if form_template does not exist
-			if (!$form_template) {
-				return $this->returnError('form_template', 404, 'export');
-			}
-
-			$data = [];
-            foreach ($form_template->sections as $section) {
-                if (count($section->questions) > 0) {
-                    foreach ($section->questions as $question) {
-                        if (count($question->answers) > 0) {
-                            foreach ($question->answers as $answer) {
-                                $data[] = [
-                                    'Section ID' => $section->id,
-                                    'Section Name' => $section->name,
-                                    'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-                                    'Section Order' => $section->order,
-                                    'Section Repeatable' => (bool)($section->repeatable),
-                                    'Section Repeatable Rows Min Count' => $section->min_rows,
-                                    'Section Repeatable Rows Max Count' => $section->max_rows,
-                                    'Question ID' => $question->id,
-                                    'Question' => $question->question,
-                                    'Question Description' => $question->description,
-                                    'Question Order' => $question->order,
-                                    'Question Mandatory' => $question->mandatory,
-                                    'Question Type' => QuestionType::find($question->question_type_id)->type,
-                                    'Answer ID' => $answer->id,
-                                    'Answer' => $answer->answer,
-                                    'Answer Parameter' => $answer->parameter ? 'TRUE' : 'FALSE',
-                                    'Answer Order' => $answer->order
-                                ];
-                            }
-                        } else {
-                            $data[] = [
-                                'Section ID' => $section->id,
-                                'Section Name' => $section->name,
-                                'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-                                'Section Order' => $section->order,
-                                'Section Repeatable' => (bool)($section->repeatable),
-                                'Section Repeatable Rows Min Count' => $section->min_rows,
-                                'Section Repeatable Rows Max Count' => $section->max_rows,
-                                'Question ID' => $question->id,
-                                'Question' => $question->question,
-                                'Question Description' => $question->description,
-                                'Question Order' => $question->order,
-                                'Question Mandatory' => $question->mandatory,
-                                'Question Type' => QuestionType::find($question->question_type_id)->type,
-                                'Answer ID' => '',
-                                'Answer' => '',
-                                'Answer Parameter' => '',
-                                'Answer Order' => ''
-                            ];
-                        }
-                    }
-                } else {
-                    $data[] = [
-                        'Section ID' => $section->id,
-                        'Section Name' => $section->name,
-                        'Parent Section Name' => $section->parent_section_id ? $section->parent->name : '',
-                        'Section Order' => $section->order,
-                        'Section Repeatable' => (bool)($section->repeatable),
-                        'Section Repeatable Rows Min Count' => $section->min_rows,
-                        'Section Repeatable Rows Max Count' => $section->max_rows,
-                        'Question ID' => '',
-                        'Question' => '',
-                        'Question Description' => '',
-                        'Question Order' => '',
-                        'Question Mandatory' => '',
-                        'Question Type' => '',
-                        'Answer ID' => '',
-                        'Answer' => '',
-                        'Answer Parameter' => '',
-                        'Answer Order' => ''
-                    ];
-                }
-            }
-
-			return Excel::create($form_template->name, function ($excel) use ($data) {
-				$excel->sheet('Sheet 1', function ($sheet) use ($data) {
-					$sheet->fromArray($data);
-				});
-			})->download('xlsx');
 		} catch (Exception $e) {
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());

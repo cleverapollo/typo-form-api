@@ -1,8 +1,7 @@
 <?php
 
-use Carbon\Carbon;
+use App\Models\AnswerSort;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class AnswerSortsTableSeeder extends Seeder
 {
@@ -13,37 +12,16 @@ class AnswerSortsTableSeeder extends Seeder
      */
     public function run()
     {
-    	// Delete all record
-	    DB::table('answer_sorts')->delete();
+        $items = [
+            ['id' => 1, 'sort' => 'Default'],
+            ['id' => 2, 'sort' => 'Alphanumeric Ascending (A-Z)'],
+            ['id' => 3, 'sort' => 'Alphanumeric Descending (Z-A)'],
+            ['id' => 4, 'sort' => 'Number Ascending (1-9)'],
+            ['id' => 5, 'sort' => 'Number Descending (9-1)']
+        ];
 
-        DB::table('answer_sorts')->insert([
-	    	'sort' => 'Default',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-        DB::table('answer_sorts')->insert([
-	    	'sort' => 'Alphanumeric Ascending (A-Z)',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-        DB::table('answer_sorts')->insert([
-	    	'sort' => 'Alphanumeric Descending (Z-A)',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-        DB::table('answer_sorts')->insert([
-	    	'sort' => 'Number Ascending (1-9)',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
-
-        DB::table('answer_sorts')->insert([
-	    	'sort' => 'Number Descending (9-1)',
-		    'created_at' => Carbon::now(),
-		    'updated_at' => Carbon::now()
-	    ]);
+        foreach ($items as $item) {
+            AnswerSort::updateOrCreate(['id' => $item['id']], $item);
+        }
     }
 }

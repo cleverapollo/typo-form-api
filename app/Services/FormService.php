@@ -46,13 +46,14 @@ class FormService extends Service {
         return $response->form_id ?? false;
     }
 
-    public function findForm($form_template_id, $data) {
+    public function findFormFromResponse($form_template_id, $data) {
 
         if($forms = Form::where('form_template_id', $form_template_id)->get()->pluck('id')) {
             $sections = Section::where('form_template_id', $form_template_id)->get()->pluck('id');
             $questions = Question::with('answers')->whereIn('section_id', $sections)->get();
             $responses = Response::whereIn('question_id', $questions->pluck('id'))->get();
             $question_types = QuestionType::get();
+            $date_forms = $forms;
 
             foreach($data as $key=>$val) {
                 if(($question = $questions->where('key', $key)->first()) && !empty($val)) {
@@ -61,8 +62,13 @@ class FormService extends Service {
                         $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('answer_id', $answer->id)->pluck('form_id');
                     } else {
                         $val = $this->formatResponse($question->type, $val);
-                        $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('response', $val)->pluck('form_id');
+                        if($question->type === 'Date') {
+                            $date_forms = $responses->whereIn('form_id', $date_forms)->where('question_id', $question->id)->where('response', $val)->pluck('form_id');
+                        } else {
+                            $forms = $responses->whereIn('form_id', $forms)->where('question_id', $question->id)->where('response', $val)->pluck('form_id');
+                        }
                     }
+                    $forms = $forms->intersect($date_forms);
                 }
 
                 if($forms->count() <= 1) break;

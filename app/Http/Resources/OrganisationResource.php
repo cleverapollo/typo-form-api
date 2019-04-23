@@ -22,13 +22,9 @@ class OrganisationResource extends JsonResource
 		return [
 			'id' => $this->id,
 			'name' => $this->name,
-			'description' => $this->description,
 			'application_id' => $this->application_id,
 			'organisation_role_id' => $this->whenPivotLoaded('organisation_users', function () {
 				return $this->pivot->role_id;
-			}),
-			'share_token' => Auth::user()->role->name == 'Super Admin' ? $this->share_token : $this->whenPivotLoaded('organisation_users', function () {
-				return Role::find($this->pivot->role_id)->name == 'Admin' ? $this->share_token : null;
 			}),
             'forms_length' => count($this->forms),
             'active_users_length' => count($this->users),
