@@ -86,7 +86,9 @@ class NoteController extends Controller
                 'description' => $request->input('description'),
                 'user_id' => $user->id,
                 'recordable_id' => $request->input('recordable_id'),
-                'recordable_type' => $request->input('recordable_type')
+                'recordable_type' => $request->input('recordable_type'),
+                'task' => $request->input('task'),
+                'task_due_at' => $request->input('task_due_at')
             ]);
 
 			if ($note) {
@@ -174,7 +176,7 @@ class NoteController extends Controller
 			}
 
 			// Update note
-			if ($note->fill($request->only('note_type_id', 'description', 'note', 'recordable_id', 'recordable_type'))->save()) {
+			if ($note->fill($request->only('note_type_id', 'description', 'note', 'recordable_id', 'recordable_type', 'task', 'task_due_at'))->save()) {
 				return $this->returnSuccessMessage('note', new NoteResource($note));
 			}
 
