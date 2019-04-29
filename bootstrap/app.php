@@ -95,6 +95,8 @@ $app->register(DynEd\Lumen\MaintenanceMode\MaintenanceModeServiceProvider::class
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Silber\Bouncer\BouncerServiceProvider::class);
+$app->register(App\Providers\WorkflowServiceProvider::class);
+
 
 // Clockwork Debugging Tool
 if (env('APP_DEBUG')) {
