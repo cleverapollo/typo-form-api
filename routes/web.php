@@ -97,7 +97,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->get('/', 'OrganisationController@show');
 					$router->put('/', 'OrganisationController@update');
 					$router->delete('/', 'OrganisationController@destroy');
-					$router->post('invite', 'OrganisationController@inviteUsers');
+					// $router->post('invite', 'OrganisationController@inviteUsers');
+                    $router->post('invite', 'OrganisationInvitationController@store');
 
 					// Application User Routes
 					$router->group(['prefix' => 'user'], function () use ($router) {
