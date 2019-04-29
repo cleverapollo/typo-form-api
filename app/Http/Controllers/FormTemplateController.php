@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Exception;
+use App\Models\AccessLevel;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\FormTemplate;
 use App\Models\Type;
 use App\Models\Status;
 use App\Http\Resources\FormTemplateResource;
+use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
 use Illuminate\Http\Request;
 
 use App\Services\FormTemplateService;
@@ -110,6 +112,11 @@ class FormTemplateController extends Controller
                 'type_id' => $type_id,
                 'name' => $request->input('name'),
                 'status_id' => Status::where('status', 'Open')->first()->id
+            ]);
+
+            $accessLevel = AccessLevel::whereValue('internal')->first();
+            $form_template->accessSettings()->create([
+                'access_level_id' => $accessLevel->id,
             ]);
 
 			if ($form_template) {
@@ -304,52 +311,31 @@ class FormTemplateController extends Controller
 	 * @return \Illuminate\Http\JsonResponse
 	 * @throws \Illuminate\Validation\ValidationException
 	 */
-	public function update($application_slug, $id, Request $request)
-	{
-		$this->validate($request, [
+    public function update($application_slug, $id, Request $request)
+    {
+        $this->validate($request, [
             'type_id' => 'nullable|integer|min:1',
-			'name' => 'filled|max:191',
-			'show_progress' => 'filled|boolean',
-			'csv' => 'file',
+            'name' => 'filled|max:191',
+            'show_progress' => 'filled|boolean',
+            'csv' => 'file',
             'status_id' => 'nullable|integer|min:1',
-		]);
+            'type' => 'filled'
+        ]);
 
-		try {
-            $user = Auth::user();
-            if ($user->role->name == 'Super Admin') {
-                $application = Application::where('slug', $application_slug)->first();
-            } else {
-                $application = $user->applications()->where('slug', $application_slug)->first();
-            }
+        $user = Auth::user();
+        $application = ApplicationRepository::bySlug($user, $application_slug);
 
-			// Check whether user has permission
-			if (!$this->hasPermission($user, $application)) {
-				return $this->returnError('application', 403, 'update form_templates');
-			}
+        // Check whether user has permission
+        if (!$this->hasPermission($user, $application)) {
+            return $this->returnError('application', 403, 'update form_templates');
+        }
 
-			// Send error if application does not exist
-			if (!$application) {
-				return $this->returnApplicationNameError();
-			}
+        $form_template = $application->form_templates()->findOrFail($id);
 
-			$form_template = $application->form_templates()->find($id);
+        $data = $request->only('type_id', 'name', 'show_progress', 'status_id');
+        $form_template->fill($data)->save();
 
-			// Send error if form_template does not exist
-			if (!$form_template) {
-				return $this->returnError('form_template', 404, 'update');
-			}
-
-			// Update form_template
-			if ($form_template->fill($request->only('type_id', 'name', 'show_progress', 'status_id'))->save()) {
-				return $this->returnSuccessMessage('form_template', new FormTemplateResource(FormTemplate::find($form_template->id)));
-			}
-
-			// Send error if there is an error on update
-			return $this->returnError('form_template', 503, 'update');
-		} catch (Exception $e) {
-			// Send error
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
+        return $this->returnSuccessMessage('form_template', new FormTemplateResource(FormTemplate::find($form_template->id)));
 	}
 
 	/**

@@ -104,11 +104,12 @@ class FormController extends Controller
      */
     public function one($application_slug, $id)
     {
-        $application = ApplicationRepository::bySlug(Auth::user(), $application_slug);
+        $user = Auth::user();
+        $application = ApplicationRepository::bySlug($user, $application_slug);
         $form = Form::findOrfail($id);
 
         $this->verifyFormTemplate($form->form_template, $application_slug);
-        $this->authorize(AclConstants::STORE, $form->form_template);
+        Acl::authorize($user, $application, AclConstants::SHOW, $form->form_template);
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
 	}

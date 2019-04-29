@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\MissingApplicationException;
 use App\Models\Application;
 use App\Services\AclFacade as Acl;
 use App\User;
@@ -23,7 +24,7 @@ class ApplicationRepository {
         }
 
         if (!$application) {
-            throw new \App\Exceptions\MissingApplicationException();
+            throw new MissingApplicationException();
         }
 
         return $application;

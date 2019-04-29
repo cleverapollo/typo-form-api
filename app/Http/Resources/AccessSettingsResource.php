@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\AccessLevel;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AclResource extends JsonResource
+class AccessSettingsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,11 +15,9 @@ class AclResource extends JsonResource
      */
     public function toArray($request)
     {
-        $entity_type = explode('\\', $this->entity_type);
+        $accessLevel = AccessLevel::findOrFail($this->access_level_id)->value;
         return [
-            'ability' => $this->name,
-            'resource_id' => $this->entity_id,
-            'resource_type' => array_pop($entity_type),
+            'access_level' => $accessLevel,
         ];
     }
 }

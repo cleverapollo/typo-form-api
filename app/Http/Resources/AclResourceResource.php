@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AclResource extends JsonResource
+class AclResourceResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,11 +14,9 @@ class AclResource extends JsonResource
      */
     public function toArray($request)
     {
-        $entity_type = explode('\\', $this->entity_type);
         return [
             'ability' => $this->name,
-            'resource_id' => $this->entity_id,
-            'resource_type' => array_pop($entity_type),
+            'users' => $this->users->pluck('id'),
         ];
     }
 }

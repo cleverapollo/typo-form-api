@@ -5,7 +5,7 @@ namespace App\Listeners;
 use \Acl;
 use \Log;
 use App\Events\InvitationAccepted;
-use App\Models\FormTemplate;
+use App\Services\AclService;
 
 class SetInviteePermissions
 {
@@ -17,14 +17,11 @@ class SetInviteePermissions
      */
     public function handle(InvitationAccepted $event)
     {
-        if(!isset($event->invitation->meta['form_templates'])) {
-            Log::warning("No form_templates selected for invitation. Invitation id: {$event->invitation->id}");
-            return;
-        }
-
-        $formTemplateIds = $event->invitation->meta['form_templates'];
-
-        Acl::canShowFormTemplate($event->user, $formTemplateIds);
-        Acl::canStoreFormTemplate($event->user, $formTemplateIds);
+        // An invitation can assign "show" abilities for a particular form template to a user.
+        // Here we extract those abilities from the invites meta data and request the user
+        // be given those abilities
+        //
+        $formTemplateIds = $event->invitation->meta['form_templates'] ?? [];
+        Acl::allowAccessToResource($event->user, 'form_templates', $formTemplateIds, AclService::SHOW);
     }
 }
