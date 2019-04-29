@@ -20,9 +20,11 @@ class ApplicationInvitationController extends Controller
     /**
      * Store Application Invitation
      *
-     * @param String $application_slug
-     * @param Request $request
-     * @return void
+     * @param string $application_slug
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Exception
      */
     public function store($application_slug, Request $request) {
 		$this->validate($request, [

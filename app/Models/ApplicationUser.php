@@ -12,8 +12,12 @@ class ApplicationUser extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'user_id', 'application_id', 'role_id'
+		'user_id', 'application_id', 'role_id', 'meta'
 	];
+
+    protected $casts = [
+        'meta' => 'array'
+    ];
 
 	/**
 	 * Get the role of the User in Application

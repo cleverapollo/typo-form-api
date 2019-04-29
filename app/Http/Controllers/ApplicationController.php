@@ -46,9 +46,6 @@ class ApplicationController extends Controller
 		if ($user->role->name == 'Super Admin') {
 			$applications = Application::get();
 		} else {
-            $this->acceptInvitation('application');
-            $this->acceptInvitation('organisation');
-
             $origin = $request->header('Origin');
             if (strlen($origin)) {
                 $request_slug = explode('.', explode('://', $origin)[1])[0];
@@ -305,7 +302,7 @@ class ApplicationController extends Controller
         $type = Type::where('name', 'application')->first();
 		$invitedUsers = Invitation::where([
 			'reference_id' => $application->id,
-			'status' => 0,
+			'status' => false,
             'type_id' => $type->id
 		])->get();
 
