@@ -8,7 +8,7 @@ use Storage;
 use App\User;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\Organisation;
+use App\Models\Role;
 use App\Models\FormTemplate;
 use App\Models\Form;
 use App\Models\Question;
@@ -801,7 +801,7 @@ class FormController extends Controller
 	{
 		$this->validate($request, [
 			'user_id' => 'nullable|integer|min:1',
-			'organisation_id' => 'nullable|integer|min:1',
+			'organisation' => 'required|string|min:1',
 			'progress' => 'filled|integer|min:0'
 		]);
 
@@ -829,18 +829,17 @@ class FormController extends Controller
 				$user_id = Auth::user()->id;
 			}
 
-			$organisation_id = $request->input('organisation_id', null);
-			if ($organisation_id) {
-				// Send error if organisation does not exist
-				if (!Organisation::find($organisation_id)) {
-					return $this->returnError('organisation', 404, 'create form');
-				}
-			}
+            $organisation = $user->organisations()->firstOrCreate([
+                'name' => $request->input('organisation'),
+                'application_id' => $form_template->application_id,
+            ], [
+                'role_id' => Role::where('name', 'User')->first()->id
+            ]);
 
 			// Create form
 			$form = $form_template->forms()->create([
 				'user_id' => $user_id,
-				'organisation_id' => $organisation_id,
+				'organisation_id' => $organisation->id,
 				'progress' => $request->input('progress', 0),
 				'period_start' => $request->input('period_start', null),
 				'period_end' => $request->input('period_end', null),
