@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Auth;
 use Carbon\Carbon;
 use App\User;
-use App\Events\InvitationAccepted;
 use App\Models\Application;
 use App\Models\Organisation;
 use App\Models\ApplicationUser;

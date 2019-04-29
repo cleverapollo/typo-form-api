@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use Auth;
 use Carbon\Carbon;
+use App\Events\InvitationAccepted;
 use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\ApplicationUser;
@@ -15,6 +16,7 @@ use App\Models\Status;
 use App\Models\Invitation;
 use App\Models\Type;
 use App\Models\Role;
+use App\User;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 use Illuminate\Support\Facades\Mail;
@@ -84,6 +86,9 @@ class ApplicationService extends Service {
                         'status' => 1,
                         'updated_at' => Carbon::now()
                     ]);
+
+                    $userInstance = User::find($user->id);
+                    event(new InvitationAccepted($userInstance, $invitation));
                 }
             }
         }
