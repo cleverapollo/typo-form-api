@@ -15,11 +15,15 @@ use App\Models\Question;
 use App\Models\QuestionType;
 use App\Models\TriggerType;
 use App\Models\Status;
+use App\Services\AclFacade as Acl;
+use App\Services\AclService as AclConstants;
+use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
 use App\Http\Resources\SectionResource;
 use App\Http\Resources\QuestionResource;
 use App\Http\Resources\AnswerResource;
 use App\Http\Resources\FormResource;
 use App\Http\Resources\ResponseResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -101,34 +105,11 @@ class FormController extends Controller
     public function one($application_slug, $id)
     {
         $user = Auth::user();
-        if ($user->role->name == 'Super Admin') {
-            $application = Application::where('slug', $application_slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $application_slug)->first();
-        }
+        $application = ApplicationRepository::bySlug($user, $application_slug);
+        $form = Form::findOrfail($id);
 
-        // Send error if application does not exist
-        if (!$application) {
-            return $this->returnApplicationNameError();
-        }
-
-        $form = Form::find($id);
-
-        // Send error if form does not exist
-        if (!$form) {
-            return $this->returnError('form', 404, 'get form');
-        }
-
-        $form_template = $form->form_template;
-
-        // Send error if form template does not exist
-        if (!$form_template) {
-            return $this->returnError('form_template', 404, 'get form');
-        }
-
-        if ($form_template->application->slug !== $application_slug) {
-            return $this->returnError('application', 404, 'get form');
-        }
+        $this->verifyFormTemplate($form->form_template, $application_slug);
+        Acl::authorize($user, $application, AclConstants::SHOW, $form->form_template);
 
         return $this->returnSuccessMessage('form', new FormResource(Form::with(['form_template', 'responses'])->find($form->id)));
 	}
@@ -1143,7 +1124,16 @@ class FormController extends Controller
 			// Send error
 			return $this->returnErrorMessage(503, $e->getMessage());
 		}
-	}
+    }
+    
+    protected function verifyFormTemplate($formTemplate, $applicationSlug)
+    {
+        if (!$formTemplate) {
+            throw (new ModelNotFoundException)->setModel('form_template');
+        } elseif ($formTemplate->application->slug !== $applicationSlug) {
+            throw (new ModelNotFoundException)->setModel('application');
+        }
+    }
 
 	/**
 	 * Check whether user has permission or not

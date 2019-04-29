@@ -93,6 +93,8 @@ $app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
 $app->register(DynEd\Lumen\MaintenanceMode\MaintenanceModeServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(App\Providers\EventServiceProvider::class);
+$app->register(Silber\Bouncer\BouncerServiceProvider::class);
 
 // Clockwork Debugging Tool
 if (env('APP_DEBUG')) {
@@ -103,6 +105,8 @@ if (env('APP_DEBUG')) {
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
+class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
+class_alias(App\Services\AclFacade::class, 'Acl');
 class_alias('Illuminate\Support\Facades\Response','Response');
 /*
 |--------------------------------------------------------------------------

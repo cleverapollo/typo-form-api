@@ -27,6 +27,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	$router->post('register', 'Auth\RegisterController@register');
 	$router->post('password/reset', 'Auth\ForgotPasswordController@sendResetLinkEmail');
 	$router->post('password/reset/{token}', 'Auth\ResetPasswordController@reset');
+	
+	// ACL Routes
+	$router->get('acl', 'AclController@index');
+	$router->get('acl/{resource}/{id}', 'AclController@show');
+	$router->put('acl/{resource}/{id}', 'AclController@update');
+
+	// Access Settings Routes
+	$router->get('access-settings/{resource}/{id}', 'AccessSettingsController@show');
+	$router->put('access-settings/{resource}/{id}', 'AccessSettingsController@update');
 
 	// Invitation Routes
 	$router->post('join/organisation/{token}', 'OrganisationController@join');

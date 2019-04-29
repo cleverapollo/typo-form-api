@@ -3,9 +3,13 @@
 namespace App\Exceptions;
 
 use Exception;
+use App\Exceptions\ApiException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -45,6 +49,37 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        if ($e instanceof AuthorizationException) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $e->getMessage(),
+            ], 403);
+        }
+        
+        if ($e instanceof ModelNotFoundException) {
+            $model = class_basename($e->getModel());
+            $message = "There is no {$model} with this ID.";
+
+            return response()->json([
+                'status' => 'fail',
+                'message' => $message,
+            ], 404);
+        }
+
+        if($e instanceof QueryException) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Failed to update resource. Please try again later.',
+            ], 503);
+        }
+
+        if($e instanceof ApiException) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $e->getMessage(),
+            ], $e->getStatusCode());
+        }
+
         return parent::render($request, $e);
     }
 }

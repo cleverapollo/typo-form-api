@@ -45,7 +45,15 @@ class FormTemplate extends Model
 	 */
 	protected $fillable = [
 		'name', 'type_id', 'application_id', 'show_progress', 'auto', 'status_id'
-	];
+    ];
+    
+    protected $appends = [
+        'access_level'
+    ];
+
+    protected $hidden = [
+        'accessSettings'
+     ];
 
 	/**
 	 * Get the application that owns the FormTemplate.
@@ -109,5 +117,15 @@ class FormTemplate extends Model
     public function status()
     {
         return $this->belongsTo('App\Models\Status');
+    }
+
+    public function accessSettings()
+    {
+        return $this->morphOne(\App\Models\AccessSettings::class, 'resource');
+    }
+
+    public function getAccessLevelAttribute()
+    {
+        return data_get($this, 'accessSettings.accessLevel.value');
     }
 }
