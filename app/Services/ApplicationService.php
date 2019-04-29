@@ -67,19 +67,16 @@ class ApplicationService extends Service {
                 if ($user_list = ApplicationUser::insert([
                     'user_id' => $user->id,
                     'application_id' => $application->id,
-                    'role_id' => $invitation->role_id
-                    // 'meta' => $invitation->meta
+                    'role_id' => $invitation->role_id,
+                    'meta' => json_encode($invitation->meta)
                 ])) {
                     $organisation_name = $invitation->meta['organisation'];
                     if ($organisation_name && $organisation_name != '') {
-                        $organisation = Organisation::firstOrCreate([
+                        $user->organisations()->firstOrCreate([
                             'name' => $organisation_name,
                             'application_id' => $application->id
-                        ]);
-                        OrganisationUser::insert([
-                            'user_id' => $user->id,
-                            'organisation_id' => $organisation->id,
-                            'role_id' => Role::where('name', 'Admin')->first()->id
+                        ], [
+                            'role_id' => Role::where('name', 'User')->first()->id
                         ]);
                     }
                     // Remove token and update status at invitations table
@@ -245,7 +242,7 @@ class ApplicationService extends Service {
      *
      * @param String $email
      * @param Int $reference_id
-     * @return void
+     * @return Invitation
      */
     public function getInvitation($email, $reference_id) {
         return Invitation::where('email', $email)
@@ -256,7 +253,7 @@ class ApplicationService extends Service {
     /**
      * Create user invitation
      *
-     * @param Array $data
+     * @param array $data
      * @return void
      */
     public function inviteUser ($data) {
@@ -279,7 +276,7 @@ class ApplicationService extends Service {
     /**
      * Send user invitation email
      *
-     * @param Array $data
+     * @param array $data
      * @return void
      */
     public function sendInvitationEmail ($data) {

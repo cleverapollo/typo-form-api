@@ -174,68 +174,6 @@ class Controller extends BaseController
 	}
 
 	/**
-	 * Accept invitation request.
-	 *
-	 * @param $type_name
-	 *
-	 */
-	protected function acceptInvitation($type_name)
-	{
-		$user = Auth::user();
-        $type = Type::where('name', $type_name)->first();
-		$invitations = Invitation::where([
-			'email' => strtolower($user->email),
-			'type_id' => $type->id,
-			'status' => false
-		])->get();
-
-        foreach ($invitations as $invitation) {
-            $reference_id = $invitation->reference_id;
-
-            $user_list = DB::table($type->name . '_users')->where([
-                'user_id' => $user->id,
-                $type->name . '_id' => $reference_id
-            ])->first();
-
-            // Check if user already exists in the Organisation or Application
-            if (!$user_list) {
-                if ($user_list = DB::table($type->name . '_users')->insert([
-                    'user_id' => $user->id,
-                    $type->name . '_id' => $reference_id,
-                    'role_id' => $invitation->role_id,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ])) {
-                    // Remove token and update status at invitations table
-                    Invitation::where('id', $invitation->id)->update([
-                        'status' => true,
-                        'updated_at' => Carbon::now()
-                    ]);
-                }
-            }
-
-            if ($user_list) {
-                if ($type->name == 'organisation') {
-                    $organisation = Organisation::find($reference_id);
-
-                    $application_user = ApplicationUser::where([
-                        'user_id' => $user->id,
-                        'application_id' => $organisation->application_id
-                    ])->first();
-
-                    if (!$application_user) {
-                        ApplicationUser::create([
-                            'user_id' => $user->id,
-                            'application_id' => $organisation->application_id,
-                            'role_id' => Role::where('name', 'User')->first()->id
-                        ]);
-                    }
-                }
-            }
-        }
-	}
-
-	/**
 	 * Accept join request.
 	 *
 	 * @param $type

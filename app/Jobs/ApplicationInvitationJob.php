@@ -22,10 +22,12 @@ class ApplicationInvitationJob extends Job
     /**
      * Execute the job.
      *
+     * @param ApplicationService $applicationService
+     *
      * @return void
      */
     public function handle(ApplicationService $applicationService)
     {
-        return $applicationService->inviteUser($this->data);
+        $applicationService->inviteUser($this->data);
     }
 }
