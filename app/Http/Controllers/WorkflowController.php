@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
+use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use Auth;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,20 @@ class WorkflowController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
+    }
+
+    public function index(Request $request)
+    {
+        // TODO permission checks
+        // TODO validation checks
+        return WorkflowRepository::all();
+    }
+
+    public function show($application_slug, $id)
+    {
+        // TODO permission checks
+        // TODO validation checks
+        return WorkflowRepository::byId($id);
     }
 
     public function store(Request $request)

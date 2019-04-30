@@ -30,6 +30,18 @@ class WorkflowRepository {
         ]);
     }
 
+    public function all()
+    {
+        // where(application TODO)
+        return Workflow::all();
+    }
+
+    public function byId($id)
+    {
+        // where(application TODO)
+        return Workflow::findOrFail($id);
+    }
+
     public function activeWorkflows()
     {
         // TODO need to limit to application and\or link application!
