@@ -128,6 +128,7 @@ trait AuthenticatesUsers
 	protected function sendLoginResponse(Request $request, $user)
 	{
 		$this->clearLoginAttempts($request);
+		$this->authenticated($request, $user);
 
 		return response()->json(['status' => 'success', 'user' => $user], 200);
 	}

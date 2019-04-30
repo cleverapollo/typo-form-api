@@ -353,7 +353,7 @@ class OrganisationController extends Controller
 
                 $invitedUsers = Invitation::where([
                     'reference_id' => $organisation->id,
-                    'status' => 0,
+                    'status' => false,
                     'type_id' => $type->id
                 ])->get();
 
@@ -393,7 +393,7 @@ class OrganisationController extends Controller
 
 		$invitedUsers = Invitation::where([
 			'reference_id' => $organisation->id,
-			'status' => 0,
+			'status' => false,
 			'type_id' => $type->id
 		])->get();
 

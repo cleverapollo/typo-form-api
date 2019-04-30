@@ -30,7 +30,7 @@ class OrganisationResource extends JsonResource
             'active_users_length' => count($this->users),
             'invited_users_length' => count(Invitation::where([
                 'reference_id' => $this->id,
-                'status' => 0,
+                'status' => false,
                 'type_id' => $type->id
             ])->get()),
             'created_at' => $this->created_at

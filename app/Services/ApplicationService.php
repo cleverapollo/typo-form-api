@@ -3,12 +3,20 @@
 namespace App\Services;
 
 use Exception;
+use Auth;
+use Carbon\Carbon;
+use App\Events\InvitationAccepted;
 use App\Models\FormTemplate;
 use App\Models\Application;
+use App\Models\ApplicationUser;
+use App\Models\Organisation;
+use App\Models\OrganisationUser;
 use App\Models\QuestionType;
 use App\Models\Status;
 use App\Models\Invitation;
-use App\Jobs\ProcessInvitationEmail;
+use App\Models\Type;
+use App\Models\Role;
+use App\User;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +29,69 @@ class ApplicationService extends Service {
     public function __construct() {
         $this->formTemplate = new FormTemplate;
         $this->fileStoreService = new FileStoreService;
+    }
+
+    public function acceptInvitation($slug, $user) {
+        $application = Application::where('slug', $slug)->first();
+        $type = Type::where('name', 'application')->first();
+
+        if ($application->join_flag) {
+            $application_user = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->first();
+
+            if (!$application_user) {
+                ApplicationUser::create([
+                    'user_id' => $user->id,
+                    'application_id' => $application->id,
+                    'role_id' => Role::where('name', 'User')->first()->id
+                ]);
+            }
+            return;
+        }
+
+        $invitations = Invitation::where([
+            'email' => strtolower($user->email),
+            'type_id' => $type->id,
+            'reference_id' => $application->id,
+            'status' => false
+        ])->get();
+
+        foreach ($invitations as $invitation) {
+            $user_list = ApplicationUser::where([
+                'user_id' => $user->id,
+                'application_id' => $application->id
+            ])->first();
+
+            // Check if user already exists in the Application
+            if (!$user_list) {
+                if ($user_list = ApplicationUser::insert([
+                    'user_id' => $user->id,
+                    'application_id' => $application->id,
+                    'role_id' => $invitation->role_id,
+                    'meta' => json_encode($invitation->meta)
+                ])) {
+                    $organisation_name = $invitation->meta['organisation'];
+                    if ($organisation_name && $organisation_name != '') {
+                        $user->organisations()->firstOrCreate([
+                            'name' => $organisation_name,
+                            'application_id' => $application->id
+                        ], [
+                            'role_id' => Role::where('name', 'User')->first()->id
+                        ]);
+                    }
+                    // Remove token and update status at invitations table
+                    Invitation::where('id', $invitation->id)->update([
+                        'status' => 1,
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    $userInstance = User::find($user->id);
+                    event(new InvitationAccepted($userInstance, $invitation));
+                }
+            }
+        }
     }
 
     public function export($application_slug) {
@@ -176,7 +247,7 @@ class ApplicationService extends Service {
      *
      * @param String $email
      * @param Int $reference_id
-     * @return void
+     * @return Invitation
      */
     public function getInvitation($email, $reference_id) {
         return Invitation::where('email', $email)
@@ -187,7 +258,7 @@ class ApplicationService extends Service {
     /**
      * Create user invitation
      *
-     * @param Array $data
+     * @param array $data
      * @return void
      */
     public function inviteUser ($data) {
@@ -210,7 +281,7 @@ class ApplicationService extends Service {
     /**
      * Send user invitation email
      *
-     * @param Array $data
+     * @param array $data
      * @return void
      */
     public function sendInvitationEmail ($data) {
