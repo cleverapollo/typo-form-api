@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
+use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
 use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use Auth;
 use Illuminate\Http\Request;
@@ -20,22 +21,27 @@ class WorkflowController extends Controller
         $this->middleware('auth:api');
     }
 
-    public function index(Request $request)
+    public function index($application_slug)
     {
         // TODO permission checks
-        // TODO validation checks
-        return WorkflowRepository::all();
+        $user = Auth::user();
+        $workflows = WorkflowRepository::all($user, $application_slug);
+        return WorkflowResource::collection($workflows);
     }
 
     public function show($application_slug, $id)
     {
         // TODO permission checks
         // TODO validation checks
-        return WorkflowRepository::byId($id);
+        $user = Auth::user();
+        $workflow = WorkflowRepository::byId($user, $application_slug, $id);
+        return new WorkflowResource($workflow);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $application_slug)
     {
+        $user = Auth::user();
+
         // TODO permission checks
         $input = $this->validate($request, [
             'name' => 'required|string',
@@ -48,9 +54,11 @@ class WorkflowController extends Controller
             'active_from' => 'required|date',
         ]);
 
-        $input['author_id'] = Auth::user()->id;
-        $input['status'] = 1;
+        $input['author_id'] = $user->id;
+        $input['application_id'] = ApplicationRepository::bySlug($user, $application_slug)->id;
+        $input['status'] = WorkflowRepository::getFacadeRoot()::WORKFLOW_STATUS_ACTIVE;
 
         $workflow = Workflow::create($input);
+        return new WorkflowResource($workflow);
     }
 }

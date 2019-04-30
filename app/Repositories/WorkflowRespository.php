@@ -4,17 +4,18 @@ namespace App\Repositories;
 
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
+use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
 use App\User;
 use Carbon\Carbon;
 
 class WorkflowRepository {
-    // TODO _Possibly_ replace with foreign table if required. Not positive having a seperate 
+    // TODO _Possibly_ replace with foreign table if required. Not positive having a seperate
     // table just for status labels is _really_ required
     const JOB_STATUS_ACTIVE = 1;
     const JOB_STATUS_SUCCESSFUL = 2;
     const JOB_STATUS_CANCELED = 4;
     const JOB_STATUS_FAILURE = 8;
-    
+
     const WORKFLOW_STATUS_ACTIVE = 1;
     const WORKFLOW_STATUS_PAUSED = 2;
 
@@ -30,16 +31,20 @@ class WorkflowRepository {
         ]);
     }
 
-    public function all()
+    public function all($user, $applicationSlug)
     {
-        // where(application TODO)
-        return Workflow::all();
+        $application = ApplicationRepository::bySlug($user, $applicationSlug);
+        return Workflow::whereApplicationId($application->id)
+            ->whereAuthorId($user->id)
+            ->get();
     }
 
-    public function byId($id)
+    public function byId($user, $applicationSlug, $id)
     {
-        // where(application TODO)
-        return Workflow::findOrFail($id);
+        $application = ApplicationRepository::bySlug($user, $applicationSlug);
+        return Workflow::whereId($id)
+            ->whereApplicationId($application->id)
+            ->firstOrFail();
     }
 
     public function activeWorkflows()
