@@ -2,10 +2,57 @@
 
 namespace App\Services;
 
-use App\Models\Invitation;
+use Carbon\Carbon;
+use App\Events\InvitationAccepted;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Application;
+use App\Models\OrganisationUser;
+use App\Models\Invitation;
+use App\Models\Type;
+use App\User;
 
 class OrganisationService extends Service {
+
+    public function acceptInvitation($slug, $user) {
+        $application = Application::where('slug', $slug)->first();
+        $organisations = $application->organisations->pluck('id')->all();
+        $type = Type::where('name', 'organisation')->first();
+
+        $invitations = Invitation::where([
+            'email' => strtolower($user->email),
+            'type_id' => $type->id,
+            'status' => false
+        ])->whereIn('reference_id', $organisations)->get();
+
+        foreach ($invitations as $invitation) {
+            $user_list = OrganisationUser::where([
+                'user_id' => $user->id,
+                'organisation_id' => $invitation->reference_id
+            ])->first();
+
+            // Check if user already exists in the Organisation
+            if (!$user_list) {
+                if ($user_list = OrganisationUser::insert([
+                    'user_id' => $user->id,
+                    'organisation_id' => $invitation->reference_id,
+                    'role_id' => $invitation->role_id,
+                    'meta' => json_encode($invitation->meta),
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ])) {
+                    // Remove token and update status at invitations table
+                    Invitation::where('id', $invitation->id)->update([
+                        'status' => 1,
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    $userInstance = User::find($user->id);
+                    event(new InvitationAccepted($userInstance, $invitation));
+                }
+            }
+        }
+    }
+
     /**
      * Checks for user inviation
      *
@@ -22,7 +69,7 @@ class OrganisationService extends Service {
      *
      * @param String $email
      * @param Int $reference_id
-     * @return void
+     * @return array \App\Models\Invitation
      */
     public function getInvitation($email, $reference_id) {
         return Invitation::where('email', $email)

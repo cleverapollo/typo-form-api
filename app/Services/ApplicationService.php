@@ -9,8 +9,6 @@ use App\Events\InvitationAccepted;
 use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\ApplicationUser;
-use App\Models\Organisation;
-use App\Models\OrganisationUser;
 use App\Models\QuestionType;
 use App\Models\Status;
 use App\Models\Invitation;
@@ -70,7 +68,9 @@ class ApplicationService extends Service {
                     'user_id' => $user->id,
                     'application_id' => $application->id,
                     'role_id' => $invitation->role_id,
-                    'meta' => json_encode($invitation->meta)
+                    'meta' => json_encode($invitation->meta),
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
                 ])) {
                     $organisation_name = $invitation->meta['organisation'];
                     if ($organisation_name && $organisation_name != '') {

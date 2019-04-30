@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Foundation\Auth\AuthenticatesUsers;
 use App\Services\ApplicationService;
+use App\Services\OrganisationService;
 
 class LoginController extends Controller
 {
     private $applicationService;
+    private $organisationService;
     /**
      * Create a new controller instance.
      *
@@ -19,6 +20,7 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->applicationService = new ApplicationService;
+        $this->organisationService = new OrganisationService;
     }
 	/*
 	|--------------------------------------------------------------------------
@@ -47,6 +49,7 @@ class LoginController extends Controller
         if (strlen($origin)) {
             $request_slug = explode('.', explode('://', $origin)[1])[0];
             $this->applicationService->acceptInvitation($request_slug, $user);
+            $this->organisationService->acceptInvitation($request_slug, $user);
         }
     }
 }
