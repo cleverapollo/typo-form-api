@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class WorkflowJob extends Model
 {
     protected $fillable = [
-        'transaction_id', 'workflow_id', 'scheduled_for', 'completed_at', 'data',
+        'completed_at',
+        'data',
+        'scheduled_for',
+        'signature',
+        'transaction_id',
+        'workflow_id',
     ];
 
     protected $dates = [

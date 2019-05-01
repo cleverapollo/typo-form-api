@@ -55,12 +55,9 @@ class WorkflowRepository {
             ->get();
     }
 
-    public function activeJobsOfWorkflow(Workflow $workflow)
+    public function jobsOfWorkflow(Workflow $workflow)
     {
-        return WorkflowJob
-            ::whereWorkflowId($workflow->id)
-            ->whereStatus(self::JOB_STATUS_ACTIVE)
-            ->get();
+        return WorkflowJob::whereWorkflowId($workflow->id)->get();
     }
 
     public function jobsToBeProcessed()

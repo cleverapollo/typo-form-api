@@ -7,5 +7,5 @@ use App\Models\Workflow;
 interface ITrigger {
     public function scheduleJobs(Workflow $workflow);
     public function unscheduleJobs();
-    public function check();
+    public function check($query);
 }
