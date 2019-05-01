@@ -73,6 +73,12 @@ class InviteTrigger implements ITrigger {
             $query->whereStatus($config['invitation_status']);
         }
 
+        // Limit invitations to the timeperiod set in workflow
+        $query->where('created_at', '>', $workflow->active_from);
+        if(isset($workflow->active_to)) {
+            $query->where('created_at', '<', $workflow->active_to);
+        }
+
         return $query;
     }
 
