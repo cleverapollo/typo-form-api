@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Acl;
 use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
 use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
@@ -23,26 +24,30 @@ class WorkflowController extends Controller
 
     public function index($application_slug)
     {
-        // TODO permission checks
         $user = Auth::user();
-        $workflows = WorkflowRepository::all($user, $application_slug);
+        $application = ApplicationRepository::bySlug($user, $application_slug);
+        Acl::adminOrfail($user, $application);
+
+        $workflows = WorkflowRepository::all($user, $application);
         return WorkflowResource::collection($workflows);
     }
 
     public function show($application_slug, $id)
     {
-        // TODO permission checks
-        // TODO validation checks
         $user = Auth::user();
-        $workflow = WorkflowRepository::byId($user, $application_slug, $id);
+        $application = ApplicationRepository::bySlug($user, $application_slug);
+        Acl::adminOrfail($user, $application);
+
+        $workflow = WorkflowRepository::byId($user, $application, $id);
         return new WorkflowResource($workflow);
     }
 
     public function store(Request $request, $application_slug)
     {
         $user = Auth::user();
+        $application = ApplicationRepository::bySlug($user, $application_slug);
+        Acl::adminOrfail($user, $application);
 
-        // TODO permission checks
         $input = $this->validate($request, [
             'name' => 'required|string',
             'trigger' => 'required|string',
@@ -55,7 +60,7 @@ class WorkflowController extends Controller
         ]);
 
         $input['author_id'] = $user->id;
-        $input['application_id'] = ApplicationRepository::bySlug($user, $application_slug)->id;
+        $input['application_id'] = $application->id;
         $input['status'] = WorkflowRepository::getFacadeRoot()::WORKFLOW_STATUS_ACTIVE;
 
         $workflow = Workflow::create($input);

@@ -31,17 +31,15 @@ class WorkflowRepository {
         ]);
     }
 
-    public function all($user, $applicationSlug)
+    public function all($user, $application)
     {
-        $application = ApplicationRepository::bySlug($user, $applicationSlug);
         return Workflow::whereApplicationId($application->id)
             ->whereAuthorId($user->id)
             ->get();
     }
 
-    public function byId($user, $applicationSlug, $id)
+    public function byId($user, $application, $id)
     {
-        $application = ApplicationRepository::bySlug($user, $applicationSlug);
         return Workflow::whereId($id)
             ->whereApplicationId($application->id)
             ->firstOrFail();
