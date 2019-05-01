@@ -33,13 +33,10 @@ class UnscheduleWorkflowJobs extends Command {
         $this->info("Begin unscheduling jobs");
 
         WorkflowRepository::activeJobs()->each(function($activeJob) {
-            // TODO passing warn() is silly/lazy ... Throw/catch
-            $trigger = WorkflowHelpers::resolveTrigger($activeJob->workflow->trigger, [$this, 'warn']);
-            if($trigger) {
-                $wasUnscheduled = $trigger->unscheduleJob($activeJob);
-                if($wasUnscheduled) {
-                    $this->line(" • Unscheduled '{$activeJob->workflow->name}' job {$activeJob->id}");
-                }
+            $trigger = WorkflowHelpers::resolveTrigger($activeJob->workflow->trigger);
+            $wasUnscheduled = $trigger->unscheduleJob($activeJob);
+            if($wasUnscheduled) {
+                $this->line(" • Unscheduled '{$activeJob->workflow->name}' job {$activeJob->id}");
             }
         });
     }

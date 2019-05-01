@@ -31,10 +31,10 @@ class Kernel extends ConsoleKernel
     {
         // TODO change frequency to recommended values
         $log = storage_path('logs/workflow.log');
-        $schedule->command(ProcessWorkflowJobs::class)
+        $schedule->command(ScheduleWorkflowJobs::class)
             ->everyMinute()
             ->appendOutputTo($log);
-        $schedule->command(ScheduleWorkflowJobs::class)
+        $schedule->command(ProcessWorkflowJobs::class)
             ->everyMinute()
             ->appendOutputTo($log);
         $schedule->command(UnscheduleWorkflowJobs::class)

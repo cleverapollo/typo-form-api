@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use \App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
+use \App\Workflows\WorkflowHelpers;
 use Illuminate\Console\Command;
 
 class ProcessWorkflowJobs extends Command {
@@ -31,9 +32,18 @@ class ProcessWorkflowJobs extends Command {
         $jobs = WorkflowRepository::jobsToBeProcessed();
         $this->line("Job ids to be processed: {$jobs->map->id}");
 
-        $jobs->map(function($job) {
-            $actionClass = "App\\Workflows\\Actions\\{$job->workflow->action}";
-
+        $jobs->each(function($job) {
+            // This is our last chance _not_ to push the job onto the Laravel queue. We will attempt
+            // a final unschedule where the trigger has the chance to opt out. For example, an 
+            // invite trigger may see the invite has been accepted, so the job isn't needed
+            // anymore
+            //
+            $trigger = WorkflowHelpers::resolveTrigger($job->workflow->trigger);
+            $wasUnscheduled = $trigger->unscheduleJob($job);
+            if($wasUnscheduled) {
+                return;
+            }
+            
             // Dispatch available Workflow jobs into Queue jobs. We then mark each dispatched job as
             // queued to avoid them getting added to the Laravel Queue multiple times. 
             //
@@ -50,6 +60,7 @@ class ProcessWorkflowJobs extends Command {
             // not currently a shared cache, and so we want to ensure dispatched jobs from 
             // all app servers are sharing the same connection for this work
             //
+            $actionClass = "App\\Workflows\\Actions\\{$job->workflow->action}";
             dispatch(new $actionClass($job))->onConnection('database');
             WorkflowRepository::queueJob($job);
 

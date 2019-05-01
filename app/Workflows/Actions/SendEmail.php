@@ -3,8 +3,6 @@
 namespace App\Workflows\Actions;
 
 use \Mail;
-use App\Models\Invitation;
-use App\Models\Invite;
 use App\Models\WorkflowJob;
 use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use App\Services\ApplicationService;
@@ -21,28 +19,24 @@ class SendEmail implements ShouldQueue, IAction {
     public function __construct(WorkflowJob $workflowJob)
     {
         $this->workflowJob = $workflowJob;
-        $this->defaults = [];
     }
 
     public function handle() 
     {
-        // TODO this implementation is _way_ too bound to invite (it should be more generic)
-        // $job->data should contain the email + meta (cc, bcc) not the invite itself..
-        //
-        // $config = array_merge($this->defaults, json_decode($job->workflow->action_config, true) ?? []);
-        // ['cc' => $cc, 'bcc' => $bcc] = $config;
-        
-        $data = json_decode($this->workflowJob->data, true) ?? [];
-        ['invite_id' => $inviteId] = $data;
+        $data = json_decode($this->workflowJob->data) ?? [];
 
-        // TODO remove, see notes above
-        $invite = \App\Models\Invitation::findOrFail($inviteId);
+        // TODO validate everything needed is available (email, subject, etc)
 
         app(ApplicationService::class)->sendInvitationEmail([
             'invitation' => [
-                'email' => $invite->email,
+                'email' => $data->email,
             ],
-            'meta' => $invite->meta,
+            'meta' => [
+                'subject' => $data->subject ?? '',
+                'message' => $data->message ?? '',
+                'cc' => $data->cc ?? null,
+                'bcc' => $data->bcc ?? null,
+            ],
         ]);
 
         WorkflowRepository::completeJob($this->workflowJob);

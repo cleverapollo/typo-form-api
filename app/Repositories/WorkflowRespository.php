@@ -34,9 +34,7 @@ class WorkflowRepository {
 
     public function all($user, $application)
     {
-        return Workflow::whereApplicationId($application->id)
-            ->whereAuthorId($user->id)
-            ->get();
+        return Workflow::whereApplicationId($application->id)->get();
     }
 
     public function byId($user, $application, $id)

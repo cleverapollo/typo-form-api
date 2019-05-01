@@ -34,12 +34,9 @@ class ScheduleWorkflowJobs extends Command {
         $this->info("Begin scheduling jobs");
 
         WorkflowRepository::activeWorkflows()->each(function($workflow) {
-            // TODO passing warn() is silly/lazy ... Throw/catch
-            $instance = WorkflowHelpers::resolveTrigger($workflow->trigger, [$this, 'warn']);
-            if($instance) {
-                $count = $instance->scheduleJobs($workflow);
-                $this->line(" • Scheduled $count '{$workflow->name}' jobs");
-            }
+            $instance = WorkflowHelpers::resolveTrigger($workflow->trigger);
+            $count = $instance->scheduleJobs($workflow);
+            $this->line(" • Scheduled $count '{$workflow->name}' jobs");
         });
     }
 }

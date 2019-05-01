@@ -39,12 +39,13 @@ class InviteTrigger implements ITrigger {
             return is_null($hasMatchingExistingJob);
         });
 
-        $invites->each(function($invite) use ($workflow) {
+        $actionConfig = json_decode($workflow->action_config, true) ?? [];
+        $invites->each(function($invite) use ($actionConfig, $workflow) {
             WorkflowRepository::createActiveJob(
                 $invite->id,
                 $workflow->id,
                 $this->calculateScheduledFor($invite, $workflow),
-                [ 'invite_id' => $invite->id ] // <-- TODO Still need to decouple invite from the job
+                array_merge($actionConfig, ['email' => $invite->email])
             );
         });
 
@@ -68,8 +69,8 @@ class InviteTrigger implements ITrigger {
         // TODO This switch-esk block could be simplified into a model whitelist, where a model
         // lists the attributes that can be checked against
         //
-        if (isset($config['invitation.status'])) {
-            $query->whereStatus($config['invitation.status']);
+        if (isset($config['invitation_status'])) {
+            $query->whereStatus($config['invitation_status']);
         }
 
         return $query;
@@ -90,6 +91,6 @@ class InviteTrigger implements ITrigger {
         }
 
         WorkflowRepository::cancelJob($job);
-        return false;
+        return true;
     }
 }

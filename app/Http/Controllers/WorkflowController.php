@@ -48,6 +48,10 @@ class WorkflowController extends Controller
         $application = ApplicationRepository::bySlug($user, $application_slug);
         Acl::adminOrfail($user, $application);
 
+        $input = $request->all();
+        $input['active_to'] = empty($input['active_to']) ? null : $input['active_to'];
+        $request->replace($input);
+
         $input = $this->validate($request, [
             'name' => 'required|string',
             'config' => 'required|json',
@@ -56,7 +60,7 @@ class WorkflowController extends Controller
             'action' => 'required|string',
             'action_config' => 'required|json',
             'delay' => 'required|numeric',
-            'active_to' => 'date',
+            'active_to' => 'nullable|date',
             'active_from' => 'required|date',
         ]);
 
