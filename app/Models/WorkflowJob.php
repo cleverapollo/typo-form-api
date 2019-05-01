@@ -11,6 +11,7 @@ class WorkflowJob extends Model
         'completed_at',
         'data',
         'scheduled_for',
+        'message',
         'signature',
         'transaction_id',
         'workflow_id',

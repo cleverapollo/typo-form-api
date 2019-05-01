@@ -6,5 +6,5 @@ use App\Models\Workflow;
 use App\Models\WorkflowJob;
 
 interface IAction {
-    public function handle(WorkflowJob $job);
+    public function handle();
 }

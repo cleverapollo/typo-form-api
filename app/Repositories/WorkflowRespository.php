@@ -98,10 +98,11 @@ class WorkflowRepository {
         return $job;
     }
 
-    public function failJob(WorkflowJob $job)
+    public function failJob(WorkflowJob $job, $message = '')
     {
         $job->completed_at = Carbon::now()->toDateTimeString();
         $job->status = self::JOB_STATUS_FAILURE;
+        $job->message = $message;
         $job->save();
         return $job;
     }

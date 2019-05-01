@@ -66,19 +66,10 @@ class ProcessWorkflowJobs extends Command {
         $this->line("Job ids to be processed: {$jobs->map->id}");
 
         $jobs->map(function($job) {
-            try {
-                $actionClass = "App\\Workflows\\Actions\\{$job->workflow->action}";
-                $message = (new $actionClass())->handle($job);
-                $this->line(" • Workflow '{$job->workflow->name}'. Job id: {$job->id}. $message");
-            } catch(\Throwable $e) {
-                $this->error(" • Workflow '{$job->workflow->name}' failed. {$e->getMessage()}");
-                WorkflowRepository::failJob($job);
-                return;
-            }
-
-            WorkflowRepository::completeJob($job);
+            $actionClass = "App\\Workflows\\Actions\\{$job->workflow->action}";
+            dispatch(new $actionClass($job));
+            $this->line(" • Workflow '{$job->workflow->name}'. Queued job id: {$job->id}.");
         });
-
         $this->info("Completed processing jobs");
     }
 }
