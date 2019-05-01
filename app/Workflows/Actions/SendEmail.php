@@ -31,14 +31,13 @@ class SendEmail implements ShouldQueue, IAction {
         //
         // $config = array_merge($this->defaults, json_decode($job->workflow->action_config, true) ?? []);
         // ['cc' => $cc, 'bcc' => $bcc] = $config;
-
+        
         $data = json_decode($this->workflowJob->data, true) ?? [];
         ['invite_id' => $inviteId] = $data;
 
         // TODO remove, see notes above
         $invite = \App\Models\Invitation::findOrFail($inviteId);
 
-        // TODO potentially queue up as job..
         app(ApplicationService::class)->sendInvitationEmail([
             'invitation' => [
                 'email' => $invite->email,

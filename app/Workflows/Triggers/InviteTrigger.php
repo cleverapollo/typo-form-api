@@ -15,7 +15,7 @@ class InviteTrigger implements ITrigger {
         // the job
         //
         $invites = Invitation::whereReferenceId($workflow->application_id);
-        $invites = $this->check($invites);
+        $invites = $this->check($workflow, $invites);
         $invites = $invites->get();
 
         // Ensure this job doesn't already exist. We are checking all jobs, including completed 
@@ -47,12 +47,24 @@ class InviteTrigger implements ITrigger {
 
     public function calculateScheduledFor($invite, $workflow)
     {
-        return $invite->created_at->addMinutes($workflow->delay);
+        return $invite->created_at->addMilliseconds($workflow->delay);
     }
 
-    public function check($query) {
-        // TODO should be using invitation foreign status instead of hard coded false..
-        $query->whereStatus(FALSE);
+    public function check(Workflow $workflow, $query) {
+        $config = json_decode($workflow->trigger_config, true) ?? [];
+
+        // We want to extract out key config items to construct our check method. It is important
+        // to note that an unset value is very different from a falsey value in this case. Unset
+        // implies we don't "care" either way, whereas, a "false" means we want to look for 
+        // exactly false
+        //
+        // TODO This switch-esk block could be simplified into a model whitelist, where a model
+        // lists the attributes that can be checked against
+        //
+        if (isset($config['invitation.status'])) {
+            $query->whereStatus($config['invitation.status']);
+        }
+
         return $query;
     }
 

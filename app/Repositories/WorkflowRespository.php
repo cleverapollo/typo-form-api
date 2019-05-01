@@ -15,6 +15,7 @@ class WorkflowRepository {
     const JOB_STATUS_SUCCESSFUL = 2;
     const JOB_STATUS_CANCELED = 4;
     const JOB_STATUS_FAILURE = 8;
+    const JOB_STATUS_QUEUED = 16;
 
     const WORKFLOW_STATUS_ACTIVE = 1;
     const WORKFLOW_STATUS_PAUSED = 2;
@@ -103,6 +104,18 @@ class WorkflowRepository {
         $job->completed_at = Carbon::now()->toDateTimeString();
         $job->status = self::JOB_STATUS_FAILURE;
         $job->message = $message;
+        $job->save();
+        return $job;
+    }
+
+    public function isJobActive(WorkflowJob $job)
+    {
+        return $job->status === self::JOB_STATUS_ACTIVE;
+    }
+
+    public function queueJob(WorkflowJob $job)
+    {
+        $job->status = self::JOB_STATUS_QUEUED;
         $job->save();
         return $job;
     }

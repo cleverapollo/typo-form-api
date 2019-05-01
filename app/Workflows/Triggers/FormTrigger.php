@@ -7,6 +7,7 @@ use App\Models\WorkflowJob;
 use App\Models\Workflow;
 use Carbon\Carbon;
 
+// TODO - this is not as fleshouted as InviteTrigger. Use InviteTrigger as "gospel" for now
 class FormTrigger implements ITrigger {
     public function scheduleJobs(Workflow $workflow) {
         // Check for all cases where this workflow is relevant
