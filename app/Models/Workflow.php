@@ -17,6 +17,7 @@ class Workflow extends Model
         'active_to',
         'application_id',
         'author_id',
+        'config',
         'delay',
         'name',
         'status',

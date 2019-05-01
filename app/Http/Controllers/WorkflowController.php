@@ -50,6 +50,7 @@ class WorkflowController extends Controller
 
         $input = $this->validate($request, [
             'name' => 'required|string',
+            'config' => 'required|json',
             'trigger' => 'required|string',
             'trigger_config' => 'required|json',
             'action' => 'required|string',

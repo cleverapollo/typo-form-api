@@ -17,6 +17,7 @@ class WorkflowResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'config' => $this->config,
             'application_id' => $this->application_id,
             'author_id' => $this->author_id,
             'trigger' => $this->trigger,
