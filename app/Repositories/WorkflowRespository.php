@@ -51,7 +51,10 @@ class WorkflowRepository {
         $now = Carbon::now()->toDateTimeString();
         return Workflow::whereStatus(self::WORKFLOW_STATUS_ACTIVE)
             ->where('active_from', '<', $now)
-            ->where('active_to', '>', $now)
+            ->where(function ($query) use ($now) {
+                $query->where('active_to', '>', $now)
+                    ->orWhereNull('active_to');
+            })
             ->get();
     }
 

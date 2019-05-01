@@ -56,7 +56,7 @@ class WorkflowController extends Controller
             'action' => 'required|string',
             'action_config' => 'required|json',
             'delay' => 'required|numeric',
-            'active_to' => 'required|date',
+            'active_to' => 'date',
             'active_from' => 'required|date',
         ]);
 
