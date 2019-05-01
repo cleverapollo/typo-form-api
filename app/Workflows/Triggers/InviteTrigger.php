@@ -9,7 +9,13 @@ use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use Carbon\Carbon;
 
 class InviteTrigger implements ITrigger {
-    public function scheduleJobs(Workflow $workflow) {
+    public function getKey(): string
+    {
+        return 'Invite';
+    }
+
+    public function scheduleJobs(Workflow $workflow) 
+    {
         // Collect all invitations for the application that is linked to workflow and then apply
         // the checks() to query. Checks is used during scheduling, unscheduling and pre-running
         // the job
@@ -50,7 +56,8 @@ class InviteTrigger implements ITrigger {
         return $invite->created_at->addMilliseconds($workflow->delay);
     }
 
-    public function check(Workflow $workflow, $query) {
+    public function check(Workflow $workflow, $query) 
+    {
         $config = json_decode($workflow->trigger_config, true) ?? [];
 
         // We want to extract out key config items to construct our check method. It is important
@@ -68,17 +75,21 @@ class InviteTrigger implements ITrigger {
         return $query;
     }
 
-    public function unscheduleJobs() {
-        // TODO - don't like this. Most likely drop this and just leverage check method
-        // TODO - remove workflow service provider too
-        Invitation::updated(function($invite) {
-            if($invite->status !== true) {
-                return;
-            }
+    // Unscheduling jobs is primarily to keep the logs endpoint fresh. This can be called at a lower
+    // frequency, and/or manually if the user requests to see the workflow logs
+    //
+    public function unscheduleJob(WorkflowJob $job)
+    {
+        $invite = Invitation::whereId($job->transaction_id);
+        $invite = $this->check($job->workflow, $invite);
+        $invite = $invite->first();
 
-            WorkflowRepository::activeJobsOfTrigger('Invite', $invite->id)->map(function($job) {
-                WorkflowRepository::cancelJob($job);
-            });
-        });
+        // If invite still matches the criteria, we don't need to cancel it
+        if($invite) {
+            return false;
+        }
+
+        WorkflowRepository::cancelJob($job);
+        return false;
     }
 }

@@ -4,6 +4,9 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
+use \App\Console\Commands\ProcessWorkflowJobs;
+use \App\Console\Commands\ScheduleWorkflowJobs;
+use \App\Console\Commands\UnscheduleWorkflowJobs;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,7 +16,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        \App\Console\Commands\ProcessWorkflowJobs::class,
+        ProcessWorkflowJobs::class,
+        ScheduleWorkflowJobs::class,
+        UnscheduleWorkflowJobs::class,
     ];
 
     /**
@@ -24,6 +29,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command(ProcessWorkflowJobs::class)->everyMinute();
+        // TODO change frequency to recommended values
+        $log = storage_path('logs/workflow.log');
+        $schedule->command(ProcessWorkflowJobs::class)
+            ->everyMinute()
+            ->appendOutputTo($log);
+        $schedule->command(ScheduleWorkflowJobs::class)
+            ->everyMinute()
+            ->appendOutputTo($log);
+        $schedule->command(UnscheduleWorkflowJobs::class)
+            ->everyMinute()
+            ->appendOutputTo($log);
     }
 }

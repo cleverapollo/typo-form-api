@@ -48,7 +48,6 @@ class WorkflowRepository {
 
     public function activeWorkflows()
     {
-        // TODO need to limit to application and\or link application!
         $now = Carbon::now()->toDateTimeString();
         return Workflow::whereStatus(self::WORKFLOW_STATUS_ACTIVE)
             ->where('active_from', '<', $now)
@@ -61,6 +60,14 @@ class WorkflowRepository {
         return WorkflowJob::whereWorkflowId($workflow->id)->get();
     }
 
+    /**
+     * Get all active jobs. This is useful for descheduling (cleanup)
+     */
+    public function activeJobs() 
+    {
+        return WorkflowJob::with('workflow')->whereStatus(self::JOB_STATUS_ACTIVE)->get();
+    }
+
     public function jobsToBeProcessed()
     {
         $now = Carbon::now()->toDateTimeString();
@@ -69,17 +76,6 @@ class WorkflowRepository {
         return WorkflowJob::with('workflow')
             ->whereStatus(self::JOB_STATUS_ACTIVE)
             ->where('scheduled_for', '<', $now)
-            ->get();
-    }
-
-    public function activeJobsOfTrigger($trigger, $transactionId)
-    {
-        return WorkflowJob
-            ::whereHas('workflow', function($q) use ($trigger) {
-                $q->whereTrigger($trigger);
-            })
-            ->whereStatus(self::JOB_STATUS_ACTIVE)
-            ->whereTransactionId($transactionId)
             ->get();
     }
 
