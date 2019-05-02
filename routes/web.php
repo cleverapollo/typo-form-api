@@ -384,4 +384,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/', 'ShortUrlController@store');
         $router->get('{short_url}', 'ShortUrlController@show');
     });
+
+    // Workflow Routes
+    $router->get('application/{application_slug}/workflow', 'WorkflowController@index');
+    $router->get('application/{application_slug}/workflow/{id}', 'WorkflowController@show');
+    $router->post('application/{application_slug}/workflow', 'WorkflowController@store');
 });

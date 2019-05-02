@@ -2,15 +2,17 @@
 
 namespace App\Exceptions;
 
-use Exception;
 use App\Exceptions\ApiException;
-use Illuminate\Validation\ValidationException;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
@@ -81,5 +83,10 @@ class Handler extends ExceptionHandler
         }
 
         return parent::render($request, $e);
+    }
+
+    public function renderForConsole($output, Exception $e)
+    {
+        $output->writeln($e->getMessage());
     }
 }

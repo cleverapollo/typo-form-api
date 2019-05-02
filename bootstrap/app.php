@@ -96,6 +96,7 @@ $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Silber\Bouncer\BouncerServiceProvider::class);
 
+
 // Clockwork Debugging Tool
 if (env('APP_DEBUG')) {
     $app->withEloquent();
