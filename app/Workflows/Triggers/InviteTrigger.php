@@ -5,6 +5,7 @@ namespace App\Workflows\Triggers;
 use App\Models\Invitation;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
+use App\Repositories\WorkflowRepository as WorkflowRepositoryConstants;
 use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use Carbon\Carbon;
 
@@ -92,7 +93,7 @@ class InviteTrigger implements ITrigger {
         $invite = $invite->first();
 
         // If invite still matches the criteria, we don't need to cancel it
-        if($invite) {
+        if($invite && !$job->workflow->trashed()) {
             return false;
         }
 

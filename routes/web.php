@@ -389,4 +389,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('application/{application_slug}/workflow', 'WorkflowController@index');
     $router->get('application/{application_slug}/workflow/{id}', 'WorkflowController@show');
     $router->post('application/{application_slug}/workflow', 'WorkflowController@store');
+    $router->delete('application/{application_slug}/workflow/{id}', 'WorkflowController@destroy');
 });

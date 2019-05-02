@@ -42,6 +42,17 @@ class WorkflowController extends Controller
         return new WorkflowResource($workflow);
     }
 
+    public function destroy($application_slug, $id)
+    {
+        $user = Auth::user();
+        $application = ApplicationRepository::bySlug($user, $application_slug);
+        Acl::adminOrfail($user, $application);
+
+        $workflow = WorkflowRepository::byId($user, $application, $id);
+        $workflow->delete();
+        return [];
+    }
+
     public function store(Request $request, $application_slug)
     {
         $user = Auth::user();

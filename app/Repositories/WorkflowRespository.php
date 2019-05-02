@@ -62,21 +62,31 @@ class WorkflowRepository {
     }
 
     /**
-     * Get all active jobs. This is useful for descheduling (cleanup)
+     * Get all active jobs. This is useful for descheduling (cleanup). 
      */
     public function activeJobs() 
     {
-        return WorkflowJob::with('workflow')->whereStatus(self::JOB_STATUS_ACTIVE)->get();
+        // We are getting all jobs regardless of their parent workflows status as we want to give
+        // the descheduling the chance to check the trigger (which is only accessible via the 
+        // workflow)
+        //
+        return WorkflowJob
+            ::with(['workflow' => function($q) {
+                $q->withTrashed();
+            }])
+            ->whereStatus(self::JOB_STATUS_ACTIVE)->get();
     }
 
     public function jobsToBeProcessed()
     {
         $now = Carbon::now()->toDateTimeString();
-        // -> where workflow still active ?
-        // application checks!
         return WorkflowJob::with('workflow')
-            ->whereStatus(self::JOB_STATUS_ACTIVE)
             ->where('scheduled_for', '<', $now)
+            ->whereStatus(self::JOB_STATUS_ACTIVE)
+            ->whereHas('workflow', function($workflowQuery) {
+                $workflowQuery->whereStatus(self::WORKFLOW_STATUS_ACTIVE);
+                $workflowQuery->whereNull('deleted_at');
+             })
             ->get();
     }
 
@@ -105,15 +115,20 @@ class WorkflowRepository {
         return $job;
     }
 
-    public function isJobActive(WorkflowJob $job)
-    {
-        return $job->status === self::JOB_STATUS_ACTIVE;
-    }
-
     public function queueJob(WorkflowJob $job)
     {
         $job->status = self::JOB_STATUS_QUEUED;
         $job->save();
         return $job;
+    }
+
+    public function isJobActive(WorkflowJob $job)
+    {
+        return $job->status === self::JOB_STATUS_ACTIVE;
+    }
+
+    public function isWorkflowActive(Workflow $workflow)
+    {
+        return $workflow->status === self::WORKFLOW_STATUS_ACTIVE && !$workflow->trashed();
     }
 }
