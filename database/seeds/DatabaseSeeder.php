@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         $this->call('AnswerSortsTableSeeder');
         $this->call('TypesTableSeeder');
         $this->call('CountriesTableSeeder');
+        $this->call('AccessLevelTableSeeder');
 	}
 }

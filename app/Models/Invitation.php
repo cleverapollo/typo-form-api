@@ -42,4 +42,26 @@ class Invitation extends Model
     {
         return $this->belongsTo('App\Models\Type');
     }
+
+    /**
+     * Set Email Attribute
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower($value);
+    }
+
+    /**
+     * Get Email Attribute
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getEmailAttribute($value)
+    {
+        return strtolower($value);
+    }
 }

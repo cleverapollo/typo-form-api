@@ -35,6 +35,10 @@ class ApplicationService extends Service {
         $application = Application::where('slug', $slug)->first();
         $type = Type::where('name', 'application')->first();
 
+        if (!$application) {
+            return;
+        }
+
         if ($application->join_flag) {
             $application_user = ApplicationUser::where([
                 'user_id' => $user->id,
