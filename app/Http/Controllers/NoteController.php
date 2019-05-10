@@ -88,7 +88,8 @@ class NoteController extends Controller
                 'recordable_id' => $request->input('recordable_id'),
                 'recordable_type' => $request->input('recordable_type'),
                 'task' => $request->input('task'),
-                'task_due_at' => $request->input('task_due_at')
+                'task_due_at' => $request->input('task_due_at'),
+                'completed' => $request->input('completed', 0)
             ]);
 
 			if ($note) {
@@ -173,10 +174,10 @@ class NoteController extends Controller
 			// Send error if note does not exist
 			if (!$note) {
 				return $this->returnError('note', 404, 'update');
-			}
+            }
 
 			// Update note
-			if ($note->fill($request->only('note_type_id', 'description', 'note', 'recordable_id', 'recordable_type', 'task', 'task_due_at'))->save()) {
+			if ($note->fill($request->only('note_type_id', 'description', 'note', 'recordable_id', 'recordable_type', 'task', 'task_due_at', 'completed'))->save()) {
 				return $this->returnSuccessMessage('note', new NoteResource($note));
 			}
 

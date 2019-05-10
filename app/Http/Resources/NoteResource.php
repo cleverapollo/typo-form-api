@@ -29,7 +29,8 @@ class NoteResource extends JsonResource
 			'recordable_type' => $this->recordable_type,
 			'updated_at' => $this->updated_at,
 			'task' => $this->task,
-			'task_due_at' => $this->task_due_at
+			'task_due_at' => $this->task_due_at,
+			'completed' => $this->completed
 		];
 	}
 }
