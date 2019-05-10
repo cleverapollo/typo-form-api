@@ -291,7 +291,7 @@ class ApplicationService extends Service {
     public function sendInvitationEmail ($data) {
         Mail::send([], [], function ($message) use ($data) {
             $message
-                ->to($data['invitation']['email'])
+                ->to(strtolower($data['invitation']['email']))
                 ->from(ENV('MAIL_FROM_ADDRESS'))
                 ->subject($data['meta']['subject'])
                 ->setBody($data['meta']['message'], 'text/html');
