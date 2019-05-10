@@ -35,6 +35,10 @@ class ApplicationService extends Service {
         $application = Application::where('slug', $slug)->first();
         $type = Type::where('name', 'application')->first();
 
+        if (!$application) {
+            return;
+        }
+
         if ($application->join_flag) {
             $application_user = ApplicationUser::where([
                 'user_id' => $user->id,
@@ -287,7 +291,7 @@ class ApplicationService extends Service {
     public function sendInvitationEmail ($data) {
         Mail::send([], [], function ($message) use ($data) {
             $message
-                ->to($data['invitation']['email'])
+                ->to(strtolower($data['invitation']['email']))
                 ->from(ENV('MAIL_FROM_ADDRESS'))
                 ->subject($data['meta']['subject'])
                 ->setBody($data['meta']['message'], 'text/html');
