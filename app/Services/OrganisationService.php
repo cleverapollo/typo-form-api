@@ -6,9 +6,12 @@ use Carbon\Carbon;
 use App\Events\InvitationAccepted;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Application;
+use App\Models\ApplicationUser;
+use App\Models\Organisation;
 use App\Models\OrganisationUser;
 use App\Models\Invitation;
 use App\Models\Type;
+use App\Models\Role;
 use App\User;
 
 class OrganisationService extends Service {
@@ -45,6 +48,17 @@ class OrganisationService extends Service {
                         'status' => 1,
                         'updated_at' => Carbon::now()
                     ]);
+
+                    // Check for application access
+                    if($organisation = Organisation::where('id', $invitation->reference_id)->first()) {
+                        if(!$application_user = ApplicationUser::where(['user_id' => $user->id, 'application_id' => $organisation->application_id])->first()) {
+                            ApplicationUser::insert([
+                                'user_id' => $user->id,
+                                'application_id' => $application->id,
+                                'role_id' => Role::where('name', 'User')->first()->id
+                            ]);
+                        }
+                    }
 
                     $userInstance = User::find($user->id);
                     event(new InvitationAccepted($userInstance, $invitation));
