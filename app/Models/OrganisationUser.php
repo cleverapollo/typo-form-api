@@ -12,8 +12,12 @@ class OrganisationUser extends Model
 	 * @var array
 	 */
 	protected $fillable = [
-		'user_id', 'organisation_id', 'role_id'
+		'user_id', 'organisation_id', 'role_id', 'meta'
 	];
+
+    protected $casts = [
+        'meta' => 'array'
+    ];
 
     /**
      * Get the organisation that owns the OrganisationUser.
