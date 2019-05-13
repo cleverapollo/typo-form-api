@@ -17,17 +17,25 @@ class MailService {
      * @param Array $map
      * @return void
      */
-    protected function applyMailMerge($body, $data, $map) 
+    protected function applyMailMerge($subject, $body, $data, $map) 
     {
         $keys = collect($map)->keys()->map(function($key) {
             return '{{' . $key . '}}';
-        });
+        })->toArray();
 
         $values = collect($map)->map(function($lookupPath) use ($data) {
             return data_get($data, $lookupPath, '');
-        });
+        })->toArray();
 
-        return str_replace($keys->toArray(), $values->toArray(), $body);
+        // Replace available tokens with values
+        $subject = str_replace($keys, $values, $subject);
+        $body = str_replace($keys, $values, $body);
+
+        // Remove any left over tokens that don't have matching values
+        $subject = preg_replace('/{{.+?}}/', '', $subject);
+        $body = preg_replace('/{{.+?}}/', '', $body);
+
+        return compact('subject', 'body');
     }
 
     /**
@@ -63,7 +71,7 @@ class MailService {
     {
         ['email' => $email, 'body' => $body, 'subject' => $subject, 'cc' => $cc, 'bcc' => $bcc] = $this->extract($data, $map);
 
-        $body = $this->applyMailMerge($body, $data, $mergeMap);
+        ['subject' => $subject, 'body' => $body] = $this->applyMailMerge($subject, $body, $data, $mergeMap);
 
         Mail::send([], [], function ($message) use ($email, $body, $subject, $cc, $bcc) {
             $message
