@@ -17,7 +17,7 @@ use App\Models\Role;
 use App\User;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
-use Illuminate\Support\Facades\Mail;
+use \MailService;
 
 class ApplicationService extends Service {
 
@@ -289,22 +289,16 @@ class ApplicationService extends Service {
      * @return void
      */
     public function sendInvitationEmail ($data) {
-        Mail::send([], [], function ($message) use ($data) {
-            $message
-                ->to(strtolower($data['invitation']['email']))
-                ->from(ENV('MAIL_FROM_ADDRESS'))
-                ->subject($data['meta']['subject'])
-                ->setBody($data['meta']['message'], 'text/html');
-            
-            // Optional CC
-            if (!empty($data['meta']['cc'])) {
-                $message->cc($this->formatEmailAddresses($data['meta']['cc']));
-            }
-
-            // Optional BCC
-            if (!empty($data['meta']['bcc'])) {
-                $message->bcc($this->formatEmailAddresses($data['meta']['bcc']));
-            }
-        });
+        MailService::send($data, [
+            'email' => 'invitation.email',
+            'body' => 'meta.message',
+            'subject' => 'meta.subject',
+            'cc' => 'meta.cc',
+            'bcc' => 'meta.bcc',
+        ], [
+            'first_name' => 'invitation.firstname',
+            'last_name' => 'invitation.lastname',
+            'email' => 'invitation.email',
+        ]);
     }
 }

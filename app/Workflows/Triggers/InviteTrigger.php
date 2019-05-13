@@ -46,7 +46,11 @@ class InviteTrigger implements ITrigger {
                 $invite->id,
                 $workflow->id,
                 $this->calculateScheduledFor($invite, $workflow),
-                array_merge($actionConfig, ['email' => $invite->email])
+                array_merge($actionConfig, [
+                    'email' => $invite->email,
+                    'first_name' => $invite->first_name,
+                    'last_name' => $invite->last_name,
+                ])
             );
         });
 
