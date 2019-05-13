@@ -2,10 +2,9 @@
 
 namespace App\Workflows\Actions;
 
-use \Mail;
+use \MailService;
 use App\Models\WorkflowJob;
 use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
-use App\Services\ApplicationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -27,16 +26,16 @@ class SendEmail implements ShouldQueue, IAction {
 
         // TODO validate everything needed is available (email, subject, etc)
 
-        app(ApplicationService::class)->sendInvitationEmail([
-            'invitation' => [
-                'email' => $data->email,
-            ],
-            'meta' => [
-                'subject' => $data->subject ?? '',
-                'message' => $data->message ?? '',
-                'cc' => $data->cc ?? null,
-                'bcc' => $data->bcc ?? null,
-            ],
+        MailService::send($data, [
+            'email' => 'email',
+            'body' => 'message',
+            'subject' => 'subject',
+            'cc' => 'cc',
+            'bcc' => 'bcc',
+        ], [
+            'first_name' => 'first_name',
+            'last_name' => 'last_name',
+            'email' => 'email',
         ]);
 
         WorkflowRepository::completeJob($this->workflowJob);

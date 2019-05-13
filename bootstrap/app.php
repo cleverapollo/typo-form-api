@@ -108,6 +108,7 @@ $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
 class_alias(App\Services\AclFacade::class, 'Acl');
+class_alias(App\Services\MailFacade::class, 'MailService');
 class_alias('Illuminate\Support\Facades\Response','Response');
 /*
 |--------------------------------------------------------------------------
