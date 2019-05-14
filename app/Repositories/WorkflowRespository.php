@@ -5,12 +5,11 @@ namespace App\Repositories;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use App\Repositories\ApplicationRepositoryFacade as ApplicationRepository;
+use App\Workflows\WorkflowHelpers;
 use App\User;
 use Carbon\Carbon;
 
 class WorkflowRepository {
-    // TODO _Possibly_ replace with foreign table if required. Not positive having a seperate
-    // table just for status labels is _really_ required
     const JOB_STATUS_ACTIVE = 1;
     const JOB_STATUS_SUCCESSFUL = 2;
     const JOB_STATUS_CANCELED = 4;
@@ -79,15 +78,20 @@ class WorkflowRepository {
 
     public function jobsToBeProcessed()
     {
-        $now = Carbon::now()->toDateTimeString();
-        return WorkflowJob::with('workflow')
-            ->where('scheduled_for', '<', $now)
+        $jobs = WorkflowJob::with('workflow')
             ->whereStatus(self::JOB_STATUS_ACTIVE)
             ->whereHas('workflow', function($workflowQuery) {
                 $workflowQuery->whereStatus(self::WORKFLOW_STATUS_ACTIVE);
                 $workflowQuery->whereNull('deleted_at');
              })
             ->get();
+
+        $jobs = $jobs->filter(function($job) {
+            $trigger = WorkflowHelpers::resolveTrigger($job->workflow->trigger);
+            return $trigger->isScheduled($job);
+        });
+
+        return $jobs;
     }
 
     public function cancelJob(WorkflowJob $job)
