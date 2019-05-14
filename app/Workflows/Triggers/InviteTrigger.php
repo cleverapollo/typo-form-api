@@ -29,7 +29,7 @@ class InviteTrigger implements ITrigger {
         // jobs - we don't want the same job being created everytime the existing one has completed
         //
         // This checking will vary from trigger to trigger, but will essentially follow this 
-        // pattern. If multiple triggers end up following an indentical pattern to the below, 
+        // pattern. If multiple triggers end up following an identical pattern to the below, 
         // we can extract it out to a trait or util
         //
         $existingJobs = WorkflowRepository::jobsOfWorkflow($workflow);
@@ -57,6 +57,16 @@ class InviteTrigger implements ITrigger {
         return $invites->count();
     }
 
+    public function isScheduled(WorkflowJob $job)
+    {
+        $invite = Invitation::findOrFail($job->transaction_id);
+        $scheduled = $job->scheduled_for->addMilliseconds($invite->workflow_delay);
+
+        $now = Carbon::now()->toDateTimeString();
+
+        return $scheduled < $now;
+    }
+
     public function calculateScheduledFor($invite, $workflow)
     {
         return $invite->created_at->addMilliseconds($workflow->delay);
@@ -79,6 +89,9 @@ class InviteTrigger implements ITrigger {
         }
 
         // Limit invitations to the timeperiod set in workflow
+        // TODO this actually will introduce a bug if the workflow from/to dates are changed 
+        // multiple times, as it may cause a job to be canceled if it falls outside of these dates
+        // Adding to https://trello.com/c/EAnvhIXH/67-workflow-v1-tech-debt
         $query->where('created_at', '>', $workflow->active_from);
         if(isset($workflow->active_to)) {
             $query->where('created_at', '<', $workflow->active_to);

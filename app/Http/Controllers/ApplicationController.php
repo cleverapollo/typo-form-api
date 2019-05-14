@@ -443,7 +443,9 @@ class ApplicationController extends Controller
 	public function updateInvitedUser($application_slug, $id, Request $request)
 	{
 		$this->validate($request, [
-			'application_role_id' => 'required|integer|min:2'
+			'application_role_id' => 'required|integer|min:2',
+			'period' => 'required|integer',
+			'multiplier' => 'required|integer',
 		]);
 
 		try {
@@ -483,7 +485,15 @@ class ApplicationController extends Controller
 			}
 
 			// Update user role
-			if ($application_invitation->fill(['role_id' => $role->id])->save()) {
+			$multiplier = intval($request->input('multiplier'));
+			$period = intval($request->input('period'));
+			$meta = array_merge($application_invitation->meta, compact('multiplier', 'period'));
+			$updated = $application_invitation->fill([
+				'role_id' => $role->id,
+				'workflow_delay' => $multiplier * $period,
+				'meta' => $meta,
+			])->save();
+			if ($updated) {
 				return $this->returnSuccessMessage('user', new InvitationResource(Invitation::find($application_invitation->id)));
 			}
 
