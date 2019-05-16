@@ -36,6 +36,7 @@ class FormResource extends JsonResource
 			'period_start' => $this->period_start,
 			'period_end' => $this->period_end,
 			'status_id' => $this->status_id,
+			'status' => $this->status->status,
 			'created_at' => $this->created_at,
 			'updated_at' => $this->updated_at,
             'submitted_date' => $this->submitted_date,
