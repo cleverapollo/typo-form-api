@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Invitation;
+use App\Models\ApplicationUser;
 use App\User;
 
 class InvitationAccepted extends Event
@@ -12,7 +12,7 @@ class InvitationAccepted extends Event
      *
      * @return void
      */
-    public function __construct(User $user, Invitation $invitation)
+    public function __construct(User $user, ApplicationUser $invitation)
     {
         $this->user = $user;
         $this->invitation = $invitation;

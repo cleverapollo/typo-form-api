@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\User;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OrganisationUser extends Model
+class OrganisationUser extends Pivot
 {
+    protected $table = 'organisation_users';
+
 	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
 	 */
 	protected $fillable = [
-		'user_id', 'organisation_id', 'role_id', 'meta'
+		'user_id', 'organisation_id', 'role_id', 'meta', 'status'
 	];
 
     protected $casts = [
@@ -25,6 +28,11 @@ class OrganisationUser extends Model
     public function organisation()
     {
         return $this->belongsTo('App\Models\Organisation');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
 	/**

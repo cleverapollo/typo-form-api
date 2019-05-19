@@ -21,7 +21,7 @@ class SetInviteePermissions
         // Here we extract those abilities from the invites meta data and request the user
         // be given those abilities
         //
-        $formTemplateIds = $event->invitation->meta['form_templates'] ?? [];
+        $formTemplateIds = data_get($event->invitation->meta, 'invite.form_templates', []);
         Acl::allowAccessToResource($event->user, 'form_templates', $formTemplateIds, AclService::SHOW);
     }
 }

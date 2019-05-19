@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use \App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
+use \WorkflowRepository;
 use \App\Workflows\Triggers\ITrigger;
 use \App\Workflows\WorkflowHelpers;
 use Illuminate\Console\Command;

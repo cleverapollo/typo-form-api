@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
+use \App\Console\Commands\MergeInvitationsAndUsers;
 use \App\Console\Commands\ProcessWorkflowJobs;
 use \App\Console\Commands\ScheduleWorkflowJobs;
 use \App\Console\Commands\UnscheduleWorkflowJobs;
@@ -16,6 +17,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+        MergeInvitationsAndUsers::class,
         ProcessWorkflowJobs::class,
         ScheduleWorkflowJobs::class,
         UnscheduleWorkflowJobs::class,

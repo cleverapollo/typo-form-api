@@ -15,16 +15,15 @@ class InvitationResource extends JsonResource
 	 */
 	public function toArray($request)
 	{
-        $type = Type::find($this->type_id);
 		return [
 			'id' => $this->id,
-			'inviter_id' => $this->inviter_id,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
-			'email' => $this->email,
-            'meta' => $this->meta,
-			$type->name . '_id' => $this->reference_id,
-            $type->name . '_role_id' => $this->role_id,
+			'inviter_id' => $this->meta['inviter_id'],
+			'first_name' => $this->user->first_name,
+			'last_name' => $this->user->last_name,
+			'email' => $this->user->email,
+			'meta' => $this->meta,
+			'organisation_id' => $this->organisation_id,
+			'organisation_role_id' => $this->role_id,
 			'created_at' => $this->created_at
 		];
 	}

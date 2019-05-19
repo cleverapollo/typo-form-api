@@ -66,11 +66,13 @@ $app->singleton(
 */
 
 $app->middleware([
-   App\Http\Middleware\CorsMiddleware::class
+   App\Http\Middleware\CorsMiddleware::class,
 ]);
-
+   
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
+    'resolve-application-slug' => App\Http\Middleware\ResolveApplicationSlugMiddleware::class,
+    'application-admin' => App\Http\Middleware\ApplicationAdminMiddleware::class,
 ]);
 
 /*
@@ -106,10 +108,42 @@ if (env('APP_DEBUG')) {
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
-class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
-class_alias(App\Services\AclFacade::class, 'Acl');
-class_alias(App\Services\MailFacade::class, 'MailService');
-class_alias('Illuminate\Support\Facades\Response','Response');
+if(!class_exists('Bouncer')) {
+    class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
+}
+if(!class_exists('Acl')) {
+    class_alias(App\Services\AclFacade::class, 'Acl');
+}
+if(!class_exists('MailService')) {
+    class_alias(App\Services\MailFacade::class, 'MailService');
+}
+if(!class_exists('ApplicationRepository')) {
+    class_alias(App\Repositories\ApplicationRepositoryFacade::class, 'ApplicationRepository');
+}
+if(!class_exists('ApplicationUserRepository')) {
+    class_alias(App\Repositories\ApplicationUserRepositoryFacade::class, 'ApplicationUserRepository');
+}
+if(!class_exists('OrganisationRepository')) {
+    class_alias(App\Repositories\OrganisationRepositoryFacade::class, 'OrganisationRepository');
+}
+if(!class_exists('OrganisationUserRepository')) {
+    class_alias(App\Repositories\OrganisationUserRepositoryFacade::class, 'OrganisationUserRepository');
+}
+if(!class_exists('RoleRepository')) {
+    class_alias(App\Repositories\RoleRepositoryFacade::class, 'RoleRepository');
+}
+if(!class_exists('UserRepository')) {
+    class_alias(App\Repositories\UserRepositoryFacade::class, 'UserRepository');
+}
+if(!class_exists('UserStatusRepository')) {
+    class_alias(App\Repositories\UserStatusRepositoryFacade::class, 'UserStatusRepository');
+}
+if(!class_exists('WorkflowRepository')) {
+    class_alias(App\Repositories\WorkflowRepositoryFacade::class, 'WorkflowRepository');
+}
+if(!class_exists('Illuminate\Support\Facades\Response')) {
+    class_alias('Illuminate\Support\Facades\Response','Response');
+}
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

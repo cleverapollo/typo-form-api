@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Models\ApplicationUser;
+use App\Models\OrganisationUser;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +34,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 		'password',
 		'role_id',
 		'api_token',
-		'expire_date'
+		'expire_date',
+		'status',
+		'workflow_delay'
 	];
 
 	/**
@@ -49,7 +53,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function organisations()
 	{
-		return $this->belongsToMany('App\Models\Organisation', 'organisation_users')->withPivot('role_id')->withTimestamps();
+		return $this->belongsToMany('App\Models\Organisation', 'organisation_users')
+			->using(OrganisationUser::class)
+			->withPivot('role_id')
+			->withTimestamps();
 	}
 
 	/**
@@ -57,7 +64,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 	 */
 	public function applications()
 	{
-		return $this->belongsToMany('App\Models\Application', 'application_users')->withPivot('role_id')->withTimestamps();
+		return $this->belongsToMany('App\Models\Application', 'application_users')
+			->using(ApplicationUser::class)
+			->withPivot('role_id')
+			->withTimestamps();
 	}
 
 	/**

@@ -2,31 +2,45 @@
 
 namespace App\Repositories;
 
+use \Acl;
 use App\Exceptions\MissingApplicationException;
 use App\Models\Application;
-use App\Services\AclFacade as Acl;
+use App\Models\ApplicationUser;
 use App\User;
 
 class ApplicationRepository {
     /**
-     * Fetch the default application for the user
+     * Fetch the slug matching application for the user
      *
      * @param User $user
-     * @param string $slug
-     * @return void
+     * @param string|null $slug
+     * @return Application
+     * @throws MissingApplicationException
      */
-    public function bySlug(User $user, string $slug)
+    public function bySlug(User $user, ?string $slug)
     {
-        if (Acl::isSuperAdmin($user)) {
-            $application = Application::where('slug', $slug)->first();
-        } else {
-            $application = $user->applications()->where('slug', $slug)->first();
-        }
+        $application = $this->bySlugLax($user, $slug);
 
         if (!$application) {
             throw new MissingApplicationException();
         }
 
         return $application;
+    }
+
+    /**
+     * Similar to bySlug but won't throw if the application is not found
+     *
+     * @param User $user
+     * @param string|null $slug
+     * @return Application|null
+     */
+    public function bySlugLax(User $user, ?string $slug)
+    {
+        if (Acl::isSuperAdmin($user)) {
+            return Application::whereSlug($slug)->first();
+        } else {
+            return $user->applications()->whereSlug($slug)->first();
+        }
     }
 }
