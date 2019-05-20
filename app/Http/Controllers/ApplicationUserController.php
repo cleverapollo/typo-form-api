@@ -89,7 +89,7 @@ class ApplicationUserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($application_slug, $id)
+    public function destroy(Request $request, $application_slug, $id)
     {
         $application = $request->get('application');
         $applicationUser = ApplicationUserRepository::findOrFail($application->id, $id);
