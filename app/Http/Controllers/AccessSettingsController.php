@@ -32,7 +32,7 @@ class AccessSettingsController extends Controller
         $resource = $this->getResource($resource, $id);
         Acl::adminOrfail($user, $resource->application);
 
-        $accessSettings = $resource->accessSettings()->first();
+        $accessSettings = $resource->accessSettings()->firstOrFail();
         return new AccessSettingsResource($accessSettings);
     }
 
