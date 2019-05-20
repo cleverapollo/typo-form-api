@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Application extends Model
@@ -34,7 +35,10 @@ class Application extends Model
 	 */
 	public function users()
 	{
-		return $this->belongsToMany('App\User', 'application_users')->withPivot('role_id')->withTimestamps();
+		return $this->belongsToMany(User::class, 'application_users')
+			->using(ApplicationUser::class)
+			->withPivot('role_id')
+			->withTimestamps();
 	}
 
 	/**

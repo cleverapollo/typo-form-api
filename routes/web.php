@@ -72,15 +72,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 			// Application User Routes
 			$router->group(['prefix' => 'user'], function () use ($router) {
-				$router->get('/', 'ApplicationController@getUsers');
-				$router->put('{id}', 'ApplicationController@updateUser');
-				$router->delete('{id}', 'ApplicationController@deleteUser');
-			});
-
-			// Application Invitation Routes
-			$router->group(['prefix' => 'invited'], function () use ($router) {
-				$router->put('{id}', 'ApplicationController@updateInvitedUser');
-				$router->delete('{id}', 'ApplicationController@deleteInvitedUser');
+				$router->get('/', 'ApplicationUserController@index');
+				$router->put('/{id}', 'ApplicationUserController@update');
+				$router->delete('/{id}', 'ApplicationUserController@destroy');
 			});
 
 			// $router->post('invite', 'ApplicationController@inviteUsers');
@@ -98,18 +92,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 					$router->put('/', 'OrganisationController@update');
 					$router->delete('/', 'OrganisationController@destroy');
 					// $router->post('invite', 'OrganisationController@inviteUsers');
-                    $router->post('invite', 'OrganisationInvitationController@store');
+					$router->post('invite', 'OrganisationInvitationController@store');
 
 					// Application User Routes
 					$router->group(['prefix' => 'user'], function () use ($router) {
-						$router->get('/', 'OrganisationController@getOrganisationUsers');
-						$router->put('{user_id}', 'OrganisationController@updateUser');
-						$router->delete('{user_id}', 'OrganisationController@deleteUser');
-					});
-
-					$router->group(['prefix' => 'invited'], function () use ($router) {
-						$router->put('{invited_id}', 'OrganisationController@updateInvitedUser');
-						$router->delete('{invited_id}', 'OrganisationController@deleteInvitedUser');
+						$router->get('/', 'OrganisationUserController@index');
+						$router->put('{user_id}', 'OrganisationUserController@update');
+						$router->delete('{user_id}', 'OrganisationUserController@destroy');
 					});
 				});
 			});

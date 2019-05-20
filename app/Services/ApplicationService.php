@@ -2,22 +2,27 @@
 
 namespace App\Services;
 
+use \ApplicationRepository;
+use \ApplicationUserRepository;
+use \MailService;
+use \OrganisationRepository;
+use \OrganisationUserRepository;
+use \RoleRepository;
+use \UserRepository;
+use \UserStatusRepository;
 use Exception;
 use Auth;
 use Carbon\Carbon;
 use App\Events\InvitationAccepted;
+use App\Events\InvitationSent;
 use App\Models\FormTemplate;
 use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\QuestionType;
 use App\Models\Status;
-use App\Models\Invitation;
-use App\Models\Type;
-use App\Models\Role;
 use App\User;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Rap2hpoutre\FastExcel\SheetCollection;
-use \MailService;
 
 class ApplicationService extends Service {
 
@@ -30,72 +35,40 @@ class ApplicationService extends Service {
     }
 
     public function acceptInvitation($slug, $user) {
-        $application = Application::where('slug', $slug)->first();
-        $type = Type::where('name', 'application')->first();
+        $user = User::findOrFail($user->resource->id);
+        $application = ApplicationRepository::bySlugLax($user, $slug);
 
         if (!$application) {
             return;
         }
 
+        // Open, "invite-less" registrations can by directly accept the invitation, no further work
+        // needs to be completed by this service
+        //
         if ($application->join_flag) {
-            $application_user = ApplicationUser::where([
-                'user_id' => $user->id,
-                'application_id' => $application->id
-            ])->first();
-
-            if (!$application_user) {
-                ApplicationUser::create([
-                    'user_id' => $user->id,
-                    'application_id' => $application->id,
-                    'role_id' => Role::where('name', 'User')->first()->id
-                ]);
-            }
+            ApplicationUserRepository::addActiveUser($application->id, $user->id, RoleRepository::idByName('User'));
             return;
         }
 
-        $invitations = Invitation::where([
-            'email' => strtolower($user->email),
-            'type_id' => $type->id,
-            'reference_id' => $application->id,
-            'status' => false
-        ])->get();
+        // Retrieve only the invitations for the current application. The current application is
+        // based on the slug. By actioning only invitations under this slug for this user we
+        // restrict the user from simply changing the slug and registering on another
+        // application
+        //
+        $invitations = ApplicationUserRepository::invitations($application->id, $user->id);
 
-        foreach ($invitations as $invitation) {
-            $user_list = ApplicationUser::where([
-                'user_id' => $user->id,
-                'application_id' => $application->id
-            ])->first();
+        $invitations->each(function($invitation) use ($application, $user) {
+            $invitation->status = UserStatusRepository::idByLabel('Active');
+            $invitation->save();
 
-            // Check if user already exists in the Application
-            if (!$user_list) {
-                if ($user_list = ApplicationUser::insert([
-                    'user_id' => $user->id,
-                    'application_id' => $application->id,
-                    'role_id' => $invitation->role_id,
-                    'meta' => json_encode($invitation->meta),
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ])) {
-                    $organisation_name = $invitation->meta['organisation'];
-                    if ($organisation_name && $organisation_name != '') {
-                        $user->organisations()->firstOrCreate([
-                            'name' => $organisation_name,
-                            'application_id' => $application->id
-                        ], [
-                            'role_id' => Role::where('name', 'User')->first()->id
-                        ]);
-                    }
-                    // Remove token and update status at invitations table
-                    Invitation::where('id', $invitation->id)->update([
-                        'status' => 1,
-                        'updated_at' => Carbon::now()
-                    ]);
-
-                    $userInstance = User::find($user->id);
-                    event(new InvitationAccepted($userInstance, $invitation));
-                }
+            $organisationName = data_get($invitation->meta, 'invite.organisation', '');
+            if (!empty($organisationName)) {
+                $organisation = OrganisationRepository::firstOrCreate($organisationName, $application->id);
+                OrganisationUserRepository::addActiveUser($organisation->id, $user->id, RoleRepository::idByName('User'));
             }
-        }
+
+            event(new InvitationAccepted($user, $invitation));
+        });
     }
 
     public function export($application_slug) {
@@ -236,50 +209,28 @@ class ApplicationService extends Service {
     }
 
     /**
-     * Checks for user inviation
-     *
-     * @param String $email
-     * @param Int $reference_id
-     * @return boolean
-     */
-    public function hasInvitation ($email, $reference_id) {
-        return !empty($this->getInvitation($email, $reference_id));
-    }
-
-    /**
-     * Get user invitation
-     *
-     * @param String $email
-     * @param Int $reference_id
-     * @return Invitation
-     */
-    public function getInvitation($email, $reference_id) {
-        return Invitation::where('email', $email)
-            ->where('reference_id', $reference_id)
-            ->first();
-    }
-
-    /**
      * Create user invitation
      *
      * @param array $data
      * @return void
      */
-    public function inviteUser ($data) {
-        if(!$this->hasInvitation($data['invitation']['email'], $data['application_id'])) {
-            Invitation::create([
-                'inviter_id' => $data['user_id'],
-                'email' => $data['invitation']['email'],
-                'first_name' => $data['invitation']['firstname'],
-                'last_name' => $data['invitation']['lastname'],
-                'meta' => $data['meta'],
-                'role_id' => $data['role_id'],
-                'type_id' => $data['type_id'],
-                'reference_id' => $data['application_id']
-            ]);
-        }
+    public function inviteUser($data) {
+        $email = strtolower($data['invitation']['email']);
+        $user = User::whereEmail($email)->first();
 
-        $this->sendInvitationEmail($data);
+        // If the user hasn't registered in the platform, in any application, add them first.
+        if(!$user) {
+            $user = UserRepository::createUnregisteredUser($data['invitation']['firstname'], $data['invitation']['lastname'], $email, $data['role_id']);
+        } 
+
+        if(!ApplicationUserRepository::isUserInApplication($data['application_id'], $user->id)) {
+            // Regardless if the user existed previously, we invite them to _this_ application
+            ApplicationUserRepository::inviteUser($data['application_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta']);
+
+            $this->sendInvitationEmail($data);
+
+            event(new InvitationSent($user));
+        }
     }
 
     /**
@@ -288,7 +239,7 @@ class ApplicationService extends Service {
      * @param array $data
      * @return void
      */
-    public function sendInvitationEmail ($data) {
+    public function sendInvitationEmail($data) {
         MailService::send($data, [
             'email' => 'invitation.email',
             'body' => 'meta.message',

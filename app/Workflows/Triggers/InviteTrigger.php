@@ -2,11 +2,12 @@
 
 namespace App\Workflows\Triggers;
 
-use App\Models\Invitation;
+use \UserStatusRepository;
+use \WorkflowRepository;
+use App\Models\ApplicationUser;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use App\Repositories\WorkflowRepository as WorkflowRepositoryConstants;
-use App\Repositories\WorkflowRepositoryFacade as WorkflowRepository;
 use Carbon\Carbon;
 
 class InviteTrigger implements ITrigger {
@@ -21,9 +22,12 @@ class InviteTrigger implements ITrigger {
         // the checks() to query. Checks is used during scheduling, unscheduling and pre-running
         // the job
         //
-        $invites = Invitation::whereReferenceId($workflow->application_id);
+        $invites = ApplicationUser
+            ::whereApplicationId($workflow->application_id)
+            ->whereStatus(UserStatusRepository::idByLabel('Invited'));
         $invites = $this->check($workflow, $invites);
         $invites = $invites->get();
+
 
         // Ensure this job doesn't already exist. We are checking all jobs, including completed 
         // jobs - we don't want the same job being created everytime the existing one has completed
@@ -47,9 +51,9 @@ class InviteTrigger implements ITrigger {
                 $workflow->id,
                 $this->calculateScheduledFor($invite, $workflow),
                 array_merge($actionConfig, [
-                    'email' => $invite->email,
-                    'first_name' => $invite->first_name,
-                    'last_name' => $invite->last_name,
+                    'email' => $invite->user->email,
+                    'first_name' => $invite->user->first_name,
+                    'last_name' => $invite->user->last_name,
                 ])
             );
         });
@@ -59,7 +63,7 @@ class InviteTrigger implements ITrigger {
 
     public function isScheduled(WorkflowJob $job)
     {
-        $invite = Invitation::findOrFail($job->transaction_id);
+        $invite = ApplicationUser::findOrFail($job->transaction_id);
         $scheduled = $job->scheduled_for->addMilliseconds($invite->workflow_delay);
 
         $now = Carbon::now()->toDateTimeString();
@@ -85,7 +89,10 @@ class InviteTrigger implements ITrigger {
         // lists the attributes that can be checked against
         //
         if (isset($config['invitation_status'])) {
-            $query->whereStatus($config['invitation_status']);
+            $status = $config['invitation_status'] === true 
+                ? UserStatusRepository::idByLabel('Active')
+                : UserStatusRepository::idByLabel('Invited');
+            $query->where('status', '=', $status);
         }
 
         // Limit invitations to the timeperiod set in workflow
@@ -105,7 +112,7 @@ class InviteTrigger implements ITrigger {
     //
     public function unscheduleJob(WorkflowJob $job)
     {
-        $invite = Invitation::whereId($job->transaction_id);
+        $invite = ApplicationUser::whereId($job->transaction_id);
         $invite = $this->check($job->workflow, $invite);
         $invite = $invite->first();
 

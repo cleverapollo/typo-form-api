@@ -27,7 +27,7 @@ class UserResource extends JsonResource
 			}),
 			'application_role_id' => $this->whenPivotLoaded('application_users', function () {
 				return $this->pivot->role_id;
-			})
+			}),
 		];
 	}
 }
