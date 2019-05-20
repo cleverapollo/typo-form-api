@@ -83,10 +83,10 @@ class OrganisationUserRepository {
             ->isNotEmpty();
     }
 
-    public function find($applicationId, $userId)
+    public function find($organisationId, $userId)
     {
         return OrganisationUser
-            ::whereOrganisationId($applicationId)
+            ::whereOrganisationId($organisationId)
             ->whereUserId($userId)
             ->first();
     }

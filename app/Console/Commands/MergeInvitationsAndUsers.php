@@ -8,6 +8,7 @@ use \OrganisationUserRepository;
 use \Storage;
 use \UserRepository;
 use \UserStatusRepository;
+use App\Models\Application;
 use App\Models\ApplicationUser;
 use App\Models\Invitation;
 use App\Models\OrganisationUser;
@@ -83,6 +84,13 @@ class MergeInvitationsAndUsers extends Command {
                 if($invite->type_id === 1) {
                     $applicationId = $invite->reference_id;
                     $this->log("Invite was for application: $applicationId");
+
+                    $application = Application::find($applicationId);
+                    if(!$application) {
+                        $this->log("Application didn't exist, skipping this invite");
+                        return;
+                    }
+
                     $applicationUser = ApplicationUserRepository::find($applicationId, $existingUser->id);
                                         
                     // Existing user + Application Invite + Not Existing ApplicationUser
@@ -145,13 +153,13 @@ class MergeInvitationsAndUsers extends Command {
             // Not Existing user
             } else {
                 $this->log('User for this invite did not exist. Create an unregistered account for them.');
-                $user = UserRepository::createUnregisteredUser($invite->first_name, $invite->last_name, $invite->email, $invite->role_id);
+                $user = UserRepository::createUnregisteredUser($invite->first_name ?? '', $invite->last_name ?? '', $invite->email, $invite->role_id);
                 
                 // Not Existing user + Application Invite
                 if($invite->type_id === 1) {
                     $applicationId = $invite->reference_id;                    
                     $this->log("Invite was for application: $applicationId");
-                   
+                    
                     $applicationUser = ApplicationUserRepository::inviteUser($applicationId, $user->id, $invite->role_id, $invite->inviter_id, $invite->meta);
 
                     $applicationUser = ApplicationUserRepository::find($applicationId, $user->id);
@@ -165,12 +173,12 @@ class MergeInvitationsAndUsers extends Command {
 
                 // Not Existing user + Organisation Invite
                 else if($invite->type_id === 2) {
-                    $organisation = $invite->reference_id;                    
-                    $this->log("Invite was for organisation: $organisation");
+                    $organisationId = $invite->reference_id;                    
+                    $this->log("Invite was for organisation: $organisationId");
                    
-                    $organisationUser = OrganisationUserRepository::inviteUser($organisation, $user->id, $invite->role_id, $invite->inviter_id, $invite->meta);
+                    $organisationUser = OrganisationUserRepository::inviteUser($organisationId, $user->id, $invite->role_id, $invite->inviter_id, $invite->meta);
 
-                    $organisationUser = OrganisationUserRepository::find($applicationId, $user->id);
+                    $organisationUser = OrganisationUserRepository::find($organisationId, $user->id);
                     $organisationUser->status = $invite->status
                             ? UserStatusRepository::idByLabel('Active')
                             : UserStatusRepository::idByLabel('Invited');
