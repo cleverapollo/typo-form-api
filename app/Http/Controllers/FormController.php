@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use \RoleRepository;
+use \StatusRepository;
+use \TypeRepository;
 use Auth;
 use Exception;
 use Storage;
@@ -799,63 +802,48 @@ class FormController extends Controller
 	 */
 	public function store($form_template_id, Request $request)
 	{
-		$this->validate($request, [
-			'user_id' => 'nullable|integer|min:1',
-			'organisation' => 'required|string|min:1',
-			'progress' => 'filled|integer|min:0'
-		]);
+        $form_template = FormTemplate::findOrFail($form_template_id);
 
-		try {
-			$form_template = FormTemplate::find($form_template_id);
+        $isOrganisationForm = TypeRepository::idByName('organisation') === $form_template->type_id;
+        $isSelfSubmitting = !$request->has('user_id');
 
-			// Send error if form template does not exist
-			if (!$form_template) {
-				return $this->returnError('form template', 404, 'create form');
-			}
+        if($isOrganisationForm) {
+            $rules = ['organisation' => 'required|string|filled'];
+        } else if($isSelfSubmitting) {
+            $rules = [];
+        } else {
+            $rules = ['user_id' => 'required|integer|exists:users,id'];
+        }
 
-            // Check whether user has permission
-            $user = Auth::user();
-            if ($form_template->status->status == 'Open' && !$this->hasPermission($user, $form_template->application_id)) {
-                return $this->returnError('application', 403, 'create form');
-            }
+        $this->validate($request, $rules);
 
-			$user_id = $request->input('user_id', null);
-			if ($user_id) {
-				// Send error if organisation does not exist
-				if (!User::find($user_id)) {
-					return $this->returnError('user', 404, 'create form');
-				}
-			} else {
-				$user_id = Auth::user()->id;
-			}
+        $user = Auth::user();
+        $user_id = $isSelfSubmitting ? $user->id : $request->input('user_id');
+        
+        // Check whether user has permission
+        if ($form_template->status->status == 'Open' && !$this->hasPermission($user, $form_template->application_id)) {
+            return $this->returnError('application', 403, 'create form');
+        }
 
+        if($isOrganisationForm) {
             $organisation = $user->organisations()->firstOrCreate([
                 'name' => $request->input('organisation'),
                 'application_id' => $form_template->application_id,
             ], [
-                'role_id' => Role::where('name', 'User')->first()->id
+                'role_id' => RoleRepository::idByName('User'),
             ]);
+        }
 
-			// Create form
-			$form = $form_template->forms()->create([
-				'user_id' => $user_id,
-				'organisation_id' => $organisation->id,
-				'progress' => $request->input('progress', 0),
-				'period_start' => $request->input('period_start', null),
-				'period_end' => $request->input('period_end', null),
-				'status_id' => Status::where('status', 'Open')->first()->id
-			]);
+        $form = $form_template->forms()->create([
+            'user_id' => $user_id,
+            'organisation_id' => $organisation->id ?? null,
+            'progress' => $request->input('progress', 0),
+            'period_start' => $request->input('period_start', null),
+            'period_end' => $request->input('period_end', null),
+            'status_id' => StatusRepository::idByName('Open'),
+        ]);
 
-			if ($form) {
-				return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
-			}
-
-			// Send error if form is not created
-			return $this->returnError('form', 503, 'create');
-		} catch (Exception $e) {
-			// Send error
-			return $this->returnErrorMessage(503, $e->getMessage());
-		}
+        return $this->returnSuccessMessage('form', new FormResource(Form::find($form->id)));
 	}
 
     /**

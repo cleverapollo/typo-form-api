@@ -9,7 +9,10 @@ class MailService {
      * Parse and replace mapped data in the body. The map data array should be in the following 
      * format:
      * [
-     *  'search_key' => 'path.to.value'   // eg: 'first_name' => 'invitation.firstname'
+     *  'mail_key' => 'path.to.value'   // eg: 'first_name' => 'invitation.firstname'
+     *  'mail_key' => function() {      // Sometimes you may want to bypass the look up and 
+     *      return 'exact value';       // dynamically insert a value directly, use a callable in 
+     *  }                               // this case
      * ]
      *
      * @param string $body
@@ -24,7 +27,11 @@ class MailService {
         })->toArray();
 
         $values = collect($map)->map(function($lookupPath) use ($data) {
-            return data_get($data, $lookupPath, '');
+            if(is_callable($lookupPath)) {
+                return $lookupPath();
+            } else {
+                return data_get($data, $lookupPath, '');
+            }
         })->toArray();
 
         // Replace available tokens with values

@@ -10,6 +10,7 @@ use \OrganisationUserRepository;
 use \RoleRepository;
 use \UserRepository;
 use \UserStatusRepository;
+use \UrlService;
 use Exception;
 use Auth;
 use Carbon\Carbon;
@@ -217,17 +218,19 @@ class ApplicationService extends Service {
     public function inviteUser($data) {
         $email = strtolower($data['invitation']['email']);
         $user = User::whereEmail($email)->first();
+        $isExistingUser = !is_null($user);
 
         // If the user hasn't registered in the platform, in any application, add them first.
-        if(!$user) {
+        if(!$isExistingUser) {
             $user = UserRepository::createUnregisteredUser($data['invitation']['firstname'], $data['invitation']['lastname'], $email, $data['role_id']);
         } 
 
         if(!ApplicationUserRepository::isUserInApplication($data['application_id'], $user->id)) {
             // Regardless if the user existed previously, we invite them to _this_ application
             ApplicationUserRepository::inviteUser($data['application_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta']);
+            $application = Application::findOrFail($data['application_id']);
 
-            $this->sendInvitationEmail($data);
+            $this->sendInvitationEmail($data, $application, $isExistingUser);
 
             event(new InvitationSent($user));
         }
@@ -237,9 +240,11 @@ class ApplicationService extends Service {
      * Send user invitation email
      *
      * @param array $data
+     * @param bool $existingUser
+     * @param Application $application
      * @return void
      */
-    public function sendInvitationEmail($data) {
+    public function sendInvitationEmail($data, $application, $isExistingUser) {
         MailService::send($data, [
             'email' => 'invitation.email',
             'body' => 'meta.message',
@@ -250,6 +255,17 @@ class ApplicationService extends Service {
             'first_name' => 'invitation.firstname',
             'last_name' => 'invitation.lastname',
             'email' => 'invitation.email',
+            'invite_link' => function() use ($data, $application, $isExistingUser) {
+                $query = [
+                    'firstname' => data_get($data, 'invitation.firstname'),
+                    'lastname' => data_get($data, 'invitation.lastname'),
+                    'email' => data_get($data, 'invitation.email')
+                ];
+                $link = $isExistingUser 
+                    ? UrlService::getApplicationLogin($application, $query, true)
+                    : UrlService::getApplicationRegister($application, $query, true);
+                return "<a href='$link' target='_blank'>$link</a>";
+            }
         ]);
     }
 }

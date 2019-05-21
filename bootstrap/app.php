@@ -117,6 +117,9 @@ if(!class_exists('Acl')) {
 if(!class_exists('MailService')) {
     class_alias(App\Services\MailFacade::class, 'MailService');
 }
+if(!class_exists('UrlService')) {
+    class_alias(App\Services\UrlServiceFacade::class, 'UrlService');
+}
 if(!class_exists('ApplicationRepository')) {
     class_alias(App\Repositories\ApplicationRepositoryFacade::class, 'ApplicationRepository');
 }
@@ -131,6 +134,12 @@ if(!class_exists('OrganisationUserRepository')) {
 }
 if(!class_exists('RoleRepository')) {
     class_alias(App\Repositories\RoleRepositoryFacade::class, 'RoleRepository');
+}
+if(!class_exists('StatusRepository')) {
+    class_alias(App\Repositories\StatusRepositoryFacade::class, 'StatusRepository');
+}
+if(!class_exists('TypeRepository')) {
+    class_alias(App\Repositories\TypeRepositoryFacade::class, 'TypeRepository');
 }
 if(!class_exists('UserRepository')) {
     class_alias(App\Repositories\UserRepositoryFacade::class, 'UserRepository');

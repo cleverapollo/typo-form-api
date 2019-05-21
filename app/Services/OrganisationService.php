@@ -8,7 +8,10 @@ use \MailService;
 use \OrganisationUserRepository;
 use \RoleRepository;
 use \UserRepository;
+use \UserStatusRepository;
+use \UrlService;
 use App\User;
+use App\Models\Application;
 use Carbon\Carbon;
 
 class OrganisationService extends Service {
@@ -16,7 +19,7 @@ class OrganisationService extends Service {
     public function acceptInvitation($slug, $user) {
         $user = $user->resource;
         $application = ApplicationRepository::bySlugLax($user, $slug);
-
+        
         if (!$application) {
             return;
         }
@@ -40,9 +43,10 @@ class OrganisationService extends Service {
     public function inviteUser ($data) {
         $email = strtolower($data['invitation']['email']);
         $user = User::whereEmail($email)->first();
+        $isExistingUser = !is_null($user);
 
         // If the user hasn't registered in the platform, in any application, add them first. 
-        if(!$user) {
+        if(!$isExistingUser) {
             $user = UserRepository::createUnregisteredUser($data['invitation']['firstname'], $data['invitation']['lastname'], $email, $data['role_id']);
         }
 
@@ -52,8 +56,9 @@ class OrganisationService extends Service {
         //
         if(!OrganisationUserRepository::isUserInOrganisation($data['organisation_id'], $user->id)) {
             OrganisationUserRepository::inviteUser($data['organisation_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta']);
+            $application = Application::findOrFail($data['application_id']);
 
-            $this->sendInvitationEmail($data);
+            $this->sendInvitationEmail($data, $application, $isExistingUser);
         }
     }
 
@@ -63,7 +68,7 @@ class OrganisationService extends Service {
      * @param array $data
      * @return void
      */
-    public function sendInvitationEmail ($data) {
+    public function sendInvitationEmail ($data, $application, $isExistingUser) {
         MailService::send($data, [
             'email' => 'invitation.email',
             'body' => 'meta.message',
@@ -74,6 +79,17 @@ class OrganisationService extends Service {
             'first_name' => 'invitation.firstname',
             'last_name' => 'invitation.lastname',
             'email' => 'invitation.email',
+            'invite_link' => function() use ($data, $application, $isExistingUser) {
+                $query = [
+                    'firstname' => data_get($data, 'invitation.firstname'),
+                    'lastname' => data_get($data, 'invitation.lastname'),
+                    'email' => data_get($data, 'invitation.email')
+                ];
+                $link = $isExistingUser 
+                    ? UrlService::getApplicationLogin($application, $query, true)
+                    : UrlService::getApplicationRegister($application, $query, true);
+                return "<a href='$link' target='_blank'>$link</a>";
+            }
         ]);
     }
 }
