@@ -55,7 +55,7 @@ class OrganisationService extends Service {
         // users
         //
         if(!OrganisationUserRepository::isUserInOrganisation($data['organisation_id'], $user->id)) {
-            OrganisationUserRepository::inviteUser($data['organisation_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta']);
+            OrganisationUserRepository::inviteUser($data['organisation_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta'], $data['invitation']['meta']);
             $application = Application::findOrFail($data['application_id']);
 
             $this->sendInvitationEmail($data, $application, $isExistingUser);
