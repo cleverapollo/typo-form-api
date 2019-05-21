@@ -57,7 +57,7 @@ class ApplicationInvitationController extends Controller
                 'message' => $request->input('message'),
                 'cc' => $request->input('cc'),
                 'bcc' => $request->input('bcc'),
-                'organisation' => $invitation['organisation']
+                'organisation' => $invitation['organisation'],
             ];
     
             dispatch(new ApplicationInvitationJob($data));

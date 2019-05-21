@@ -108,48 +108,27 @@ if (env('APP_DEBUG')) {
 $app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
-if(!class_exists('Bouncer')) {
-    class_alias(Silber\Bouncer\BouncerFacade::class, 'Bouncer');
-}
-if(!class_exists('Acl')) {
-    class_alias(App\Services\AclFacade::class, 'Acl');
-}
-if(!class_exists('MailService')) {
-    class_alias(App\Services\MailFacade::class, 'MailService');
-}
-if(!class_exists('UrlService')) {
-    class_alias(App\Services\UrlServiceFacade::class, 'UrlService');
-}
-if(!class_exists('ApplicationRepository')) {
-    class_alias(App\Repositories\ApplicationRepositoryFacade::class, 'ApplicationRepository');
-}
-if(!class_exists('ApplicationUserRepository')) {
-    class_alias(App\Repositories\ApplicationUserRepositoryFacade::class, 'ApplicationUserRepository');
-}
-if(!class_exists('OrganisationRepository')) {
-    class_alias(App\Repositories\OrganisationRepositoryFacade::class, 'OrganisationRepository');
-}
-if(!class_exists('OrganisationUserRepository')) {
-    class_alias(App\Repositories\OrganisationUserRepositoryFacade::class, 'OrganisationUserRepository');
-}
-if(!class_exists('RoleRepository')) {
-    class_alias(App\Repositories\RoleRepositoryFacade::class, 'RoleRepository');
-}
-if(!class_exists('StatusRepository')) {
-    class_alias(App\Repositories\StatusRepositoryFacade::class, 'StatusRepository');
-}
-if(!class_exists('TypeRepository')) {
-    class_alias(App\Repositories\TypeRepositoryFacade::class, 'TypeRepository');
-}
-if(!class_exists('UserRepository')) {
-    class_alias(App\Repositories\UserRepositoryFacade::class, 'UserRepository');
-}
-if(!class_exists('UserStatusRepository')) {
-    class_alias(App\Repositories\UserStatusRepositoryFacade::class, 'UserStatusRepository');
-}
-if(!class_exists('WorkflowRepository')) {
-    class_alias(App\Repositories\WorkflowRepositoryFacade::class, 'WorkflowRepository');
-}
+collect([
+    Silber\Bouncer\BouncerFacade::class => 'Bouncer',
+    App\Repositories\ApplicationRepositoryFacade::class => 'ApplicationRepository',
+    App\Repositories\ApplicationUserRepositoryFacade::class => 'ApplicationUserRepository',
+    App\Repositories\OrganisationRepositoryFacade::class => 'OrganisationRepository',
+    App\Repositories\OrganisationUserRepositoryFacade::class => 'OrganisationUserRepository',
+    App\Repositories\RoleRepositoryFacade::class => 'RoleRepository',
+    App\Repositories\StatusRepositoryFacade::class => 'StatusRepository',
+    App\Repositories\TypeRepositoryFacade::class => 'TypeRepository',
+    App\Repositories\UserRepositoryFacade::class => 'UserRepository',
+    App\Repositories\UserStatusRepositoryFacade::class => 'UserStatusRepository',
+    App\Repositories\WorkflowRepositoryFacade::class => 'WorkflowRepository',
+    App\Services\AclFacade::class => 'Acl',
+    App\Services\MailFacade::class => 'MailService',
+    App\Services\UrlServiceFacade::class => 'UrlService',
+])->each(function($alias, $original) {
+    if(!class_exists($alias)) {
+        class_alias($original, $alias);
+    }
+});
+
 if(!class_exists('Illuminate\Support\Facades\Response')) {
     class_alias('Illuminate\Support\Facades\Response','Response');
 }

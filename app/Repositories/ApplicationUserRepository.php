@@ -42,7 +42,7 @@ class ApplicationUserRepository {
      * @param Object $meta
      * @return void
      */
-    public function inviteUser($applicationId, $userId, $roleId, $inviterId, $meta)
+    public function inviteUser($applicationId, $userId, $roleId, $inviterId, $meta, $clientMeta)
     {
         return ApplicationUser::create([
             'user_id' => $userId,
@@ -52,6 +52,7 @@ class ApplicationUserRepository {
             'meta' => [
                 'inviter_id' => $inviterId,
                 'invite' => $meta,
+                'client' => $clientMeta,
             ],
         ]);
     }

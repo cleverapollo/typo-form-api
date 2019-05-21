@@ -42,7 +42,7 @@ class OrganisationUserRepository {
      * @param Object $meta
      * @return void
      */
-    public function inviteUser($organisationId, $userId, $roleId, $inviterId, $meta)
+    public function inviteUser($organisationId, $userId, $roleId, $inviterId, $meta, $clientMeta)
     {
         return OrganisationUser::create([
             'user_id' => $userId,
@@ -52,6 +52,7 @@ class OrganisationUserRepository {
             'meta' => [
                 'inviter_id' => $inviterId,
                 'invite' => $meta,
+                'client' => $clientMeta,
             ],
         ]);
     }
