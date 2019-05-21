@@ -117,6 +117,9 @@ if(!class_exists('Acl')) {
 if(!class_exists('MailService')) {
     class_alias(App\Services\MailFacade::class, 'MailService');
 }
+if(!class_exists('UrlService')) {
+    class_alias(App\Services\UrlServiceFacade::class, 'UrlService');
+}
 if(!class_exists('ApplicationRepository')) {
     class_alias(App\Repositories\ApplicationRepositoryFacade::class, 'ApplicationRepository');
 }

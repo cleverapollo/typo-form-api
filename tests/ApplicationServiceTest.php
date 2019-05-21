@@ -23,13 +23,13 @@ class ApplicationServiceTest extends TestCase
         $this->assertEquals(User::whereEmail('test@test.com')->count(), 0);
 
         $applicationService->inviteUser([
-            'firstname' => 'bob',
-            'lastname' => 'jones',
             'role_id' => 3,
             'application_id' => 1,
             'user_id' => 1,
             'meta' => [],
             'invitation' => [
+                'firstname' => 'bob',
+                'lastname' => 'jones',
                 'email' => 'test@test.com',
             ],
         ]);
