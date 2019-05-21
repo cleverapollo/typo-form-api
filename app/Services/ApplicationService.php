@@ -230,7 +230,7 @@ class ApplicationService extends Service {
             ApplicationUserRepository::inviteUser($data['application_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta']);
             $application = Application::findOrFail($data['application_id']);
 
-            $this->sendInvitationEmail($data, $isExistingUser, $application);
+            $this->sendInvitationEmail($data, $application, $isExistingUser);
 
             event(new InvitationSent($user));
         }
@@ -244,7 +244,7 @@ class ApplicationService extends Service {
      * @param Application $application
      * @return void
      */
-    public function sendInvitationEmail($data, $existingUser, $application) {
+    public function sendInvitationEmail($data, $application, $isExistingUser) {
         MailService::send($data, [
             'email' => 'invitation.email',
             'body' => 'meta.message',
@@ -255,13 +255,13 @@ class ApplicationService extends Service {
             'first_name' => 'invitation.firstname',
             'last_name' => 'invitation.lastname',
             'email' => 'invitation.email',
-            'invite_link' => function() use ($data, $application, $existingUser) {
+            'invite_link' => function() use ($data, $application, $isExistingUser) {
                 $query = [
                     'firstname' => data_get($data, 'invitation.firstname'),
                     'lastname' => data_get($data, 'invitation.lastname'),
                     'email' => data_get($data, 'invitation.email')
                 ];
-                $link = $existingUser 
+                $link = $isExistingUser 
                     ? UrlService::getApplicationLogin($application, $query, true)
                     : UrlService::getApplicationRegister($application, $query, true);
                 return "<a href='$link' target='_blank'>$link</a>";

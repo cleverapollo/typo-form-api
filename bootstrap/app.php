@@ -135,6 +135,12 @@ if(!class_exists('OrganisationUserRepository')) {
 if(!class_exists('RoleRepository')) {
     class_alias(App\Repositories\RoleRepositoryFacade::class, 'RoleRepository');
 }
+if(!class_exists('StatusRepository')) {
+    class_alias(App\Repositories\StatusRepositoryFacade::class, 'StatusRepository');
+}
+if(!class_exists('TypeRepository')) {
+    class_alias(App\Repositories\TypeRepositoryFacade::class, 'TypeRepository');
+}
 if(!class_exists('UserRepository')) {
     class_alias(App\Repositories\UserRepositoryFacade::class, 'UserRepository');
 }
