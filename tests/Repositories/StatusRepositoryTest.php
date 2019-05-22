@@ -4,7 +4,7 @@ use Laravel\Lumen\Testing\DatabaseMigrations;
 
 class StatusRepositoryTest extends TestCase
 {
-    // use DatabaseMigrations;
+    use DatabaseMigrations;
 
     public function test_type_repository_fetch_by_id_methods()
     {
