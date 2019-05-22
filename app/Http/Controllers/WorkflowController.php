@@ -60,7 +60,7 @@ class WorkflowController extends Controller
         return new WorkflowResource($workflow);
     }
 
-    public function destroy($application_slug, $id)
+    public function destroy(Request $request, $application_slug, $id)
     {
         $user = Auth::user();
         $application = $request->get('application');
