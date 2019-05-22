@@ -76,6 +76,19 @@ class WorkflowRepository {
             ->whereStatus(self::JOB_STATUS_ACTIVE)->get();
     }
 
+    public function activeJobsOfWorkflow($workflowId)
+    {
+        return WorkflowJob
+            ::whereWorkflowId($workflowId)
+            ->whereStatus(self::JOB_STATUS_ACTIVE)
+            ->get();
+    }
+
+    public function deleteActiveJobsOfWorkflow($workflowId)
+    {
+        return $this->activeJobsOfWorkflow($workflowId)->each->delete();
+    }
+
     public function jobsToBeProcessed()
     {
         $jobs = WorkflowJob::with('workflow')

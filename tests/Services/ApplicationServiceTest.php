@@ -4,7 +4,6 @@ use App\User;
 use App\Models\Application;
 use App\Services\ApplicationService;
 use Laravel\Lumen\Testing\DatabaseMigrations;
-use Laravel\Lumen\Testing\DatabaseTransactions;
 
 class ApplicationServiceTest extends TestCase
 {

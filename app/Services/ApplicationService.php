@@ -227,7 +227,7 @@ class ApplicationService extends Service {
 
         if(!ApplicationUserRepository::isUserInApplication($data['application_id'], $user->id)) {
             // Regardless if the user existed previously, we invite them to _this_ application
-            ApplicationUserRepository::inviteUser($data['application_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta'], $data['invitation']['meta']);
+            ApplicationUserRepository::inviteUser($data['application_id'], $user->id, $data['role_id'], $data['user_id'], $data['meta'], $data['invitation']['meta'] ?? []);
             $application = Application::findOrFail($data['application_id']);
 
             $this->sendInvitationEmail($data, $application, $isExistingUser);
