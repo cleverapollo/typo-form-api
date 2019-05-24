@@ -71,30 +71,22 @@ class FormController extends Controller
 	 */
 	public function all($application_slug)
 	{
-		$user = Auth::user();
+        $user = Auth::user();
+        $application = Application::where('slug', $application_slug)->first();
+        $form_templates = $application->form_templates->pluck('id');
+        $forms = Form::with(['form_template', 'user', 'organisation', 'responses'])
+            ->get()
+            ->whereIn('form_template_id', $form_templates);
 
-		// Check Application
-		if($user->role->name === 'Super Admin') {
-			$application = Application::where('slug', $application_slug)->first();
-		} else {
-			$application = $user->applications()->where('slug', $application_slug)->first();
-		}
-
-		// No Application
-		if(!$application) {
-			return $this->returnApplicationNameError();
-		}
-
-		// Get forms
-		$form_templates = $application->form_templates->pluck('id');
-		if($this->hasPermission($user, $application->id)) {
-            $forms = Form::with(['form_template', 'user', 'organisation', 'responses'])->get()->whereIn('form_template_id', $form_templates);
-		} else {
-			$user->load(['forms.form_template', 'forms.user', 'forms.organisation', 'forms.responses']);
-			$forms = $user->forms()->whereIn('form_template_id', $form_templates)->get();
-		}
-
-		return $this->returnSuccessMessage('forms', FormResource::collection($forms));
+        // Filter forms by user and organisation
+        if(!$this->hasPermission($user, $application->id)) {
+            $organisations = $user->organisations->where('application_id', $application->id)->pluck('id');
+            $forms = $forms->filter(function ($form) use ($user, $organisations) {
+                return $form->user_id === $user->id || $organisations->contains($form->organisation_id);
+            });
+        }
+        
+        return response()->json(['forms' => FormResource::collection($forms)]);
 	}
 
     /**
