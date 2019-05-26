@@ -5,6 +5,7 @@ return [
     // App Services
     'app' => [
         'frontend_url' => env('FRONTEND_URL'),
+        'frontend_base_domain' => env('FRONTEND_BASE_DOMAIN'),
         'frontend_scheme' => env('FRONTEND_SCHEME'),
     ],
 

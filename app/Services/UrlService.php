@@ -10,7 +10,7 @@ class UrlService {
     public function getApplication(Application $application, $path = '') 
     {
         $scheme = config('services.app.frontend_scheme');
-        $host = config('services.app.frontend_url');
+        $host = config('services.app.frontend_base_domain');
         \Log::info("INVITE-URL-ISSUE--UrlService@getApplication:: Path: $path. Scheme: [$scheme]. Host: [$host]. Application: " . json_encode($application));
         return "$scheme://{$application->slug}.{$host}{$path}";
     }

@@ -9,7 +9,7 @@ class UrlServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Config::set('services.app.frontend_url', 'example.org:7777');
+        Config::set('services.app.frontend_base_domain', 'example.org:7777');
         Config::set('services.app.frontend_scheme', 'http');
     }
 
