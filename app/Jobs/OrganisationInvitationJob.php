@@ -26,6 +26,7 @@ class OrganisationInvitationJob extends Job
      */
     public function handle(OrganisationService $organisationService)
     {
+        \Log::info("INVITE-URL-ISSUE--OrganisationInvitationJob@handle:: Data: " . json_encode($this->data));
         $organisationService->inviteUser($this->data);
     }
 }

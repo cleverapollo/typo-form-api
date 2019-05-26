@@ -59,7 +59,7 @@ class ApplicationInvitationController extends Controller
                 'bcc' => $request->input('bcc'),
                 'organisation' => $invitation['organisation'],
             ];
-    
+            \Log::info("INVITE-URL-ISSUE--ApplicationInvitationController@handle:: Data: " . json_encode($data));
             dispatch(new ApplicationInvitationJob($data));
         }
         

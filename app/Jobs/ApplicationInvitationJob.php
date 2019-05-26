@@ -28,6 +28,7 @@ class ApplicationInvitationJob extends Job
      */
     public function handle(ApplicationService $applicationService)
     {
+        \Log::info("INVITE-URL-ISSUE--ApplicationInvitationJob@handle:: Data: " . json_encode($this->data));
         $applicationService->inviteUser($this->data);
     }
 }
