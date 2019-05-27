@@ -63,7 +63,6 @@ class OrganisationInvitationController extends Controller
                 'bcc' => $request->input('bcc')
             ];
     
-            \Log::info("INVITE-URL-ISSUE--OrganisationInvitationController@handle:: Data: " . json_encode($data));
             dispatch(new OrganisationInvitationJob($data));
         }
         

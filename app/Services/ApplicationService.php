@@ -261,7 +261,6 @@ class ApplicationService extends Service {
                     'lastname' => data_get($data, 'invitation.lastname'),
                     'email' => data_get($data, 'invitation.email')
                 ];
-                \Log::info("INVITE-URL-ISSUE--ApplicationService@sendInvitationEmail:: Query: " . json_encode($query) . ". Application: " . json_encode($application));
                 $link = $isExistingUser 
                     ? UrlService::getApplicationLogin($application, $query, true)
                     : UrlService::getApplicationRegister($application, $query, true);

@@ -11,7 +11,6 @@ class UrlService {
     {
         $scheme = config('services.app.frontend_scheme');
         $host = config('services.app.frontend_base_domain');
-        \Log::info("INVITE-URL-ISSUE--UrlService@getApplication:: Path: $path. Scheme: [$scheme]. Host: [$host]. Application: " . json_encode($application));
         return "$scheme://{$application->slug}.{$host}{$path}";
     }
 
@@ -26,14 +25,12 @@ class UrlService {
     public function getApplicationLogin($application, $parameters = null) 
     {
         $query = $this->constructEncodedData('invite', $parameters);
-        \Log::info("INVITE-URL-ISSUE--UrlService@getApplicationLogin:: Query: $query. Application: " . json_encode($application));
         return $this->getApplication($application, "/login{$query}");
     }
 
     public function getApplicationRegister($application, $parameters = null) 
     {
         $query = $this->constructEncodedData('invite', $parameters);
-        \Log::info("INVITE-URL-ISSUE--UrlService@getApplicationRegister:: Query: $query. Application: " . json_encode($application));
         return $this->getApplication($application, "/register{$query}");
     }
 }
