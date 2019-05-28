@@ -18,8 +18,8 @@ class OrganisationService extends Service {
 
     public function acceptInvitation($slug, $user) {
         $user = $user->resource;
-        $application = ApplicationRepository::bySlugLax($user, $slug);
-        
+        $application = Application::whereSlug($slug)->first();
+
         if (!$application) {
             return;
         }

@@ -12,6 +12,30 @@ class UserRepository {
     }
 
     /**
+     * Create a new, registered user. This is most likely used when self registering, rather than
+     * coming from an invite. These people are so excited about using our platform they are
+     * self registering!
+     *
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $email
+     * @param int $roleId
+     * @param string $password - an unhashed password string
+     * @return void
+     */
+    public function createRegisteredUser($firstname, $lastname, $email, $roleId, $password)
+    {
+        return User::create([
+            'first_name' => $firstname,
+            'last_name' => $lastname,
+            'email' => $email,
+            'password' => $this->hash->make($password),
+            'role_id' => $roleId,
+            'status' => UserStatusRepository::idByLabel('Registered'),
+        ]);
+    }
+
+    /**
      * Create a new, unregistered user. This is most likely triggered by system events and on behalf
      * of the user, without them registering directly. For this reason, we create a temporary 
      * random password
@@ -20,7 +44,7 @@ class UserRepository {
      * @param string $lastname
      * @param string $email
      * @param int $roleId
-     * @param string $password - a pre-hashed password string
+     * @param string $password - an unhashed password string
      * @return void
      */
     public function createUnregisteredUser($firstname, $lastname, $email, $roleId, $password = null)
