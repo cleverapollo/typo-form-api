@@ -97,6 +97,7 @@ $app->register(DynEd\Lumen\MaintenanceMode\MaintenanceModeServiceProvider::class
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Silber\Bouncer\BouncerServiceProvider::class);
+$app->register(Sentry\Laravel\ServiceProvider::class);
 
 
 // Clockwork Debugging Tool
@@ -110,6 +111,7 @@ $app->alias('Response', Illuminate\Support\Facades\Response::class);
 
 collect([
     Silber\Bouncer\BouncerFacade::class => 'Bouncer',
+    Sentry\Laravel\Facade::class => 'Sentry',
     App\Repositories\ApplicationRepositoryFacade::class => 'ApplicationRepository',
     App\Repositories\ApplicationUserRepositoryFacade::class => 'ApplicationUserRepository',
     App\Repositories\OrganisationRepositoryFacade::class => 'OrganisationRepository',
