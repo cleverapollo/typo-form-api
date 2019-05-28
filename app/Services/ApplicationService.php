@@ -37,7 +37,7 @@ class ApplicationService extends Service {
 
     public function acceptInvitation($slug, $user) {
         $user = User::findOrFail($user->resource->id);
-        $application = ApplicationRepository::bySlugLax($user, $slug);
+        $application = Application::whereSlug($slug)->first();
 
         if (!$application) {
             return;

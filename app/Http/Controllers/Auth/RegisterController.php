@@ -51,7 +51,7 @@ class RegisterController extends Controller
                 // The user doesn't exist, we will create one now. This matches the existing flow
                 // of allowing a user to register even when no apps are assigned to them
                 //
-                $user = UserRepository::createUnregisteredUser($input['first_name'], $input['last_name'], $email, $roleId, $input['password']);
+                $user = UserRepository::createRegisteredUser($input['first_name'], $input['last_name'], $email, $roleId, $input['password']);
             }
 
             return response()->json(['message' => __('responses.register_200')], 200);
