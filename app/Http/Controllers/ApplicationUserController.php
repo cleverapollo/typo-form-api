@@ -60,7 +60,7 @@ class ApplicationUserController extends Controller
 
         $multiplier = intval($request->input('multiplier'));
         $period = intval($request->input('period'));
-        $meta = array_merge($applicationUser->meta, compact('multiplier', 'period'));
+        $meta = array_merge($applicationUser->meta ?? [], compact('multiplier', 'period'));
 
         $applicationUser->update([
             'role_id' => $input['application_role_id'],
