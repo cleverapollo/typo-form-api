@@ -51,8 +51,8 @@ class CreateNotesFromWorkflowJobs extends Command {
             Note::unguard();
             $note = Note::create([
                 'application_id' => $workflow->application_id,
-                'note_type_id' => 3, // <-- "Other"
-                'description' => __('app.workflow_email_note_description', ['userName' => $user->first_name, 'workflowName' => $workflow->name]),
+                'note_type_id' => 2, // <-- "Email"
+                'description' => $workflow->name,
                 'note' => implode(PHP_EOL.PHP_EOL, [
                     'Subject: ' . $mailData['subject'],
                     'Body:',
