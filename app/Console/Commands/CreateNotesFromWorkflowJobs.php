@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use \MailService;
 use App\Models\Note;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
@@ -41,12 +42,22 @@ class CreateNotesFromWorkflowJobs extends Command {
                 dump($workflowJob->id . ': no user!');
                 return;
             }
+
+            $mailData = MailService::applyMailMerge($data->subject, $data->message, $data, [
+                'first_name' => 'first_name',
+                'last_name' => 'last_name',
+                'email' => 'email',
+            ]);
             Note::unguard();
             $note = Note::create([
                 'application_id' => $workflow->application_id,
                 'note_type_id' => 3, // <-- "Other"
                 'description' => __('app.workflow_email_note_description', ['userName' => $user->first_name, 'workflowName' => $workflow->name]),
-                'note' => '',
+                'note' => implode(PHP_EOL.PHP_EOL, [
+                    'Subject: ' . $mailData['subject'],
+                    'Body:',
+                    html_to_plain_text($mailData['body']),
+                 ]),
                 'user_id' => $workflow->author_id,
                 'recordable_id' => $user->id,
                 'recordable_type' => 'User',

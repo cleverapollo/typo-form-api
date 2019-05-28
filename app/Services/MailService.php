@@ -20,7 +20,7 @@ class MailService {
      * @param Array $map
      * @return void
      */
-    protected function applyMailMerge($subject, $body, $data, $map) 
+    public function applyMailMerge($subject, $body, $data, $map) 
     {
         $keys = collect($map)->keys()->map(function($key) {
             return '{{' . $key . '}}';

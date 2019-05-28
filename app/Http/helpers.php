@@ -44,3 +44,20 @@ if (! function_exists('model_class')) {
         return "App\\Models\\" . Str::singular(Str::studly($resource));
     }
 }
+
+if (! function_exists('html_to_plain_text')) {
+    function html_to_plain_text($input) {
+        $out = str_replace("<br>", PHP_EOL.PHP_EOL, $input);
+        $out = str_replace("<br/>", PHP_EOL.PHP_EOL, $out);
+        $out = str_replace("<br />", PHP_EOL.PHP_EOL, $out);
+        $out = str_replace("<BR>", PHP_EOL.PHP_EOL, $out);
+        $out = str_replace("<BR/>", PHP_EOL.PHP_EOL, $out);
+        $out = str_replace("<BR />", PHP_EOL.PHP_EOL, $out);
+
+        $out = str_replace("&nbsp;", '', $out);
+
+        $out = strip_tags($out);
+
+        return $out;
+    }
+}
