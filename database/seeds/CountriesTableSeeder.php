@@ -211,6 +211,7 @@ class CountriesTableSeeder extends Seeder
             ['id' => 196, 'name' => 'Yemen'],
             ['id' => 197, 'name' => 'Zambia'],
             ['id' => 198, 'name' => 'Zimbabwe'],
+            ['id' => 199, 'name' => 'Ireland']
         ];
 
         foreach ($countries as $country) {
